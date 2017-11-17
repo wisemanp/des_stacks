@@ -10,7 +10,7 @@ import configparser
 import os
 import logging
 
-from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year
+from utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year
 
 class Stack():
     def __init__(self, logger, field, band, my, chips ,working_dir):
@@ -28,9 +28,9 @@ class Stack():
     def _define_paths(self):
         '''Sets the base paths in which to do all of the work'''
         self.logger.info('Defining the paths so we can make our stack nice and tidily')
-        if self.coadding_dir = 'coadding':
+        if self.coadding_dir == 'coadding':
             self.coadding_dir = '/media/data1/wiseman/des/coadding/'
-        elif self.coadding_dir = 'current':
+        elif self.coadding_dir == 'current':
             self.coadding_dir = os.curdir
         self.config_dir = os.path.join(self.coadding_dir,'config')
         self.log_dir = os.path.join(self.coadding_dir,'log')

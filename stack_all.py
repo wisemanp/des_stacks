@@ -13,8 +13,7 @@ import os
 import logging
 import argparse
 
-
-import .des_stack as stack
+import des_stack as stack
 
 def parser(cmdline):
     parser = argparse.ArgumentParser(description='Stack some DES SN images')
@@ -83,7 +82,7 @@ def do_stack():
     logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     logger = logging.getLogger(__name__)
-    
+
     #read in parameters from the command line
     fields,bands,mys,chips,workdir = parser()
     for f in fields:

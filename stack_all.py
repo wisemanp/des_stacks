@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''Stack Everything'''
 
 import numpy as np
@@ -90,3 +91,6 @@ def do_stack():
             for my in mys:
                 s = stack.Stack(logger,f,b,my,chips,workdir)
                 s.do_my_stack()
+
+if __name__=="__main__":
+    do_stack()

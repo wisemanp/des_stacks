@@ -10,13 +10,15 @@ import matplotlib.pyplot as plt
 import datetime
 import configparser
 import os
+import subprocess
 import logging
 
-from utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year
+from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year
 
 class Stack():
     def __init__(self, logger, field, band, my, chips ,working_dir):
         self.logger = logger
+        self.coadding_dir =working_dir
         self._define_paths()
         self._get_info()
         self._get_configs()
@@ -25,7 +27,7 @@ class Stack():
         self.band = band
         self.my =my
         self.chips=chips
-        self.coadding_dir =working_dir
+
 
     def _define_paths(self):
         '''Sets the base paths in which to do all of the work'''

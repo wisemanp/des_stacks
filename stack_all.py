@@ -14,16 +14,16 @@ import os
 import logging
 import argparse
 
-import des_stack as stack
+from des_stacks import des_stack as stack
 
-def parser(cmdline):
+def parser():
     parser = argparse.ArgumentParser(description='Stack some DES SN images')
     parser.add_argument('-f','--field', help = 'Field(s) to stack. Separate with space or comma (e.g. X2 X3)',nargs='?',required=False,default='X2')
     parser.add_argument('-b', '--band', help = 'Bands(s) to stack. Separate with space or comma (e.g. g r)',nargs='?',required=False,default='r')
     parser.add_argument('-my','--minusyears', help = 'Which minus years to stack (e.g. 1,2,3,4,none)',nargs='?',required=False,default='1')
     parser.add_argument('-ch','--chips', help = 'Which chips to stack (e.g. [1,5] = 1,3,4)',nargs=1,required=False,default='All')
     parser.add_argument('-wd','--workdir', help = 'Working directory', default = './')
-    args=parser.parse_args(cmdline)
+    args=parser.parse_args()
     try:
         fields = args.field.split(',')
 

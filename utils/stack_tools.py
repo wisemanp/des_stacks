@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import datetime
 import configparser
 import os
+import glob
 
 def reduce_info(info,**kwargs):
     pass
@@ -223,7 +224,11 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum):
     rabbit_hole = True
     while rabbit_hole:
         curr_subdir = '/'.join(subdir_list)
-        curr_dir_cont = os.listdir(curr_subdir)
+        try:
+            curr_dir_cont = os.listdir(curr_subdir)
+        except:
+            stack.logger.info('CCD {0} not observed on that night in that band'.format(chipnum))
+            return False
         next_subdir = '/'.join([
             curr_subdir,
             curr_dir_cont[0]])

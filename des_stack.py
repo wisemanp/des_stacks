@@ -107,7 +107,10 @@ class Stack():
             chips = self.info_df.CCDNUM.sort_values().unique()
         # get swarp commands
         for y in my:
-            self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,my))
+            # catch silly string issue
+            if y == 'n':
+                y = 'none'
+            self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
             for chip in chips:
                 os.chdir(self.temp_dir)
                 self.logger.info('Stacking CCD {0}'.format(chip))

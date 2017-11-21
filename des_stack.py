@@ -119,7 +119,10 @@ class Stack():
                 p = subprocess.Popen(cmd)
                 p.wait()
                 self.logger.info('Finish stacking chip {0}'.format(chip))
+
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(chips,y))
+            if y == 'none':
+                break
         self.logger.info('Stacking complete!')
     def run_stack_sex(self):
         pass

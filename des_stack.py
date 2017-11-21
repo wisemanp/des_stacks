@@ -27,7 +27,11 @@ class Stack():
         self._get_info()
         self._get_configs()
         self.logger.info("Doing work in: %s as a root directory" % self.coadding_dir)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 1744434fc850bc5dcdbb773b7ece10aba75958bc
     ###############################################
     def _define_paths(self):
         '''Sets the base paths in which to do all of the work'''
@@ -52,7 +56,13 @@ class Stack():
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
         fh = logging.FileHandler(os.path.join(self.log_dir,'stack_%s%s%s%s.log'%(self.field,self.band,self.my,self.chips)))
+<<<<<<< HEAD
         fh.setFormatter(formatter)
+=======
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+        fh.setFormatter(formatter)
+        
+>>>>>>> 1744434fc850bc5dcdbb773b7ece10aba75958bc
         ch.setFormatter(formatter)
         logger.addHandler(ch)
         logger.addHandler(fh)
@@ -132,7 +142,7 @@ class Stack():
                 os.chdir(self.temp_dir)
                 self.logger.info('Stacking CCD {0}'.format(chip))
                 cmd = make_swarp_cmd(self,y,field,chip,band)
-                self.logger.info('Executing command: {0}'.format(cmd))
+                #self.logger.info('Executing command: {0}'.format(cmd))
 
                 p = subprocess.Popen(cmd,shell=True,stdout=log,stderr=log)
                 p.wait()

@@ -89,7 +89,9 @@ class Stack():
         field = self.field
         band = self.band
         my = self.my
+        self.logger.info('******************************************************')
         self.logger.info('Initiating stack on {0} in {1} band'.format(field,band))
+        self.logger.info('******************************************************')
         #does list of good frames exist?
         if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cut))):
             #get the list of good frames
@@ -124,6 +126,7 @@ class Stack():
             if y == 'none':
                 break
         self.logger.info('Stacking complete!')
+        self.logger.info('******************************************************')
     def run_stack_sex(self):
         pass
         # Do SExtractor on the complete stacks

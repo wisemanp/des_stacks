@@ -108,7 +108,7 @@ class Stack():
         # get swarp commands
         for y in my:
             # catch silly string issue
-            if y == 'n':
+            if y in 'none':
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
             for chip in chips:

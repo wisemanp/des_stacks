@@ -17,17 +17,17 @@ from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, g
 
 class Stack():
     def __init__(self, field, band, my, chips ,working_dir):
-
+        self.field = field
+        self.band = band
+        self.my =my
+        self.chips=chips
         self.coadding_dir =working_dir
         self._define_paths()
         self._init_log()
         self._get_info()
         self._get_configs()
         self.logger.info("Doing work in: %s as a root directory" % self.coadding_dir)
-        self.field = field
-        self.band = band
-        self.my =my
-        self.chips=chips
+        
     ###############################################
     def _define_paths(self):
         '''Sets the base paths in which to do all of the work'''
@@ -50,9 +50,10 @@ class Stack():
         logger.setLevel(logging.DEBUG)
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-        fh = logging.FileHandler(os.path.join(self.log_dir,'stack_%s%s%s%s.log'%(self.field,self.band,self.chips)))
+        fh = logging.FileHandler(os.path.join(self.log_dir,'stack_%s%s%s%s.log'%(self.field,self.band,self.my,self.chips)))
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
         fh.setFormatter(formatter)
-        formatter = logging.Formatter('%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+        
         ch.setFormatter(formatter)
         logger.addHandler(ch)
         logger.addHandler(fh)
@@ -121,7 +122,7 @@ class Stack():
         if chips == 'All':
             chips = self.info_df.CCDNUM.sort_values().unique()
         # get swarp commands
-        log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s_%s.log'(field, band, my, chips)),'a')
+        log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s_%s.log' %(field, band, my, chips)),'a')
         log.flush()
         for y in my:
             # catch silly string issue
@@ -132,7 +133,7 @@ class Stack():
                 os.chdir(self.temp_dir)
                 self.logger.info('Stacking CCD {0}'.format(chip))
                 cmd = make_swarp_cmd(self,y,field,chip,band)
-                self.logger.info('Executing command: {0}'.format(cmd))
+                #self.logger.info('Executing command: {0}'.format(cmd))
 
                 p = subprocess.Popen(cmd,shell=True,stdout=log,stderr=log)
                 p.wait()

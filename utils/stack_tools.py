@@ -151,7 +151,8 @@ def make_swarp_cmd(stack,MY,field,chip,band):
         night = first['NITE']
         #chip = first['CCDNUM']
         this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip)
-        stack_fns.append(this_exp_fn)
+        if this_exp_fn:
+            stack_fns.append(this_exp_fn)
     stack.logger.info('Added {} files'.format(counter))
     stack_fns = np.array(stack_fns)
     fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s.lst' %(MY,field,band,chip))
@@ -228,7 +229,7 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum):
             curr_dir_cont = os.listdir(curr_subdir)
         except:
             stack.logger.info('CCD {0} not observed on that night in that band'.format(chipnum))
-            return False
+            return None
         next_subdir = '/'.join([
             curr_subdir,
             curr_dir_cont[0]])

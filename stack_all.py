@@ -13,8 +13,13 @@ import configparser
 import os
 import logging
 import argparse
+from time import gmtime, strftime
+
 
 from des_stacks import des_stack as stack
+all_logger = logging.getLogger('stack_all.py')
+all_logger.setLevel(logging.DEBUG)
+logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 def parser():
     parser = argparse.ArgumentParser(description='Stack some DES SN images')
@@ -79,18 +84,17 @@ def parser():
 
 def do_stack():
     '''code to run the stacks'''
-    #start the logger
-    logging.basicConfig(level=logging.DEBUG)
-    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-    logger = logging.getLogger(__name__)
-
     #read in parameters from the command line
     fields,bands,mys,chips,workdir = parser()
+    all_logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for f in fields:
         for b in bands:
             for my in mys:
-                s = stack.Stack(logger,f,b,my,chips,workdir)
+                s = stack.Stack(f,b,my,chips,workdir)
                 s.do_my_stack()
 
 if __name__=="__main__":
+    all_logger.info("***********************************")
+    all_logger.info("Initialising *** stack_all.py *** at %s UT" % strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+    all_logger.info("***********************************")
     do_stack()

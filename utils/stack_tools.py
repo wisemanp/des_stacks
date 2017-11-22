@@ -12,7 +12,7 @@ import configparser
 import os
 import glob
 import logging
-logger = logging.getLogger(__name__)
+
 def reduce_info(info,**kwargs):
     pass
     #Get a smaller info dataframe based on kwargs
@@ -32,6 +32,7 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
     ## 1
     ## Get median ZP for each exposure
     ## And calculate residual for each chip compared to that median
+    logger = logging.getLogger(__name__)
     logger.info('Initiating make_good_frame_list.py')
     logger.info('Finding good frames for {0}, in {1}, clipping ZP at {2}'.format(field,band,sig))
 
@@ -131,6 +132,7 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
     return good_frame
 
 def make_swarp_cmd(stack,MY,field,chip,band):
+    logger = logging.getLogger(__name__)
     """function to make swarp command to stack Nminus1_year, field chip, band"""
     logger.info('Initiating make_swarp_cmd in order to make the commands to pass to swarp')
     #band = band + '    '
@@ -167,6 +169,7 @@ def make_swarp_cmd(stack,MY,field,chip,band):
     return swarp_cmd
 #############################################
 def get_des_obs_year(night):
+    logger = logging.getLogger(__name__)
     night = int(night)
     cp=configparser.ConfigParser()
     # read the .ini file
@@ -199,7 +202,7 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum):
        given field, band, night, chip, and expnum.
        Uses an object of the Stack class.
        Returns path and name of the file requested.'''
-
+    logger = logging.getLogger(__name__)
     #------------------------------------
     # step 1 - get the year of the observation
     year = get_des_obs_year(night)

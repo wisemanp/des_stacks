@@ -17,9 +17,7 @@ from time import gmtime, strftime
 
 
 from des_stacks import des_stack as stack
-all_logger = logging.getLogger('stack_all.py')
-all_logger.setLevel(logging.DEBUG)
-logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 
 def parser():
     parser = argparse.ArgumentParser(description='Stack some DES SN images')
@@ -67,9 +65,7 @@ def parser():
         except:
             if args.chips[0][0]== '[':
                 chip_bounds = args.chips[0][1:-1].split(',')
-                print (chip_bounds)
                 chips = np.arange(int(chip_bounds[0]), int(chip_bounds[-1]))
-                print (chips)
             else:
                 chips = args.chips[0].split(' ')
 
@@ -82,11 +78,11 @@ def parser():
         workdir = args.workdir
     return fields, bands, mys, chips, workdir
 
-def do_stack():
+def do_stack(logger):
     '''code to run the stacks'''
     #read in parameters from the command line
     fields,bands,mys,chips,workdir = parser()
-    all_logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
+    logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for f in fields:
         for b in bands:
             for my in mys:
@@ -94,7 +90,14 @@ def do_stack():
                 s.do_my_stack()
 
 if __name__=="__main__":
-    all_logger.info("***********************************")
-    all_logger.info("Initialising *** stack_all.py *** at %s UT" % strftime("%Y-%m-%d %H:%M:%S", gmtime()))
-    all_logger.info("***********************************")
-    do_stack()
+    logger = logging.getLogger('stack_all.py')
+    logger.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    logger.info("***********************************")
+    logger.info("Initialising *** stack_all.py *** at %s UT" % strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+    logger.info("***********************************")
+    do_stack(logger)

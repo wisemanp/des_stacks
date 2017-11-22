@@ -33,6 +33,12 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
     ## Get median ZP for each exposure
     ## And calculate residual for each chip compared to that median
     logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
     logger.info('Initiating make_good_frame_list.py')
     logger.info('Finding good frames for {0}, in {1}, clipping ZP at {2}'.format(field,band,sig))
 
@@ -133,6 +139,12 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
 
 def make_swarp_cmd(stack,MY,field,chip,band):
     logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
     """function to make swarp command to stack Nminus1_year, field chip, band"""
     logger.info('Initiating make_swarp_cmd in order to make the commands to pass to swarp')
     #band = band + '    '
@@ -153,7 +165,7 @@ def make_swarp_cmd(stack,MY,field,chip,band):
         first = this_exp.iloc[0]
         night = first['NITE']
         #chip = first['CCDNUM']
-        this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip)
+        this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip,logger)
         if this_exp_fn:
             stack_fns.append(this_exp_fn)
     logger.info('Added {} files'.format(counter))
@@ -168,8 +180,15 @@ def make_swarp_cmd(stack,MY,field,chip,band):
     swarp_cmd = ['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),'@{0}'.format(fn_list),'-c','default.swarp']
     return swarp_cmd
 #############################################
-def get_des_obs_year(night):
-    logger = logging.getLogger(__name__)
+def get_des_obs_year(night,logger=None):
+    if not logger:
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+        formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
     night = int(night)
     cp=configparser.ConfigParser()
     # read the .ini file
@@ -197,15 +216,22 @@ def get_des_obs_year(night):
     return year
 ###############################################
 
-def get_dessn_obs(stack, field, band, night, expnum, chipnum):
+def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
     '''Function to get the filename for a DES image for a
        given field, band, night, chip, and expnum.
        Uses an object of the Stack class.
        Returns path and name of the file requested.'''
-    logger = logging.getLogger(__name__)
+    if not logger:
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+        formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
     #------------------------------------
     # step 1 - get the year of the observation
-    year = get_des_obs_year(night)
+    year = get_des_obs_year(night,logger)
     #------------------------------------
     # step 2 - find the directory for this night
     year_dir = stack.data_dirs[year]

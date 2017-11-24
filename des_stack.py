@@ -47,6 +47,7 @@ class Stack():
     def _init_log(self):
         '''Sets up the logger'''
         logger = logging.getLogger('des_stack.py')
+        logger.handlers =[]
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         ch = logging.StreamHandler()
@@ -129,14 +130,17 @@ class Stack():
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
             for chip in chips:
-                os.chdir(self.temp_dir)
+                
                 self.logger.info('Stacking CCD {0}'.format(chip))
                 cmd = make_swarp_cmd(self,y,field,chip,band)
-                # self.logger.info('Executing command: {0}'.format(cmd))
-
-                p = subprocess.Popen(cmd,shell=True,stdout=log,stderr=log)
-                p.wait()
-
+                self.logger.info('Executing command: {0}'.format(cmd))
+                os.chdir(self.temp_dir)
+                try: 
+                    p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                    outs,errs = p.communicate()
+                    
+                except (OSError, IOError):
+                    self.logger.warn("Swarp failed.", exc_info=1)	
                 self.logger.info('Finish stacking chip {0}'.format(chip))
 
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(chips,y))

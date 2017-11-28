@@ -120,39 +120,87 @@ class Stack():
         # how many chips are we stacking?
         chips = self.chips
         if chips == 'All':
-            chips = self.info_df.CCDNUM.sort_values().unique()
+            self.chips = self.info_df.CCDNUM.sort_values().unique()
         # get swarp commands
-        log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s_%s.log' %(field, band, my, chips)),'a')
+        log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s_%s.log' %(field, band, my, self.chips)),'a')
         log.flush()
         for y in my:
             # catch silly string issue
             if y in 'none':
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
-            for chip in chips:
-                
+            for chip in self.chips:
+
                 self.logger.info('Stacking CCD {0}'.format(chip))
                 cmd = make_swarp_cmd(self,y,field,chip,band)
                 self.logger.info('Executing command: {0}'.format(cmd))
                 os.chdir(self.temp_dir)
-                try: 
+                try:
                     p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                     outs,errs = p.communicate()
-                    
+
                 except (OSError, IOError):
-                    self.logger.warn("Swarp failed.", exc_info=1)	
+                    self.logger.warn("Swarp failed.", exc_info=1)
                 self.logger.info('Finish stacking chip {0}'.format(chip))
 
-            self.logger.info('Finished stacking chips {0} for MY {1}'.format(chips,y))
+            self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break
         log.close()
-        self.logger.info('Stacking of %s %s %s %s complete!' %(field, band, my, chips))
+        self.logger.info('Stacking of %s %s %s %s complete!' %(field, band, my, self.chips))
         self.logger.info('******************************************************')
     def run_stack_sex(self):
-        pass
-        # Do SExtractor on the complete stacks
+        self.logger.info("******** Preparing to extract and match soures *******")
+        qual_df = pd.DataFrame()
+        for chip in self.chips:
+            # create file structure and copy defaults accross
+            chip_dir = os.path.join(stack.out_dir,'MY%s'%self.my,self.field,self.band,chip)
+            if not os.isdir(chip_dir):
+                os.mkdir(chip_dir)
+            psf_dir = os.path.join(chip_dir,'psf')
+            if not os.isdir(psf_dir)
+                os.mkdir(psf_dir)
+            if not os.isfile(os.path.join(psf_dir,'default.sex')):
+                copyfile(os.path.join(self.config_dir,'psf','default.sex'),os.path.join(psf_dir,'default.sex'))
+            if not os.isfile(os.path.join(psf_dir,'default.param')):
+                copyfile(os.path.join(self.config_dir,'psf','default.param'),os.path.join(psf_dir,'default.param'))
+            if not os.isfile(os.path.join(psf_dir,'default.conv')):
+                copyfile(os.path.join(self.config_dir,'psf','default.conv'),os.path.join(psf_dir,'default.conv'))
 
-    def loop_after_sex(self):
+            # do sex for psfex
+            model_fwhm = sex_for_psfex(self,chip)
+            # do psfex on sex
+            psfex(self,chip)
+            # do sex on psf
+            ana_dir = os.path.join(chip_dir,'ana')
+            if not os.path.isdir(ana_dir):
+                os.mkdir(ana_dir)
+            os.chdir(ana_dir)
+            if not os.path.isfile(os.path.join(ana_dir,'default.sex')):
+                copyfile(os.path.join(self.config_dir,'default.sex'),os.path.join(ana_dir,'default.sex'))
+            if not os.path.isfile(os.path.join(ana_dir,'default.param')):
+                copyfile(os.path.join(self.config_dir,'default.param'),os.path.join(ana_dir,'default.param'))
+            if not os.path.isfile(os.path.join(ana_dir,'default.conv')):
+                copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
+            # Do SExtractor on the complete stacks
+            sexcat = sex_for_cat(self,chip)
+            # Compare new catalog to old one, get the ZP and FWHM out
+            sex_fwhm,zp = astrometry(sexcat)
+            qual = open(os.path.join(ana_dir,'%s_ana.qual'),'a')
+            print ('# Quality parameters for %s %s %s %s' %(self.my,self.field,self.band,chip),file =qual)
+            print ('# Parameters:',file=qual)
+            print ('# Zeropoint from sextractor',file=qual)
+            print ('# FWHM from PSFex',file = qual)
+            print ('# FWHM from SExtractor using PSF model',file = qual)
+            print ('%s %s %s'%(zp,model_fwhm,sex_fwhm))
+            qual.close()
+            self.logger.info("Written quality factors to {0}".format('%s_ana.qual'))
+            qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
+            qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
+        self.logger.info("********** Done measuring quality of stack! **********")
+        self.logger.info("******************************************************")
+        return qual_df
+    def qual_loop(self):
+
         pass
         # Have a look at the sex files and compare them to something.

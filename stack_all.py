@@ -43,7 +43,7 @@ def parser():
             fields[i]=field
         except:
             field = 'SN-'+fields[0]
-    parsed['fields'=fields]
+    parsed['fields']=fields
 
     try:
         bands = args.band.split(',')
@@ -52,7 +52,7 @@ def parser():
             bands = args.band[0].split(' ')
         except:
             bands = args.band
-    parsed['bands'=bands]
+    parsed['bands']=bands
     try:
         mys = args.minusyears.split(',')
     except:
@@ -64,7 +64,7 @@ def parser():
 
     if args.chips != 'All':
         try:
-            chips = args.chips.split(',')
+            chips = args.chips[0].split(',')
         except:
             if args.chips[0][0]== '[':
                 chip_bounds = args.chips[0][1:-1].split(',')
@@ -75,6 +75,7 @@ def parser():
     else:
         chips = args.chips
     parsed['chips']=chips
+    print ('Parsed chips as: %s' % chips)
 
     if not args.workdir:
         workdir = 'current'
@@ -87,7 +88,7 @@ def parser():
         loop_type = args.looptype
         parsed['looptype']=loop_type
     except:
-        continue
+        print ('Not looping')
     return parsed
 
 def simple_stack(logger,parsed):
@@ -117,16 +118,16 @@ def looped_stack(logger,parsed):
             for my in mys:
                 #do initial stack
                 s = stack.Stack(f,b,my,chips,workdir)
-                cut = -0.15
+                cut = -0.14
                 s.do_my_stack(cut)
-                s.run_stack_sex()
-                qual = s.run_stack_sex()
+                
+                qual = s.run_stack_sex(cut)
                 # do stack with more generous cut
-                s.do_my_stack(cut+0.05)
-                qual_plus = s.run_stack_sex()
+                s.do_my_stack(cut = -0.2)
+                qual_plus = s.run_stack_sex(cut= cut-0.1)
                 # do stack with more stringent cut
-                s.do_my_stack(cut-0.05)
-                qual_minus = s.run_stack_sex()
+                s.do_my_stack(cut = cut-0.1)
+                qual_minus = s.run_stack_sex(cut = cut-0.1)
                 #test which is better
                 #try going further in that direction
                 #until we get no further.
@@ -150,4 +151,4 @@ if __name__=="__main__":
         looped_stack(logger,parsed)
     else:
         do_stack(logger,parsed)
-    do_stack(logger)
+    

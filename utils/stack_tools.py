@@ -33,6 +33,7 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
     ## Get median ZP for each exposure
     ## And calculate residual for each chip compared to that median
     logger = logging.getLogger(__name__)
+    logger.handlers =[]
     logger.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch = logging.StreamHandler()
@@ -137,8 +138,9 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
     good_table.write(good_fn)
     return good_frame
 
-def make_swarp_cmd(stack,MY,field,chip,band):
+def make_swarp_cmd(stack,MY,field,chip,band,logger = None):
     logger = logging.getLogger(__name__)
+    logger.handlers =[]
     logger.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch = logging.StreamHandler()
@@ -183,6 +185,7 @@ def make_swarp_cmd(stack,MY,field,chip,band):
 def get_des_obs_year(night,logger=None):
     if not logger:
         logger = logging.getLogger(__name__)
+        logger.handlers =[]
         logger.setLevel(logging.DEBUG)
         formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         ch = logging.StreamHandler()
@@ -222,6 +225,7 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
        Uses an object of the Stack class.
        Returns path and name of the file requested.'''
     if not logger:
+        logger.handlers =[]
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
         formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -230,6 +234,7 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
         ch.setFormatter(formatter)
         logger.addHandler(ch)
     #------------------------------------
+    chipnum = int(chipnum)   
     # step 1 - get the year of the observation
     year = get_des_obs_year(night,logger)
     #------------------------------------

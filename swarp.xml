@@ -1,0 +1,768 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="file:///usr/local/share/swarp/swarp.xsl"?>
+<VOTABLE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ivoa.net/xml/VOTable/v1.1">
+<DESCRIPTION>produced by SWarp</DESCRIPTION>
+<!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
+<RESOURCE ID="SWarp" name="ccd_5.fits">
+ <DESCRIPTION>Data related to SWarp</DESCRIPTION>
+ <INFO name="QUERY_STATUS" value="OK" />
+ <COOSYS ID="J2000" equinox="J2000" epoch="J2000" system="ICRS"/>
+ <RESOURCE ID="MetaData" name="MetaData">
+  <DESCRIPTION>SWarp meta-data</DESCRIPTION>
+  <INFO name="QUERY_STATUS" value="OK" />
+  <PARAM name="Software" datatype="char" arraysize="*" ucd="meta.title;meta.software" value="SWarp"/>
+  <PARAM name="Version" datatype="char" arraysize="*" ucd="meta.version;meta.software" value="2.38.0"/>
+  <PARAM name="Soft_URL" datatype="char" arraysize="*" ucd="meta.ref.url;meta.software" value="http://astromatic.net/software/swarp/"/>
+  <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
+  <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2002ASPC..281..228B"/>
+  <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="32"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2017-11-24"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="12:35:31"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="180.51" unit="s"/>
+  <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="wiseman"/>
+  <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
+  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/wiseman/code/des_stacks"/>
+  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="/media/data1/wiseman/des/coadding/stacks/MY1/SN-E1/r/ccd_5.fits"/>
+  <PARAM name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="coadd.weight.fits"/>
+  <PARAM name="NOverlap_Max" datatype="int" ucd="meta.number;stat.max;obs.image" value="71"/>
+  <PARAM name="ExpTime_Max" datatype="float" ucd="time.expo;stat.max;obs.image" value="10650" unit="s"/>
+  <PARAM name="Gain_Max" datatype="float" ucd="instr.calib;stat.max;obs.image" value="32.4227" unit="photon/ADU"/>
+  <TABLE ID="Input_Image_Data" name="Input_Image_Data">
+   <DESCRIPTION>Data gathered by SWarp for every FITS input image</DESCRIPTION>
+   <!-- NFrames may be 0 if an error occurred early in the processing -->
+   <PARAM name="NFrames" datatype="int" ucd="meta.number;meta.dataset" value="71"/>
+   <!-- CurrFrame may differ from NFrames if an error occurred -->
+   <PARAM name="CurrFrame" datatype="int" ucd="meta.number;meta.dataset" value="71"/>
+   <FIELD name="Frame_Index" datatype="int" ucd="meta.record"/>
+   <FIELD name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits"/>
+   <FIELD name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits"/>
+   <FIELD name="External_Header" datatype="boolean" ucd="meta.code;obs.param"/>
+   <FIELD name="Image_Ident" datatype="char" arraysize="*" ucd="meta.id;obs"/>
+   <FIELD name="Extension" datatype="int" ucd="meta.record"/>
+   <FIELD name="Date" datatype="char" arraysize="*" ucd="meta.record;time.event.end"/>
+   <FIELD name="Time" datatype="char" arraysize="*" ucd="meta.record;time.event.end"/>
+   <FIELD name="Duration" datatype="float" ucd="meta.record;time.event.end" unit="s"/>
+   <FIELD name="Background_Mean" datatype="float" ucd="instr.skyLevel;obs.image;stat.median" unit="adu"/>
+   <FIELD name="Background_StDev" datatype="float" ucd="stat.stdev;obs.image;stat.median" unit="adu"/>
+   <FIELD name="Subtract_Back" datatype="boolean" ucd="meta.code;obs.param"/>
+   <FIELD name="Back_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param"/>
+   <FIELD name="Back_Size" datatype="int" ucd="obs.param" unit="pix"/>
+   <FIELD name="Back_FilterSize" datatype="int" ucd="obs.param" unit="pix"/>
+   <FIELD name="Back_Default" datatype="float" ucd="obs.param" unit="adu"/>
+   <FIELD name="Weight_Type" datatype="boolean" arraysize="*" ucd="stat.weight;meta.code"/>
+   <FIELD name="Rescale_Weights" datatype="char" arraysize="*" ucd="stat.weight;meta.code"/>
+   <FIELD name="Weight_Thresh" datatype="float" ucd="instr.sensitivity;obs.param" unit="adu"/>
+   <FIELD name="Weight_Scaling" datatype="float" ucd="arith.factor;obs.image;stat.median"/>
+   <FIELD name="Interpolate" datatype="boolean" ucd="meta.code;obs.param"/>
+   <FIELD name="Gain" datatype="float" ucd="instr.calib;obs.image" unit="photon/adu"/>
+   <FIELD name="Saturation" datatype="float" ucd="instr.calib;obs.image" unit="adu"/>
+   <FIELD name="ExpTime" datatype="float" ucd="time.expo;obs.image" unit="s"/>
+   <FIELD name="Photometric_Flux_Scaling" datatype="float" ucd="phot.calib;obs.image"/>
+   <FIELD name="Astrometric_Flux_Scaling" datatype="float" ucd="phot.calib;obs.image"/>
+   <FIELD name="Field_Coordinates" datatype="double" arraysize="2" ucd="pos.eq;obs.image" unit="pix"/>
+   <FIELD name="Pixel_Scale" datatype="float" ucd="instr.pixel;obs.image;stat.mean" unit="arcsec"/>
+   <FIELD name="ObsDate" datatype="double" ucd="time.start;obs" unit="yr"/>
+   <FIELD name="Equinox" datatype="double" ucd="time.equinox;obs" unit="yr"/>
+   <FIELD name="Epoch" datatype="double" ucd="time.epoch;obs" unit="yr"/>
+   <FIELD name="COOSYS" datatype="char" arraysize="*" ucd="meta.code;pos"/>
+   <DATA><TABLEDATA>
+    <TR>
+     <TD>1</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20150731-r1623/D_SN-E1_r_s1/p02/ccd05/red/D00459991_SN-E1_r_c05_r1623p02_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:31</TD><TD>0.00</TD>
+     <TD>7029.88</TD><TD>43.4901</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>T</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.999787</TD><TD>7.667223281 -42.27017719</TD><TD>0.262758</TD><TD>2015.580269</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>2</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20150817-r1627/D_SN-E1_r_s1/p01/ccd05/red/D00464802_SN-E1_r_c05_r1627p01_hupdate_sci.fits</TD><TD>Weightmap</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:32</TD><TD>0.00</TD>
+     <TD>434.447</TD><TD>11.2442</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00001</TD><TD>7.664066958 -42.26879043</TD><TD>0.262758</TD><TD>2015.626916</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>3</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20140807-r1648/D_SN-E1_r_s1/p01/ccd05/red/D00345372_SN-E1_r_c05_r1648p01_hupdate_sci.fits</TD><TD>filename</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:32</TD><TD>0.00</TD>
+     <TD>2672.83</TD><TD>27.2939</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.999864</TD><TD>7.664264232 -42.26791457</TD><TD>0.262758</TD><TD>2014.600086</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>4</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20150822-r1631/D_SN-E1_r_s1/p01/ccd05/red/D00466288_SN-E1_r_c05_r1631p01_hupdate_sci.fits</TD><TD>if</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:33</TD><TD>0.00</TD>
+     <TD>569.785</TD><TD>12.7812</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.999949</TD><TD>7.664066957 -42.26893641</TD><TD>0.262758</TD><TD>2015.640558</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>5</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141125-r1707/D_SN-E1_r_s1/p01/ccd05/red/D00381504_SN-E1_r_c05_r1707p01_hupdate_sci.fits</TD><TD>suffix</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:34</TD><TD>0.00</TD>
+     <TD>569.538</TD><TD>12.8023</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00028</TD><TD>7.663771029 -42.27065164</TD><TD>0.262758</TD><TD>2014.900836</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>6</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20150830-r1644/D_SN-E1_r_s1/p01/ccd05/red/D00469154_SN-E1_r_c05_r1644p01_hupdate_sci.fits</TD><TD>not</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:34</TD><TD>0.00</TD>
+     <TD>4113.4</TD><TD>33.6075</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00013</TD><TD>7.66579306 -42.26981227</TD><TD>0.262758</TD><TD>2015.662455</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>7</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20140815-r1649/D_SN-E1_r_s1/p01/ccd05/red/D00348371_SN-E1_r_c05_r1649p01_hupdate_sci.fits</TD><TD>used</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:35</TD><TD>0.00</TD>
+     <TD>871.165</TD><TD>15.7469</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.999861</TD><TD>7.66416558 -42.27006773</TD><TD>0.262758</TD><TD>2014.622072</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>8</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20140820-r1652/D_SN-E1_r_s1/p01/ccd05/red/D00350531_SN-E1_r_c05_r1652p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:36</TD><TD>0.00</TD>
+     <TD>387.023</TD><TD>10.6607</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00001</TD><TD>7.664214895 -42.27032319</TD><TD>0.262758</TD><TD>2014.635784</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>9</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141012-r1681/D_SN-E1_r_s1/p02/ccd05/red/D00367110_SN-E1_r_c05_r1681p02_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:37</TD><TD>0.00</TD>
+     <TD>922.23</TD><TD>16.1624</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00004</TD><TD>7.663672388 -42.27090709</TD><TD>0.262758</TD><TD>2014.780307</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>10</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20150907-r1693/D_SN-E1_r_s1/p01/ccd05/red/D00472293_SN-E1_r_c05_r1693p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:37</TD><TD>0.00</TD>
+     <TD>519.32</TD><TD>12.223</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1</TD><TD>7.667025969 -42.26904587</TD><TD>0.262758</TD><TD>2015.68404</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>11</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141022-r1686/D_SN-E1_r_s1/p01/ccd05/red/D00370527_SN-E1_r_c05_r1686p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:38</TD><TD>0.00</TD>
+     <TD>626.714</TD><TD>13.3764</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00013</TD><TD>7.663376515 -42.26922836</TD><TD>0.262758</TD><TD>2014.807757</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>12</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20140919-r1663/D_SN-E1_r_s1/p01/ccd05/red/D00360536_SN-E1_r_c05_r1663p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:39</TD><TD>0.00</TD>
+     <TD>519.516</TD><TD>12.2252</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.999824</TD><TD>7.666039574 -42.26623583</TD><TD>0.262758</TD><TD>2014.717491</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>13</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20140923-r1665/D_SN-E1_r_s1/p01/ccd05/red/D00361606_SN-E1_r_c05_r1665p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:40</TD><TD>0.00</TD>
+     <TD>406.781</TD><TD>10.9306</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.0001</TD><TD>7.664658759 -42.26886342</TD><TD>0.262758</TD><TD>2014.728662</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>14</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20140929-r1668/D_SN-E1_r_s1/p01/ccd05/red/D00363791_SN-E1_r_c05_r1668p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:40</TD><TD>0.00</TD>
+     <TD>694.294</TD><TD>14.0912</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00011</TD><TD>7.66258748 -42.26813352</TD><TD>0.262758</TD><TD>2014.745014</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>15</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20140911-r1660/D_SN-E1_r_s1/p01/ccd05/red/D00358424_SN-E1_r_c05_r1660p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:41</TD><TD>0.00</TD>
+     <TD>1454.3</TD><TD>20.1534</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.999895</TD><TD>7.664856026 -42.26879043</TD><TD>0.262758</TD><TD>2014.695647</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>16</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141026-r1688/D_SN-E1_r_s1/p01/ccd05/red/D00371614_SN-E1_r_c05_r1688p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:42</TD><TD>0.00</TD>
+     <TD>754.635</TD><TD>14.6711</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00025</TD><TD>7.664609438 -42.27035969</TD><TD>0.262758</TD><TD>2014.818639</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>17</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141118-r1705/D_SN-E1_r_s1/p01/ccd05/red/D00379265_SN-E1_r_c05_r1705p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:43</TD><TD>0.00</TD>
+     <TD>548.777</TD><TD>12.5799</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00028</TD><TD>7.663918983 -42.27072463</TD><TD>0.262758</TD><TD>2014.88166</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>18</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141111-r1704/D_SN-E1_r_s1/p01/ccd05/red/D00376675_SN-E1_r_c05_r1704p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:43</TD><TD>0.00</TD>
+     <TD>401.463</TD><TD>10.8495</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00024</TD><TD>7.664116256 -42.27065164</TD><TD>0.262758</TD><TD>2014.862741</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>19</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20150911-r1699/D_SN-E1_r_s1/p01/ccd05/red/D00473891_SN-E1_r_c05_r1699p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:44</TD><TD>0.00</TD>
+     <TD>419.834</TD><TD>11.0519</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.99987</TD><TD>7.667223211 -42.26838897</TD><TD>0.262758</TD><TD>2015.694966</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>20</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141224-r1773/D_SN-E1_r_s1/p01/ccd05/red/D00391279_SN-E1_r_c05_r1773p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:45</TD><TD>0.00</TD>
+     <TD>528.971</TD><TD>12.3398</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00009</TD><TD>7.664214894 -42.27046917</TD><TD>0.262758</TD><TD>2014.980443</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>21</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141219-r1770/D_SN-E1_r_s1/p01/ccd05/red/D00389432_SN-E1_r_c05_r1770p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:45</TD><TD>0.00</TD>
+     <TD>542.977</TD><TD>12.4952</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00024</TD><TD>7.665546481 -42.27054215</TD><TD>0.262758</TD><TD>2014.966584</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>22</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141130-r1711/D_SN-E1_r_s1/p01/ccd05/red/D00383111_SN-E1_r_c05_r1711p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:46</TD><TD>0.00</TD>
+     <TD>1502.85</TD><TD>20.5266</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00025</TD><TD>7.666088978 -42.27043267</TD><TD>0.262758</TD><TD>2014.914538</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>23</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20150924-r1824/D_SN-E1_r_s1/p02/ccd05/red/D00478092_SN-E1_r_c05_r1824p02_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:47</TD><TD>0.00</TD>
+     <TD>3729.21</TD><TD>32.0217</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00012</TD><TD>7.667420472 -42.26827948</TD><TD>0.262758</TD><TD>2015.730462</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>24</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151001-r1915/D_SN-E1_r_s1/p01/ccd05/red/D00480919_SN-E1_r_c05_r1915p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:48</TD><TD>0.00</TD>
+     <TD>693.67</TD><TD>14.0433</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00014</TD><TD>7.665349191 -42.26864446</TD><TD>0.262758</TD><TD>2015.749574</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>25</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20141210-r1765/D_SN-E1_r_s1/p01/ccd05/red/D00386231_SN-E1_r_c05_r1765p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:49</TD><TD>0.00</TD>
+     <TD>532.041</TD><TD>12.3885</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00028</TD><TD>7.666384876 -42.27006772</TD><TD>0.262758</TD><TD>2014.941927</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>26</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20150121-r1814/D_SN-E1_r_s1/p01/ccd05/red/D00401527_SN-E1_r_c05_r1814p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:49</TD><TD>0.00</TD>
+     <TD>672.522</TD><TD>13.8602</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.99993</TD><TD>7.666532798 -42.26897289</TD><TD>0.262758</TD><TD>2015.056938</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>27</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20150102-r1800/D_SN-E1_r_s1/p01/ccd05/red/D00393836_SN-E1_r_c05_r1800p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:50</TD><TD>0.00</TD>
+     <TD>2688.86</TD><TD>27.3567</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00013</TD><TD>7.666582106 -42.26864444</TD><TD>0.262758</TD><TD>2015.004917</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>28</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20150114-r1808/D_SN-E1_r_s1/p01/ccd05/red/D00398236_SN-E1_r_c05_r1808p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:52</TD><TD>1.00</TD>
+     <TD>599.465</TD><TD>13.0903</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00008</TD><TD>7.664806709 -42.2696298</TD><TD>0.262758</TD><TD>2015.037817</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>29</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20150128-r1819/D_SN-E1_r_s1/p01/ccd05/red/D00404133_SN-E1_r_c05_r1819p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:52</TD><TD>0.00</TD>
+     <TD>2459.43</TD><TD>26.1851</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.999888</TD><TD>7.664658758 -42.26904589</TD><TD>0.262758</TD><TD>2015.076081</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>30</TD><TD>/media/data1/rawdata/des/Y2/REPROC_NCSA/des005/desarchive/sne/Y2REPROC/20150107-r1803/D_SN-E1_r_s1/p01/ccd05/red/D00395486_SN-E1_r_c05_r1803p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:53</TD><TD>0.00</TD>
+     <TD>769.875</TD><TD>14.8158</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00006</TD><TD>7.666878047 -42.26988524</TD><TD>0.262758</TD><TD>2015.018607</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>31</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151015-r1953/D_SN-E1_r_s1/p01/ccd05/red/D00484468_SN-E1_r_c05_r1953p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:54</TD><TD>0.00</TD>
+     <TD>647.541</TD><TD>13.6041</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00006</TD><TD>7.663524455 -42.26981227</TD><TD>0.262758</TD><TD>2015.787842</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>32</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151102-r1998/D_SN-E1_r_s1/p01/ccd05/red/D00489410_SN-E1_r_c05_r1998p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:55</TD><TD>0.00</TD>
+     <TD>555.776</TD><TD>12.639</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00027</TD><TD>7.664954661 -42.26944733</TD><TD>0.262758</TD><TD>2015.837145</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>33</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151019-r1957/D_SN-E1_r_s1/p01/ccd05/red/D00485809_SN-E1_r_c05_r1957p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:32:59</TD><TD>3.00</TD>
+     <TD>674.641</TD><TD>13.8764</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00027</TD><TD>7.663524511 -42.26692922</TD><TD>0.262758</TD><TD>2015.799184</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>34</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151009-r1945/D_SN-E1_r_s1/p01/ccd05/red/D00483384_SN-E1_r_c05_r1945p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:00</TD><TD>1.00</TD>
+     <TD>514.309</TD><TD>12.196</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00017</TD><TD>7.667075279 -42.2688634</TD><TD>0.262758</TD><TD>2015.771534</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>35</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151020-r1961/D_SN-E1_r_s1/p01/ccd05/red/D00486073_SN-E1_r_c05_r1961p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:01</TD><TD>0.00</TD>
+     <TD>1390.14</TD><TD>19.7699</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00015</TD><TD>7.664116272 -42.26908239</TD><TD>0.262758</TD><TD>2015.801527</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>36</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151112-r2023/D_SN-E1_r_s1/p01/ccd05/red/D00492429_SN-E1_r_c05_r2023p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:02</TD><TD>1.00</TD>
+     <TD>532.856</TD><TD>12.3857</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00019</TD><TD>7.666582143 -42.26992174</TD><TD>0.262758</TD><TD>2015.864534</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>37</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151128-r2055/D_SN-E1_r_s1/p01/ccd05/red/D00497334_SN-E1_r_c05_r2055p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:03</TD><TD>1.00</TD>
+     <TD>1476.63</TD><TD>20.3364</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.0001</TD><TD>7.666088951 -42.26915537</TD><TD>0.262758</TD><TD>2015.908677</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>38</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151107-r2012/D_SN-E1_r_s1/p04/ccd05/red/D00491095_SN-E1_r_c05_r2012p04_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:06</TD><TD>3.00</TD>
+     <TD>442.116</TD><TD>11.3411</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00007</TD><TD>7.664609446 -42.26725768</TD><TD>0.262758</TD><TD>2015.851308</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>39</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151029-r1987/D_SN-E1_r_s1/p02/ccd05/red/D00488418_SN-E1_r_c05_r1987p02_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:07</TD><TD>0.00</TD>
+     <TD>587.777</TD><TD>12.971</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00012</TD><TD>7.664116279 -42.268389</TD><TD>0.262758</TD><TD>2015.826216</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>40</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160822-r2457/D_SN-E1_r_s1/p01/ccd05/red/immask/D00566549_SN-E1_r_c05_r2457p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:08</TD><TD>1.00</TD>
+     <TD>0.132796</TD><TD>71.2344</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999781</TD><TD>7.664609441 -42.26908239</TD><TD>0.262758</TD><TD>2016.642602</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>41</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151208-r2110/D_SN-E1_r_s1/p01/ccd05/red/D00500459_SN-E1_r_c05_r2110p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:10</TD><TD>1.00</TD>
+     <TD>475.721</TD><TD>11.7178</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00022</TD><TD>7.66500398 -42.26984877</TD><TD>0.262758</TD><TD>2015.935766</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>42</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151229-r2156/D_SN-E1_r_s1/p01/ccd05/red/D00506786_SN-E1_r_c05_r2156p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:11</TD><TD>1.00</TD>
+     <TD>803.124</TD><TD>15.0627</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00012</TD><TD>7.666039619 -42.26842548</TD><TD>0.262758</TD><TD>2015.993277</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>43</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20160106-r2177/D_SN-E1_r_s1/p01/ccd05/red/D00508806_SN-E1_r_c05_r2177p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:13</TD><TD>2.00</TD>
+     <TD>501.077</TD><TD>12.0349</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00007</TD><TD>7.663771051 -42.26926486</TD><TD>0.262758</TD><TD>2016.01522</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>44</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20160112-r2261/D_SN-E1_r_s1/p02/ccd05/red/D00510807_SN-E1_r_c05_r2261p02_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:15</TD><TD>1.00</TD>
+     <TD>641.856</TD><TD>13.5553</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>0.999857</TD><TD>7.667321883 -42.26933782</TD><TD>0.262758</TD><TD>2016.031768</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>45</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160901-r2487/D_SN-E1_r_s1/p01/ccd05/red/immask/D00570164_SN-E1_r_c05_r2487p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:16</TD><TD>0.00</TD>
+     <TD>-4.08411</TD><TD>40.1097</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999845</TD><TD>7.662143536 -42.27050563</TD><TD>0.262758</TD><TD>2016.66999</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>46</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160905-r2495/D_SN-E1_r_s1/p01/ccd05/red/immask/D00571430_SN-E1_r_c05_r2495p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:18</TD><TD>1.00</TD>
+     <TD>-3.64967</TD><TD>47.683</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999815</TD><TD>7.661354554 -42.26853492</TD><TD>0.262758</TD><TD>2016.68092</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>47</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160828-r2473/D_SN-E1_r_s1/p01/ccd05/red/immask/D00568701_SN-E1_r_c05_r2473p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:19</TD><TD>1.00</TD>
+     <TD>-3.6964</TD><TD>39.6092</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999768</TD><TD>7.663425851 -42.2683525</TD><TD>0.262758</TD><TD>2016.659016</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>48</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151219-r2140/D_SN-E1_r_s1/p01/ccd05/red/D00504010_SN-E1_r_c05_r2140p01_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:22</TD><TD>3.00</TD>
+     <TD>1900.71</TD><TD>22.9802</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00031</TD><TD>7.664214903 -42.26944733</TD><TD>0.262758</TD><TD>2015.965892</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>49</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20151222-r2148/D_SN-E1_r_s1/p02/ccd05/red/D00505420_SN-E1_r_c05_r2148p02_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:23</TD><TD>1.00</TD>
+     <TD>2426.07</TD><TD>25.9741</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00022</TD><TD>7.666286237 -42.26992175</TD><TD>0.262758</TD><TD>2015.974117</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>50</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161004-r2579/D_SN-E1_r_s1/p01/ccd05/red/immask/D00580800_SN-E1_r_c05_r2579p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:24</TD><TD>1.00</TD>
+     <TD>1.16154</TD><TD>53.72</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.99967</TD><TD>7.665299878 -42.26904589</TD><TD>0.262758</TD><TD>2016.759819</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>51</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161108-r2714/D_SN-E1_r_s1/p01/ccd05/red/immask/D00591426_SN-E1_r_c05_r2714p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:25</TD><TD>1.00</TD>
+     <TD>13.0944</TD><TD>82.2729</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999955</TD><TD>7.665595754 -42.26714819</TD><TD>0.262758</TD><TD>2016.855656</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>52</TD><TD>/media/data1/rawdata/des/Y3/PROD/des005/desarchive/sne/Y3N/20160119-r2280/D_SN-E1_r_s1/p03/ccd05/red/D00513308_SN-E1_r_c05_r2280p03_hupdate_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:27</TD><TD>1.00</TD>
+     <TD>2507.37</TD><TD>26.4329</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>4.085</TD><TD>45237</TD><TD>150</TD><TD>1.99999</TD>
+     <TD>1.00002</TD><TD>7.663919002 -42.26930135</TD><TD>0.262758</TD><TD>2016.05077</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>53</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161020-r2676/D_SN-E1_r_s1/p01/ccd05/red/immask/D00584364_SN-E1_r_c05_r2676p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:30</TD><TD>2.00</TD>
+     <TD>8.01867</TD><TD>61.568</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999797</TD><TD>7.663524488 -42.26809704</TD><TD>0.262758</TD><TD>2016.803573</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>54</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161101-r2703/D_SN-E1_r_s1/p03/ccd05/red/immask/D00588590_SN-E1_r_c05_r2703p03_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:31</TD><TD>1.00</TD>
+     <TD>4.79734</TD><TD>51.9302</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999925</TD><TD>7.663820357 -42.26999474</TD><TD>0.262758</TD><TD>2016.836451</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>55</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160925-r2552/D_SN-E1_r_s1/p01/ccd05/red/immask/D00577399_SN-E1_r_c05_r2552p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:32</TD><TD>0.00</TD>
+     <TD>-4.47408</TD><TD>44.0468</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999901</TD><TD>7.662094346 -42.26747661</TD><TD>0.262758</TD><TD>2016.735653</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>56</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160913-r2527/D_SN-E1_r_s1/p01/ccd05/red/immask/D00574583_SN-E1_r_c05_r2527p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:33</TD><TD>1.00</TD>
+     <TD>102.9</TD><TD>166.205</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999659</TD><TD>7.662735332 -42.27116254</TD><TD>0.262758</TD><TD>2016.702467</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>57</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160813-r2447/D_SN-E1_r_s1/p05/ccd05/red/immask/D00563925_SN-E1_r_c05_r2447p05_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:34</TD><TD>1.00</TD>
+     <TD>21.0536</TD><TD>74.3874</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999699</TD><TD>7.668258391 -42.26003176</TD><TD>0.262758</TD><TD>2016.617997</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>58</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161115-r2722/D_SN-E1_r_s1/p01/ccd05/red/immask/D00593053_SN-E1_r_c05_r2722p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:35</TD><TD>1.00</TD>
+     <TD>31.8989</TD><TD>83.7898</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999988</TD><TD>7.664757392 -42.26948382</TD><TD>0.262758</TD><TD>2016.874886</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>59</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160929-r2563/D_SN-E1_r_s1/p01/ccd05/red/immask/D00578960_SN-E1_r_c05_r2563p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:36</TD><TD>1.00</TD>
+     <TD>-3.64344</TD><TD>46.8223</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.99978</TD><TD>7.663820377 -42.26864445</TD><TD>0.262758</TD><TD>2016.746251</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>60</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161126-r2740/D_SN-E1_r_s1/p02/ccd05/red/immask/D00596782_SN-E1_r_c05_r2740p02_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:37</TD><TD>0.00</TD>
+     <TD>0.32188</TD><TD>45.8945</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999977</TD><TD>7.663573814 -42.26758612</TD><TD>0.262758</TD><TD>2016.904946</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>61</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161009-r2594/D_SN-E1_r_s1/p01/ccd05/red/immask/D00582362_SN-E1_r_c05_r2594p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:39</TD><TD>1.00</TD>
+     <TD>17.5902</TD><TD>91.8605</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999639</TD><TD>7.664510808 -42.2690094</TD><TD>0.262758</TD><TD>2016.773433</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>62</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20160921-r2541/D_SN-E1_r_s1/p01/ccd05/red/immask/D00575721_SN-E1_r_c05_r2541p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:40</TD><TD>1.00</TD>
+     <TD>-0.623264</TD><TD>46.1386</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999702</TD><TD>7.665003979 -42.26959331</TD><TD>0.262758</TD><TD>2016.724317</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>63</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161228-r2794/D_SN-E1_r_s1/p01/ccd05/red/immask/D00604949_SN-E1_r_c05_r2794p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:41</TD><TD>1.00</TD>
+     <TD>1.30892</TD><TD>46.6268</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999904</TD><TD>7.666335524 -42.26868094</TD><TD>0.262758</TD><TD>2016.992636</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>64</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161130-r2753/D_SN-E1_r_s1/p01/ccd05/red/immask/D00598261_SN-E1_r_c05_r2753p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:42</TD><TD>1.00</TD>
+     <TD>-0.847571</TD><TD>47.3321</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999944</TD><TD>7.668505396 -42.26769555</TD><TD>0.262758</TD><TD>2016.916136</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>65</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161207-r2765/D_SN-E1_r_s1/p03/ccd05/red/immask/D00600835_SN-E1_r_c05_r2765p03_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:43</TD><TD>1.00</TD>
+     <TD>3.74695</TD><TD>80.6508</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999999</TD><TD>7.667025947 -42.26842547</TD><TD>0.262758</TD><TD>2016.93509</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>66</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161024-r2686/D_SN-E1_r_s1/p01/ccd05/red/immask/D00585828_SN-E1_r_c05_r2686p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:44</TD><TD>1.00</TD>
+     <TD>2.5236</TD><TD>53.6941</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999843</TD><TD>7.666187595 -42.26962979</TD><TD>0.262758</TD><TD>2016.814536</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>67</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161121-r2730/D_SN-E1_r_s1/p01/ccd05/red/immask/D00595045_SN-E1_r_c05_r2730p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:45</TD><TD>1.00</TD>
+     <TD>0.0159441</TD><TD>44.1255</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999951</TD><TD>7.66544781 -42.26736716</TD><TD>0.262758</TD><TD>2016.891296</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>68</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161217-r2774/D_SN-E1_r_s1/p01/ccd05/red/immask/D00601765_SN-E1_r_c05_r2774p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:46</TD><TD>0.00</TD>
+     <TD>2.20692</TD><TD>45.3142</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999969</TD><TD>7.666927289 -42.26769559</TD><TD>0.262758</TD><TD>2016.96248</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>69</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20170105-r2805/D_SN-E1_r_s1/p01/ccd05/red/immask/D00606859_SN-E1_r_c05_r2805p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:47</TD><TD>1.00</TD>
+     <TD>4.9995</TD><TD>88.364</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999837</TD><TD>7.666927313 -42.26838898</TD><TD>0.262758</TD><TD>2017.014554</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>70</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20161224-r2790/D_SN-E1_r_s1/p01/ccd05/red/immask/D00604323_SN-E1_r_c05_r2790p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:48</TD><TD>1.00</TD>
+     <TD>2.20174</TD><TD>51.2218</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999942</TD><TD>7.668900004 -42.26893634</TD><TD>0.262758</TD><TD>2016.981644</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>71</TD><TD>/media/data1/rawdata/des/Y4/PROD/des005/desarchive/sne/Y4N/20170118-r2825/D_SN-E1_r_s1/p01/ccd05/red/immask/D00610454_SN-E1_r_c05_r2825p01_immasked.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-E1 tiling 20</TD>
+     <TD>0</TD><TD>2017-11-24</TD><TD>12:33:50</TD><TD>1.00</TD>
+     <TD>10.779</TD><TD>74.1488</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.927002</TD><TD>199345</TD><TD>150</TD><TD>1</TD>
+     <TD>0.999787</TD><TD>7.664856024 -42.26795107</TD><TD>0.262758</TD><TD>2017.050081</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+   </TABLEDATA></DATA>
+  </TABLE>
+  <TABLE ID="Warnings" name="Warnings">
+   <DESCRIPTION>SWarp warnings (limited to the last 1000)</DESCRIPTION>
+   <FIELD name="Date" datatype="char" arraysize="*" ucd="meta;time.event.end"/>
+   <FIELD name="Time" datatype="char" arraysize="*" ucd="meta;time.event.end"/>
+   <FIELD name="Msg" datatype="char" arraysize="*" ucd="meta"/>
+   <DATA><TABLEDATA>
+    <TR><TD>2017-11-24</TD><TD>12:32:30</TD><TD>default.swarp not found, using internal defaults</TD></TR>
+   </TABLEDATA></DATA>
+  </TABLE>
+  <RESOURCE ID="Config" name="Config">
+   <DESCRIPTION>SWarp configuration</DESCRIPTION>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="swarp -IMAGEOUT_NAME /media/data1/wiseman/des/coadding/stacks/MY1/SN-E1/r/ccd_5.fits @/media/data1/wiseman/des/coadding/temp/stack_fns_MY1_SN-E1_r_5.lst -c default.swarp"/>
+   <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.swarp"/>
+   <PARAM name="ImageOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="/media/data1/wiseman/des/coadding/stacks/MY1/SN-E1/r/ccd_5.fits"/>
+   <PARAM name="WeightOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="coadd.weight.fits"/>
+   <PARAM name="Header_Only" datatype="boolean" ucd="meta.code;obs.param" value="F"/>
+   <PARAM name="Header_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".head"/>
+   <PARAM name="Weight_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".weight.fits"/>
+   <PARAM name="Combine" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="Combine_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param" value="MEDIAN"/>
+   <PARAM name="Blank_BadPixels" datatype="boolean" ucd="meta.code;obs.param" value="F"/>
+   <PARAM name="Celestial_Type" datatype="char" arraysize="*" ucd="meta;pos;obs.param" value="NATIVE"/>
+   <PARAM name="Projection_Type" datatype="char" arraysize="*" ucd="meta;pos;obs.param" value="TAN"/>
+   <PARAM name="Projection_Err" datatype="float" arraysize="1" ucd="pos.angDistance;stat.max;obs.param" value="0.001" unit="pix"/>
+   <PARAM name="Center_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="ALL"/>
+   <PARAM name="Center" datatype="double" arraysize="2" ucd="pos;obs.param" value="    7.664757392    -42.26532348" unit="pix"/>
+   <PARAM name="PixelScale_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="MEDIAN"/>
+   <PARAM name="Pixel_Scale" datatype="float" arraysize="1" ucd="instr.scale;instr.pixel;obs.param" value="0"/>
+   <PARAM name="Image_Size" datatype="int" arraysize="1" ucd="instr.scale;instr.pixel;obs.param" value="0"/>
+   <PARAM name="Resample" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="Resample_Dir" datatype="char" arraysize="*" ucd="meta.dataset" value="."/>
+   <PARAM name="Resample_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".resamp.fits"/>
+   <PARAM name="Resampling_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="LANCZOS3"/>
+   <PARAM name="Oversampling" datatype="int" arraysize="1" ucd="arith.factor;instr.pixel;obs.param" value="1"/>
+   <PARAM name="FScalAstro_Type" datatype="char" arraysize="*" ucd="phot.calib;obs.param" value="FIXED"/>
+   <PARAM name="FScale_Keyword" datatype="char" arraysize="*" ucd="meta.code;phot.calib;obs.param" value="FLXSCALE"/>
+   <PARAM name="FScale_Default" datatype="float" ucd="phot.calib;obs.param" value="1"/>
+   <PARAM name="Gain_Keyword" datatype="char" arraysize="*" ucd="meta.code;phot.calib;obs.param" value="GAIN"/>
+   <PARAM name="Gain_Default" datatype="float" ucd="phot.calib;obs.param" value="0"/>
+   <PARAM name="SatLev_Keyword" datatype="char" arraysize="*" ucd="meta.code;instr.saturation;obs.param" value="SATURATE"/>
+   <PARAM name="SatLev_Default" datatype="float" ucd="instr.saturation;obs.param" value="50000"/>
+   <PARAM name="Subtract_Back" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="Back_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param" value="NONE"/>
+   <PARAM name="Back_Size" datatype="int" ucd="obs.param" value="128"/>
+   <PARAM name="Back_FilterSize" datatype="int" ucd="obs.param" value="3"/>
+   <PARAM name="Back_Default" datatype="float" ucd="obs.param" value="0" unit="adu"/>
+   <PARAM name="Back_FiltThresh" datatype="float" ucd="phot.count;arith.ratio;obs.param" value="0"/>
+   <PARAM name="VMem_Dir" datatype="char" arraysize="*" ucd="meta" value="."/>
+   <PARAM name="VMem_Max" datatype="int" ucd="meta.number;stat.max" value="2047" unit="Mbyte"/>
+   <PARAM name="Mem_Max" datatype="int" ucd="meta.number;stat.max" value="256" unit="Mbyte"/>
+   <PARAM name="Combine_BufSize" datatype="int" ucd="meta.number;stat.max" value="256" unit="Mbyte"/>
+   <PARAM name="Delete_TmpFiles" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="Copy_Keywords" datatype="char" arraysize="*" ucd="meta;meta.fits" value="OBJECT  "/>
+   <PARAM name="Write_FileInfo" datatype="boolean" ucd="meta.code" value="F"/>
+   <PARAM name="Verbose_Type" datatype="char" arraysize="*" ucd="meta.code" value="NORMAL"/>
+  </RESOURCE>
+ </RESOURCE>
+</RESOURCE>
+</VOTABLE>

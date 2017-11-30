@@ -10,11 +10,11 @@ import os
 import logging
 import time
 
-def astrometry(stack,sexcat):
+def astrometry(stack,chip,sexcat):
     '''Load in the existing DES and the newly SExtracted catalogs'''
     old_cat = os.path.join(stack.cat_dir,'%s_All_filters_3.csv'%(stack.field[3]))
     old = pd.DataFrame.from_csv(old_cat)
-    sexdat = fits.getdata(sexcat,ext=2)
+    sexdat = fits.getdata(sexcat,ext=1)
     new =pd.DataFrame(sexdat)
     new_obj = SkyCoord(ra=new['X_WORLD']*u.degree,dec =new['Y_WORLD']*u.degree)
     old_obj = SkyCoord(ra=old['RA_%s'%stack.band]*u.degree,dec =old['DEC_%s'%stack.band]*u.degree)

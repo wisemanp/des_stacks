@@ -12,8 +12,11 @@ import configparser
 import os
 import subprocess
 import logging
+from shutil import copyfile
 
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year
+from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
+from des_stacks.analysis.astro import astrometry
 
 class Stack():
     def __init__(self, field, band, my, chips ,working_dir):
@@ -109,8 +112,9 @@ class Stack():
         #does list of good frames exist?
         if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cut))):
             #get the list of good frames
-            self.good_frame = make_good_frame_list(self,field,band)
-            self.logger.info('No good frame list yet, making a new one')
+            self.logger.info('No good frame list yet, making a new one with cut %s' %cut)
+            self.good_frame = make_good_frame_list(self,field,band,sig=cut)
+            
         else:
             good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cut))
             self.logger.info('Reading in list of good frames from {0}'.format(good_fn))
@@ -149,28 +153,28 @@ class Stack():
         log.close()
         self.logger.info('Stacking of %s %s %s %s complete!' %(field, band, my, self.chips))
         self.logger.info('******************************************************')
-    def run_stack_sex(self):
+    def run_stack_sex(self,cut):
         self.logger.info("******** Preparing to extract and match soures *******")
         qual_df = pd.DataFrame()
         for chip in self.chips:
             # create file structure and copy defaults accross
-            chip_dir = os.path.join(stack.out_dir,'MY%s'%self.my,self.field,self.band,chip)
-            if not os.isdir(chip_dir):
+            chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,chip)
+            if not os.path.isdir(chip_dir):
                 os.mkdir(chip_dir)
             psf_dir = os.path.join(chip_dir,'psf')
-            if not os.isdir(psf_dir)
+            if not os.path.isdir(psf_dir):
                 os.mkdir(psf_dir)
-            if not os.isfile(os.path.join(psf_dir,'default.sex')):
+            if not os.path.isfile(os.path.join(psf_dir,'default.sex')):
                 copyfile(os.path.join(self.config_dir,'psf','default.sex'),os.path.join(psf_dir,'default.sex'))
-            if not os.isfile(os.path.join(psf_dir,'default.param')):
+            if not os.path.isfile(os.path.join(psf_dir,'default.param')):
                 copyfile(os.path.join(self.config_dir,'psf','default.param'),os.path.join(psf_dir,'default.param'))
-            if not os.isfile(os.path.join(psf_dir,'default.conv')):
+            if not os.path.isfile(os.path.join(psf_dir,'default.conv')):
                 copyfile(os.path.join(self.config_dir,'psf','default.conv'),os.path.join(psf_dir,'default.conv'))
 
             # do sex for psfex
-            model_fwhm = sex_for_psfex(self,chip)
-            # do psfex on sex
-            psfex(self,chip)
+            sex_for_psfex(self,chip)
+            # do psfex on sex, and get the fwhm from there
+            model_fwhm = psfex(self,chip)
             # do sex on psf
             ana_dir = os.path.join(chip_dir,'ana')
             if not os.path.isdir(ana_dir):
@@ -185,18 +189,20 @@ class Stack():
             # Do SExtractor on the complete stacks
             sexcat = sex_for_cat(self,chip)
             # Compare new catalog to old one, get the ZP and FWHM out
-            sex_fwhm,zp = astrometry(sexcat)
-            qual = open(os.path.join(ana_dir,'%s_ana.qual'),'a')
+            zp,sex_fwhm = astrometry(self,chip,sexcat)
+            qual = open(os.path.join(ana_dir,'%s_ana.qual'%np.abs(cut)),'a')
             print ('# Quality parameters for %s %s %s %s' %(self.my,self.field,self.band,chip),file =qual)
             print ('# Parameters:',file=qual)
             print ('# Zeropoint from sextractor',file=qual)
             print ('# FWHM from PSFex',file = qual)
             print ('# FWHM from SExtractor using PSF model',file = qual)
-            print ('%s %s %s'%(zp,model_fwhm,sex_fwhm))
+            print ('%s %s %s'%(zp,model_fwhm,sex_fwhm),file=qual)
             qual.close()
-            self.logger.info("Written quality factors to {0}".format('%s_ana.qual'))
+            self.logger.info("Written quality factors to {0}_{1}".format(cut,'ana.qual'))
             qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
-            qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
+            self.logger.info("Here is the dict %s" %qual_dict)
+            qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
+            self.logger.info("And the DataFrame %s" %qual_df)
         self.logger.info("********** Done measuring quality of stack! **********")
         self.logger.info("******************************************************")
         return qual_df

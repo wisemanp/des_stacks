@@ -173,19 +173,22 @@ class Stack():
 
             # do sex for psfex
             sex_for_psfex(self,chip)
-            # do psfex on sex, and get the fwhm from there
-            model_fwhm = psfex(self,chip)
-            # do sex on psf
+           
             ana_dir = os.path.join(chip_dir,'ana')
             if not os.path.isdir(ana_dir):
                 os.mkdir(ana_dir)
-            os.chdir(ana_dir)
+            
             if not os.path.isfile(os.path.join(ana_dir,'default.sex')):
                 copyfile(os.path.join(self.config_dir,'default.sex'),os.path.join(ana_dir,'default.sex'))
             if not os.path.isfile(os.path.join(ana_dir,'default.param')):
                 copyfile(os.path.join(self.config_dir,'default.param'),os.path.join(ana_dir,'default.param'))
             if not os.path.isfile(os.path.join(ana_dir,'default.conv')):
                 copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
+             
+            # do psfex on sex, and get the fwhm from there
+            model_fwhm = psfex(self,chip)
+            # do sex on psf
+            os.chdir(ana_dir)
             # Do SExtractor on the complete stacks
             sexcat = sex_for_cat(self,chip)
             # Compare new catalog to old one, get the ZP and FWHM out

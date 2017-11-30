@@ -49,7 +49,8 @@ def psfex(stack,chip,retval='FWHM'):
     stack.logger.info("Took %10.2f secconds" % (end-start))
     copyfile(os.path.join(band_dir,chip,'init.psf'),os.path.join(band_dir,chip,'ana','default.psf'))
     if retval == 'FWHM':
-        psf_out = os.path.join(band_dir,chip,'default.psf')
+        
+        psf_out = os.path.join(band_dir,chip,'ana','default.psf')
         h = fits.getheader(psf_out,ext=1)
         fwhm = h['PSF_FWHM']*0.27 #convert from pixels to arcsec using DES chip pixel scale of 0.27 pix/arcsec
         return fwhm

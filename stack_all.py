@@ -104,7 +104,8 @@ def simple_stack(logger,parsed):
         for b in bands:
             for my in mys:
                 s = stack.Stack(f,b,my,chips,workdir)
-                s.do_my_stack()
+                s.do_my_stack() 
+                s.run_stack_sex(cut=-0.15)
 
 def looped_stack(logger,parsed):
     fields = parsed['fields']
@@ -148,7 +149,10 @@ if __name__=="__main__":
     logger.info("***********************************")
     parsed = parser()
     if 'looptype' in parsed.keys():
-        looped_stack(logger,parsed)
+        if parsed['looptype']in ['b','both','zp','z']:
+            looped_stack(logger,parsed)
+        else:
+            simple_stack(logger,parsed)
     else:
-        do_stack(logger,parsed)
+        simple_stack(logger,parsed)
     

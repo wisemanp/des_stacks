@@ -96,10 +96,12 @@ class Stack():
         '''Gets the current info file (originally from the DESDB)'''
         info_tab = Table.read(os.path.join(self.config_dir,'snobsinfo.fits'))
         self.info_df = info_tab.to_pandas()
-    def do_my_stack(self, cut=-0.15):
+    def do_my_stack(self, zp_cut = -0.15, psf_cut = 2.5,final=True):
         '''Does a stack defined by the parameters from the Stack object it is passed.
-        parameters:
-        cut (float, optional): the zeropoint cut to be used for the stack
+        keyword arguments:
+        zp_cut (float): the zeropoint cut to be used for the stack (default = -0.15)
+        psf_cut (float): the seeing cut to be used for the stack (default = 2.5)
+        final (Bool): whether the stack is final or intermediate (default = True)
         returns:
         none
         '''
@@ -112,11 +114,11 @@ class Stack():
         #does list of good frames exist?
         if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cut))):
             #get the list of good frames
-            self.logger.info('No good frame list yet, making a new one with cut %s' %cut)
-            self.good_frame = make_good_frame_list(self,field,band,sig=cut)
-            
+            self.logger.info('No good frame list yet, making a new one with ZP < %s and PSF < %s cut' %(zp_cut,psf_cut))
+            self.good_frame = make_good_frame_list(self,field,band,zp_cut,psf_cut)
+
         else:
-            good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cut))
+            good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
             self.logger.info('Reading in list of good frames from {0}'.format(good_fn))
             good_table = Table.read(good_fn)
             self.good_frame = good_table.to_pandas()
@@ -136,7 +138,7 @@ class Stack():
             for chip in self.chips:
 
                 self.logger.info('Stacking CCD {0}'.format(chip))
-                cmd = make_swarp_cmd(self,y,field,chip,band)
+                cmd = make_swarp_cmd(self,y,field,chip,band,zp_cut,psf_cut,final)
                 self.logger.info('Executing command: {0}'.format(cmd))
                 os.chdir(self.temp_dir)
                 try:
@@ -153,7 +155,7 @@ class Stack():
         log.close()
         self.logger.info('Stacking of %s %s %s %s complete!' %(field, band, my, self.chips))
         self.logger.info('******************************************************')
-    def run_stack_sex(self,cut):
+    def run_stack_sex(self,zp_cut,psf_cut):
         self.logger.info("******** Preparing to extract and match soures *******")
         qual_df = pd.DataFrame()
         for chip in self.chips:
@@ -173,18 +175,18 @@ class Stack():
 
             # do sex for psfex
             sex_for_psfex(self,chip)
-           
+
             ana_dir = os.path.join(chip_dir,'ana')
             if not os.path.isdir(ana_dir):
                 os.mkdir(ana_dir)
-            
+
             if not os.path.isfile(os.path.join(ana_dir,'default.sex')):
                 copyfile(os.path.join(self.config_dir,'default.sex'),os.path.join(ana_dir,'default.sex'))
             if not os.path.isfile(os.path.join(ana_dir,'default.param')):
                 copyfile(os.path.join(self.config_dir,'default.param'),os.path.join(ana_dir,'default.param'))
             if not os.path.isfile(os.path.join(ana_dir,'default.conv')):
                 copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
-             
+
             # do psfex on sex, and get the fwhm from there
             model_fwhm = psfex(self,chip)
             # do sex on psf
@@ -203,7 +205,6 @@ class Stack():
             qual.close()
             self.logger.info("Written quality factors to {0}_{1}".format(cut,'ana.qual'))
             qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
-            self.logger.info("Here is the dict %s" %qual_dict)
             qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
             self.logger.info("And the DataFrame %s" %qual_df)
         self.logger.info("********** Done measuring quality of stack! **********")

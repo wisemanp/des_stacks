@@ -17,8 +17,8 @@ def reduce_info(info,**kwargs):
     pass
     #Get a smaller info dataframe based on kwargs
 
-def make_good_frame_list(stack,field,band,sig = -0.15):
-    """Returns a list of images for a certain chip that are of quality sig.
+def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
+    """Returns a list of images for a certain chip that are of quality better than zp_cut and psf_cut.
     Arguments:
     field (str): (e.g. 'X2')
     band (str): (e.g. 'g')
@@ -41,7 +41,7 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     logger.info('Initiating make_good_frame_list.py')
-    logger.info('Finding good frames for {0}, in {1}, clipping ZP at {2}'.format(field,band,sig))
+    logger.info('Finding good frames for {0}, in {1}, clipping ZP at {2}'.format(field,band,zp_cut))
 
     logger.info('Getting median zeropoint for each exposure, calculating residual for each image')
 
@@ -96,10 +96,10 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
     #####################################################################
     ## 5
     ## Now cut exposures (field,band,chip) based on whether they make the cut and return them
-    logger.info('Getting rid of exposures whose ZP residual is below {0}'.format(sig))
+    logger.info('Getting rid of exposures whose ZP residual is below {0}'.format(zp_cut))
     exps = info.EXPNUM.unique()
-    zp_cut     = float(sig)
-    seeing_cut = 2.5
+    zp_cut     = float(zp_cut)
+    psf_cut = float(psf_cut)
     nbad = 15
     good_exps = []
     good_frame = pd.DataFrame()
@@ -133,12 +133,12 @@ def make_good_frame_list(stack,field,band,sig = -0.15):
     #print (good_table)
     #logger.info('Here is the good_table, to write to fits format')
     #logger.info(good_table)
-    good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,zp_cut))
+    good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
     logger.info('Writing out good exposure list to {0}'.format(good_fn))
     good_table.write(good_fn)
     return good_frame
 
-def make_swarp_cmd(stack,MY,field,chip,band,logger = None):
+def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut =2.5,final=True):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -172,13 +172,15 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None):
             stack_fns.append(this_exp_fn)
     logger.info('Added {} files'.format(counter))
     stack_fns = np.array(stack_fns)
-    fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s.lst' %(MY,field,band,chip))
+    fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s_%s_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut))
     logger.info('Saving list of files to stack at {0}'.format(fn_list))
     np.savetxt(fn_list,stack_fns,fmt='%s')
     if not os.path.isdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band))
-
-    fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s.fits'%chip
+    if final = True:
+        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%s_%s.fits'%(chip,band,zp_cut,psf_cut)
+    else:
+        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut)
     swarp_cmd = ['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),'@{0}'.format(fn_list),'-c','default.swarp']
     return swarp_cmd
 #############################################
@@ -234,7 +236,7 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
         ch.setFormatter(formatter)
         logger.addHandler(ch)
     #------------------------------------
-    chipnum = int(chipnum)   
+    chipnum = int(chipnum)
     # step 1 - get the year of the observation
     year = get_des_obs_year(night,logger)
     #------------------------------------

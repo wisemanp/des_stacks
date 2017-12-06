@@ -15,7 +15,7 @@ import logging
 import argparse
 from time import gmtime, strftime
 from des_stacks import des_stack as stack
-
+from des_stacks.utils.loop_stack import iterate_sex_loop, init_sex_loop
 
 def parser():
     parser = argparse.ArgumentParser(description='Stack some DES SN images')
@@ -25,6 +25,7 @@ def parser():
     parser.add_argument('-ch','--chips', help = 'Which chips to stack (e.g. [1,5] = 1,3,4)',nargs=1,required=False,default='All')
     parser.add_argument('-wd','--workdir', help = 'Working directory', default = './')
     parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "zp", "b" or "both")',required = False, default = 'both')
+    parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, defualt =0.25)
     args=parser.parse_args()
     parsed = {}
     try:
@@ -88,7 +89,11 @@ def parser():
         loop_type = args.looptype
         parsed['looptype']=loop_type
     except:
-        print ('Not looping')
+        pass
+    try:
+        parsed['psf_step']=args.psfstep
+    except:
+        parsed['psf_step']=0.25
     return parsed
 
 def simple_stack(logger,parsed):
@@ -104,37 +109,44 @@ def simple_stack(logger,parsed):
         for b in bands:
             for my in mys:
                 s = stack.Stack(f,b,my,chips,workdir)
-                s.do_my_stack() 
+                s.do_my_stack()
                 s.run_stack_sex(cut=-0.15)
 
-def looped_stack(logger,parsed):
+def looped_stack(logger,parsed,init_cut,init_step):
     fields = parsed['fields']
     bands = parsed['bands']
     mys = parsed['mys']
     chips = parsed['chips']
     workdir = parsed['workdir']
     looptype = parsed['looptype']
+    psfstep = parsed['psf_step']
     for f in fields:
         for b in bands:
             for my in mys:
-                #do initial stack
-                s = stack.Stack(f,b,my,chips,workdir)
-                cut = -0.14
-                s.do_my_stack(cut)
-                
-                qual = s.run_stack_sex(cut)
-                # do stack with more generous cut
-                s.do_my_stack(cut = -0.2)
-                qual_plus = s.run_stack_sex(cut= cut-0.1)
-                # do stack with more stringent cut
-                s.do_my_stack(cut = cut-0.1)
-                qual_minus = s.run_stack_sex(cut = cut-0.1)
-                #test which is better
-                #try going further in that direction
-                #until we get no further.
-                logger.info("Quality of normal stack %s" %qual)
-                logger.info("Quality of generous stack %s" %qual_plus)
-                logger.info("Quality of stringent stack %s" %qual_minus)
+                norm,stringent,generous= init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir)
+                for i in chips:
+                    # find out which of the stacks is deeper
+                    if generous.loc[chip,'zp']>norm.loc[chip,'zp']:
+                        logger.info("Generous cut gives deeper stack than normal stack")
+                        if generous.loc[chip,'zp']>stringent.loc[chip,'zp']:
+                            logger.info("Generous cut gives deeper stack than stringent stack")
+                            logger.info("Heading in the generous direction!")
+                            # The generous stack is deepest, so go a bit further
+                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'ge',norm)
+                            logger.info("Saved stack and exiting loop for chip %s" %i)
+                        elif generous.loc[chip,'zp']<stringent.loc[chip,'zp']:
+                            logger.info("Generous cut not as deep as stringent stack. Exploring options.")
+                            # explore some options. Unlikely to get to this point.
+                    elif generous.loc[chip,'zp']<norm.loc[chip,'zp']:
+                        logger.info("Stack with a generous cut not as deep as the normal stack")
+                        if norm.loc[chip,'zp']<stringent.loc[chip,'zp']:
+                            # The stringent cut is deepest, so go more stringent
+                            logger.info("Stack with a normal cut also not as deep as the stringent cut")
+                            logger.info("Heading in the stringent direction!")
+                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',norm)
+                            logger.info("Saved stack and exiting loop for chip %s" %i)
+                        elif norm.loc[chip,'zp']>stringent.loc[chip,'zp']:
+                            logger.info("Stack with normal cut is deeper than the stringent cut. Exploring options")
 
 if __name__=="__main__":
     logger = logging.getLogger('stack_all.py')
@@ -150,9 +162,8 @@ if __name__=="__main__":
     parsed = parser()
     if 'looptype' in parsed.keys():
         if parsed['looptype']in ['b','both','zp','z']:
-            looped_stack(logger,parsed)
+            looped_stack(logger,parsed,[-0.15,2.5])
         else:
             simple_stack(logger,parsed)
     else:
         simple_stack(logger,parsed)
-    

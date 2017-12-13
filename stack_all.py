@@ -25,7 +25,8 @@ def parser():
     parser.add_argument('-ch','--chips', help = 'Which chips to stack (e.g. [1,5] = 1,3,4)',nargs=1,required=False,default='All')
     parser.add_argument('-wd','--workdir', help = 'Working directory', default = './')
     parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "zp", "b" or "both")',required = False, default = 'both')
-    parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, defualt =0.25)
+    parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, default =0.25)
+    parser.add_argument('-zs','--zpstep', help ='Size of the cut step for zeropoint cuts',required=False,default = 0.025)
     args=parser.parse_args()
     parsed = {}
     try:
@@ -94,6 +95,11 @@ def parser():
         parsed['psf_step']=args.psfstep
     except:
         parsed['psf_step']=0.25
+
+    try:
+        parsed['zp_step']=args.zpstep
+    except:
+        parsed['zp_step'] = 0.05
     return parsed
 
 def simple_stack(logger,parsed):
@@ -118,13 +124,15 @@ def looped_stack(logger,parsed,init_cut,init_step):
     mys = parsed['mys']
     chips = parsed['chips']
     workdir = parsed['workdir']
-    looptype = parsed['looptype']
+    loop_type = parsed['looptype']
     psfstep = parsed['psf_step']
     for f in fields:
         for b in bands:
             for my in mys:
+                logger.info("Doing the initial stack")
                 norm,stringent,generous= init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir)
-                for i in chips:
+                for chip in chips:
+                    logger.info("Now starting the loop to get the best stack for chip %s" %chip)
                     # find out which of the stacks is deeper
                     if generous.loc[chip,'zp']>norm.loc[chip,'zp']:
                         logger.info("Generous cut gives deeper stack than normal stack")
@@ -133,8 +141,8 @@ def looped_stack(logger,parsed,init_cut,init_step):
                             logger.info("Heading in the generous direction!")
                             # The generous stack is deepest, so go a bit further
                             cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'ge',norm)
-                            logger.info("Saved stack and exiting loop for chip %s" %i)
-                        elif generous.loc[chip,'zp']<stringent.loc[chip,'zp']:
+                            logger.info("Saved stack and exiting loop for chip %s" %chip)
+                        elif generous.loc[chip,'zp']<=stringent.loc[chip,'zp']:
                             logger.info("Generous cut not as deep as stringent stack. Exploring options.")
                             # explore some options. Unlikely to get to this point.
                     elif generous.loc[chip,'zp']<norm.loc[chip,'zp']:
@@ -144,7 +152,7 @@ def looped_stack(logger,parsed,init_cut,init_step):
                             logger.info("Stack with a normal cut also not as deep as the stringent cut")
                             logger.info("Heading in the stringent direction!")
                             cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',norm)
-                            logger.info("Saved stack and exiting loop for chip %s" %i)
+                            logger.info("Saved stack and exiting loop for chip %s" %chip)
                         elif norm.loc[chip,'zp']>stringent.loc[chip,'zp']:
                             logger.info("Stack with normal cut is deeper than the stringent cut. Exploring options")
 
@@ -161,8 +169,8 @@ if __name__=="__main__":
     logger.info("***********************************")
     parsed = parser()
     if 'looptype' in parsed.keys():
-        if parsed['looptype']in ['b','both','zp','z']:
-            looped_stack(logger,parsed,[-0.15,2.5])
+        if parsed['looptype']in ['b','both','zp','z','psf']:
+            looped_stack(logger,parsed,[-0.15,2.5],[parsed['zp_step'],parsed['psf_step']])
         else:
             simple_stack(logger,parsed)
     else:

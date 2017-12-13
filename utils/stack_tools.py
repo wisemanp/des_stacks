@@ -34,10 +34,14 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
     ## And calculate residual for each chip compared to that median
     logger = logging.getLogger(__name__)
     logger.handlers =[]
-    logger.setLevel(logging.DEBUG)
-    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    if zp_cut>0:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        ch.setLevel(logging.INFO)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     logger.info('Initiating make_good_frame_list.py')
@@ -58,8 +62,8 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
         med_zp = this_exp['CHIP_ZERO_POINT'].median()
         info.loc[exp_idx,'ZP_EXPRES'] = this_exp['CHIP_ZERO_POINT']-med_zp
 
-    #logger.info('Here is the column of initial residuals for each exposure')
-    #logger.info(info['ZP_EXPRES'])
+    logger.debug('Here is the column of initial residuals for each exposure')
+    logger.debug(info['ZP_EXPRES'])
     ######################################################
     ## 2
     ## Calculate the average residual from part 1 over all exposures for that chip (field,band)
@@ -76,8 +80,8 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
         ## Subtract that average residual from the given ZP to give an adjusted ZP
         info.loc[chip_idx,'ZP_ADJ1']=this_chip['CHIP_ZERO_POINT']-med_zp
         info.loc[chip_idx,'ZP_SIG_ADJ1']=sig_chip_zps
-    #logger.info('Here is the column of adjusted zeropoints')
-    #logger.info(info['ZP_ADJ1'])
+    logger.debug('Here is the column of adjusted zeropoints')
+    logger.debug(info['ZP_ADJ1'])
     #####################################################
     ## 4
     ## Subtract the average ZP for each year off the individual zps for that year
@@ -105,7 +109,7 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
     good_frame = pd.DataFrame()
     for exp in exps:
         this_exp = info[info['EXPNUM']==exp]
-        logger.info('Cutting in exposure {0}'.format(exp))
+        logger.debug('Cutting in exposure {0}'.format(exp))
         resids = this_exp['ZP_RES']
         resids = resids.as_matrix()
 
@@ -118,21 +122,24 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
             if float(res)<zp_cut:
                 bad_resids +=1
         this_exp['ZP_RES']=np.array(reformatted_resids)
-        logger.info('Number of frames in exposure {0} that fail the ZP cut: {1}'.format(exp,bad_resids))
-        bads =bad_resids+len(this_exp[this_exp['PSF_NEA']>seeing_cut])
+        logger.debug('Number of frames in exposure {0} that fail the ZP cut: {1}'.format(exp,bad_resids))
+        bads =bad_resids+len(this_exp[this_exp['PSF_NEA']>psf_cut])
+        logger.info("Number of frames failing the combined ZP and PSF cut: %s" %bads)
         if bads <nbad:
             #is a good frame
-            logger.info('...is a good frame!')
+            logger.debug('...is a good frame!')
             good_exps.append(exp)
 
             good_frame = good_frame.append(this_exp)
-
+    logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
     ## Save results
     np.savetxt(os.path.join(stack.list_dir,'good_exps_%s_%s.txt'%(field,band)),good_exps,fmt='%s')
-    good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
-    #print (good_table)
-    #logger.info('Here is the good_table, to write to fits format')
-    #logger.info(good_table)
+    try:
+        good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
+    except ValueError:
+        logger.exception("Not enough good frames!!")
+    logger.debug('Here is the good_table, to write to fits format')
+    logger.debug(good_table)
     good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
     logger.info('Writing out good exposure list to {0}'.format(good_fn))
     good_table.write(good_fn)
@@ -172,16 +179,20 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
             stack_fns.append(this_exp_fn)
     logger.info('Added {} files'.format(counter))
     stack_fns = np.array(stack_fns)
-    fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s_%s_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut))
+    fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s_%.3f_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut))
     logger.info('Saving list of files to stack at {0}'.format(fn_list))
     np.savetxt(fn_list,stack_fns,fmt='%s')
     if not os.path.isdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band))
-    if final = True:
-        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%s_%s.fits'%(chip,band,zp_cut,psf_cut)
+    if final == True:
+        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%.3f_%s.fits'%(chip,band,zp_cut,psf_cut)
     else:
-        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut)
-    swarp_cmd = ['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),'@{0}'.format(fn_list),'-c','default.swarp']
+        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,band,zp_cut,psf_cut)
+    
+    if not os.path.isfile(fn_out):
+        swarp_cmd = ['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),'@{0}'.format(fn_list),'-c','default.swarp']
+    else:
+        swarp_cmd = False
     return swarp_cmd
 #############################################
 def get_des_obs_year(night,logger=None):

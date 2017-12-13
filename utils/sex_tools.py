@@ -10,11 +10,18 @@ from shutil import copyfile
 import time
 import subprocess
 
-def sex_for_psfex(stack,chip):
+def sex_for_psfex(stack,chip,cuts=None):
     '''Runs SExtractor on a certain stacked frame, to send to PSFex'''
     band_dir = os.path.join(stack.out_dir,'MY%s'%stack.my,stack.field,stack.band)
-    sexcat = os.path.join(band_dir,chip,'init.sexcat')
-    img = os.path.join(band_dir,'ccd_%s.fits' %chip)
+    sexcat = os.path.join(band_dir,chip,'%s_%s_temp.sexcat'%(chip,stack.band))
+    try:
+        zp_cut,psf_cut = cuts['zp'],cuts['psf']
+    except:
+        pass
+    img = band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
+    
+    if not os.path.isfile(img):
+        img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
     os.chdir(os.path.join(band_dir,chip,'psf'))
     #run SExtractor
     sex_cmd = ['sex','-CATALOG_NAME',sexcat,'-CATALOG_TYPE','FITS_LDAC',img]
@@ -32,11 +39,11 @@ def sex_for_psfex(stack,chip):
         stack.logger.info("SExtractor failed...")
         return None
 
-def psfex(stack,chip,retval='FWHM'):
+def psfex(stack,chip,retval='FWHM',cuts=None):
     '''Runs PSFex on a SExtracted catalog to get the PSF Model'''
 
     band_dir = os.path.join(stack.out_dir, 'MY%s' %stack.my, stack.field, stack.band)
-    init_cat = os.path.join(band_dir,chip,'init.sexcat')
+    init_cat = os.path.join(band_dir,chip,'%s_%s_temp.sexcat'%(chip,stack.band))
     stack.logger.info("Getting the PSF from the stack")
     stack.logger.info("Running PSFex on %s" %init_cat)
     start =float(time.time())
@@ -47,7 +54,7 @@ def psfex(stack,chip,retval='FWHM'):
     end = float(time.time())
     stack.logger.info("Successfully made the PSF model")
     stack.logger.info("Took %10.2f secconds" % (end-start))
-    copyfile(os.path.join(band_dir,chip,'init.psf'),os.path.join(band_dir,chip,'ana','default.psf'))
+    copyfile(os.path.join(band_dir,chip,'%s_%s_temp.psf'%(chip,stack.band)),os.path.join(band_dir,chip,'ana','default.psf'))
     if retval == 'FWHM':
         
         psf_out = os.path.join(band_dir,chip,'ana','default.psf')
@@ -55,15 +62,20 @@ def psfex(stack,chip,retval='FWHM'):
         fwhm = h['PSF_FWHM']*0.27 #convert from pixels to arcsec using DES chip pixel scale of 0.27 pix/arcsec
         return fwhm
 
-def sex_for_cat(stack,chip):
+def sex_for_cat(stack,chip,cuts = None):
     '''Runs SExtractor on a certain stacked frame, given a PSF model from PSFex'''
     band_dir = os.path.join(stack.out_dir, 'MY%s' %stack.my, stack.field, stack.band)
     ana_dir = os.path.join(band_dir,chip,'ana')
     os.chdir(ana_dir)
-    sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s.sexcat' %(stack.my,
-                                                               stack.field,stack.band,chip))
-    img = os.path.join(band_dir,'ccd_%s.fits'%chip)
-    #run SExtractor
+    sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s.sexcat' %(stack.my,stack.field,stack.band,chip))
+    
+    try:
+        zp_cut,psf_cut = cuts['zp'],cuts['psf']
+    except:
+        pass
+    img = band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
+    if not os.path.isfile(img):
+        img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
     stack.logger.info("Starting source extraction using the modelled PSF")
     start = float(time.time())
     sex_cmd = ['sex','-CATALOG_NAME',sexcat,img]

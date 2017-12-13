@@ -96,7 +96,7 @@ class Stack():
         '''Gets the current info file (originally from the DESDB)'''
         info_tab = Table.read(os.path.join(self.config_dir,'snobsinfo.fits'))
         self.info_df = info_tab.to_pandas()
-    def do_my_stack(self, zp_cut = -0.15, psf_cut = 2.5,final=True):
+    def do_my_stack(self, cuts={'zp':-0.15,'psf':2.5},final=True):
         '''Does a stack defined by the parameters from the Stack object it is passed.
         keyword arguments:
         zp_cut (float): the zeropoint cut to be used for the stack (default = -0.15)
@@ -105,6 +105,9 @@ class Stack():
         returns:
         none
         '''
+        
+        zp_cut = cuts['zp']
+        psf_cut = cuts['psf']
         field = self.field
         band = self.band
         my = self.my
@@ -112,7 +115,7 @@ class Stack():
         self.logger.info('Initiating stack on {0} in {1} band'.format(field,band))
         self.logger.info('******************************************************')
         #does list of good frames exist?
-        if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cut))):
+        if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))):
             #get the list of good frames
             self.logger.info('No good frame list yet, making a new one with ZP < %s and PSF < %s cut' %(zp_cut,psf_cut))
             self.good_frame = make_good_frame_list(self,field,band,zp_cut,psf_cut)
@@ -138,16 +141,21 @@ class Stack():
             for chip in self.chips:
 
                 self.logger.info('Stacking CCD {0}'.format(chip))
-                cmd = make_swarp_cmd(self,y,field,chip,band,zp_cut,psf_cut,final)
-                self.logger.info('Executing command: {0}'.format(cmd))
-                os.chdir(self.temp_dir)
-                try:
-                    p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                    outs,errs = p.communicate()
+                cmd = make_swarp_cmd(self,y,field,chip,band,self.logger,zp_cut,psf_cut,final)
+                if cmd == False:
+                    self.logger.info("Already stacked this chip with these cuts, going straight to astrometry")
+                    
+                else:
+                    
+                    self.logger.info('Executing command: {0}'.format(cmd))
+                    os.chdir(self.temp_dir)
+                    try:
+                        p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                        outs,errs = p.communicate()
 
-                except (OSError, IOError):
-                    self.logger.warn("Swarp failed.", exc_info=1)
-                self.logger.info('Finish stacking chip {0}'.format(chip))
+                    except (OSError, IOError):
+                        self.logger.warn("Swarp failed.", exc_info=1)
+                    self.logger.info('Finish stacking chip {0}'.format(chip))
 
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
@@ -155,8 +163,10 @@ class Stack():
         log.close()
         self.logger.info('Stacking of %s %s %s %s complete!' %(field, band, my, self.chips))
         self.logger.info('******************************************************')
-    def run_stack_sex(self,zp_cut,psf_cut):
+    def run_stack_sex(self,cuts={'zp':-0.15,'psf':2.5}):
         self.logger.info("******** Preparing to extract and match soures *******")
+        zp_cut = cuts['zp']
+        psf_cut = cuts['psf']
         qual_df = pd.DataFrame()
         for chip in self.chips:
             # create file structure and copy defaults accross
@@ -174,7 +184,7 @@ class Stack():
                 copyfile(os.path.join(self.config_dir,'psf','default.conv'),os.path.join(psf_dir,'default.conv'))
 
             # do sex for psfex
-            sex_for_psfex(self,chip)
+            sex_for_psfex(self,chip,cuts)
 
             ana_dir = os.path.join(chip_dir,'ana')
             if not os.path.isdir(ana_dir):
@@ -188,14 +198,14 @@ class Stack():
                 copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
 
             # do psfex on sex, and get the fwhm from there
-            model_fwhm = psfex(self,chip)
+            model_fwhm = psfex(self,chip,retval='FWHM',cuts=cuts)
             # do sex on psf
             os.chdir(ana_dir)
             # Do SExtractor on the complete stacks
-            sexcat = sex_for_cat(self,chip)
+            sexcat = sex_for_cat(self,chip,cuts)
             # Compare new catalog to old one, get the ZP and FWHM out
             zp,sex_fwhm = astrometry(self,chip,sexcat)
-            qual = open(os.path.join(ana_dir,'%s_ana.qual'%np.abs(cut)),'a')
+            qual = open(os.path.join(ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut)),'a')
             print ('# Quality parameters for %s %s %s %s' %(self.my,self.field,self.band,chip),file =qual)
             print ('# Parameters:',file=qual)
             print ('# Zeropoint from sextractor',file=qual)
@@ -203,7 +213,7 @@ class Stack():
             print ('# FWHM from SExtractor using PSF model',file = qual)
             print ('%s %s %s'%(zp,model_fwhm,sex_fwhm),file=qual)
             qual.close()
-            self.logger.info("Written quality factors to {0}_{1}".format(cut,'ana.qual'))
+            self.logger.info("Written quality factors to %s_%s_ana.qual" %(zp_cut,psf_cut))
             qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
             qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
             self.logger.info("And the DataFrame %s" %qual_df)

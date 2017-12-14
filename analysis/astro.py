@@ -10,7 +10,7 @@ import os
 import logging
 import time
 
-def astrometry(stack,chip,sexcat):
+def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
     old_cat = os.path.join(stack.cat_dir,'%s_All_filters_3.csv'%(stack.field[3]))
     old = pd.DataFrame.from_csv(old_cat)
@@ -37,8 +37,8 @@ def astrometry(stack,chip,sexcat):
         print ('fk5; circle(%s,%s,3p)'%(good_new_ra.values[i],good_new_dec.values[i]),file=reg)
     reg.close()
     # find the new mags that correspond to that
-    good_new_mag = new['MAG_AUTO'].iloc[good_inds]
-    good_new_magerr = new['MAGERR_AUTO'].iloc[good_inds]
+    good_new_mag = new['MAG_%s'%phot_type].iloc[good_inds]
+    good_new_magerr = new['MAGERR_%s'%phot_type].iloc[good_inds]
     # and the old ones
     good_cat_mag = init_match_cat_mag.iloc[good_inds]
     good_cat_magerr = init_match_cat_magerr.iloc[good_inds]

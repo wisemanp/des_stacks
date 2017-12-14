@@ -19,7 +19,7 @@ def sex_for_psfex(stack,chip,cuts=None):
     except:
         pass
     img = band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
-    
+
     if not os.path.isfile(img):
         img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
     os.chdir(os.path.join(band_dir,chip,'psf'))
@@ -56,7 +56,7 @@ def psfex(stack,chip,retval='FWHM',cuts=None):
     stack.logger.info("Took %10.2f secconds" % (end-start))
     copyfile(os.path.join(band_dir,chip,'%s_%s_temp.psf'%(chip,stack.band)),os.path.join(band_dir,chip,'ana','default.psf'))
     if retval == 'FWHM':
-        
+
         psf_out = os.path.join(band_dir,chip,'ana','default.psf')
         h = fits.getheader(psf_out,ext=1)
         fwhm = h['PSF_FWHM']*0.27 #convert from pixels to arcsec using DES chip pixel scale of 0.27 pix/arcsec
@@ -67,8 +67,11 @@ def sex_for_cat(stack,chip,cuts = None):
     band_dir = os.path.join(stack.out_dir, 'MY%s' %stack.my, stack.field, stack.band)
     ana_dir = os.path.join(band_dir,chip,'ana')
     os.chdir(ana_dir)
-    sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s.sexcat' %(stack.my,stack.field,stack.band,chip))
-    
+    if not cuts:
+        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s.sexcat' %(stack.my,stack.field,stack.band,chip))
+    else:
+        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%s_%s.sexcat' %(stack.my,stack.field,stack.band,chip,cuts['zp'],cuts['psf']))
+
     try:
         zp_cut,psf_cut = cuts['zp'],cuts['psf']
     except:

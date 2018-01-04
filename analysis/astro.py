@@ -12,6 +12,8 @@ import time
 
 def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
+
+    cmap = {'PSF':'red','AUTO':'green','cat':'blue'}
     old_cat = os.path.join(stack.cat_dir,'%s_All_filters_3.csv'%(stack.field[3]))
     old = pd.DataFrame.from_csv(old_cat)
     sexdat = fits.getdata(sexcat,ext=1)

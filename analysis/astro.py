@@ -58,7 +58,7 @@ def init_phot(stack,chip,sexcat):
 
     zp_cut,psf_cut = stack.zp_cut,stack.psf_cut
     if final ==True:
-        imgname = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
+        imgname = os.path.join(stack.band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
     else:
         imgname = stack.band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
     cuts = imgname.split('_')

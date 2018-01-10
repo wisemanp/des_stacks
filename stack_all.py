@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''Stack Everything'''
-
+# exectuable to run through the entire stack process
 import numpy as np
 import pandas as pd
 import seaborn as sns

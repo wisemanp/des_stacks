@@ -48,15 +48,14 @@ def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     psf = np.median(new['FWHM_WORLD']*3600)
     return zp,psf
 
-def init_phot(stack,chip,sexcat,zps):
+def init_phot(stack,chip,sexcat):
     try:
         final = stack.final
     except AttributeError:
         final = True
     # first, get the raw magnitudes and add zero-points to make them proper magnitudes
 
-    zp_kr = zps['kron']
-    zp_psf = zps['psf']
+
     zp_cut,psf_cut = stack.zp_cut,stack.psf_cut
     if final ==True:
         imgname = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
@@ -66,8 +65,10 @@ def init_phot(stack,chip,sexcat,zps):
     q= open(os.path.join(stack.ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut)),'r')
     q = q.read()
     quals = q.split('\n')[-2]
-    av_fwhm = quals.split(' ')[-2]
-
+    quals = quals.split(' ')
+    av_fwhm = quals[2]
+    zp_kr = quals[0]
+    zp_psf = quals[1]
     sexcat = Table.read(os.path.join(stack.ana_dir,'%s_%s_%s_%s.sexcat'%(stack.my,stack.field,stack.band,stack.chip)))
     sexcat = sexcat.to_pandas()
     cat['MAG_AUTO']=sexcat['MAG_AUTO']+zp_kr

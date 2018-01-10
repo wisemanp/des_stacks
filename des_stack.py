@@ -105,9 +105,11 @@ class Stack():
         returns:
         none
         '''
-        
+        self.final=final
         zp_cut = cuts['zp']
         psf_cut = cuts['psf']
+        self.zp_cut = zp_cut
+        self.psf_cut = psf_cut
         field = self.field
         band = self.band
         my = self.my
@@ -144,9 +146,9 @@ class Stack():
                 cmd = make_swarp_cmd(self,y,field,chip,band,self.logger,zp_cut,psf_cut,final)
                 if cmd == False:
                     self.logger.info("Already stacked this chip with these cuts, going straight to astrometry")
-                    
+
                 else:
-                    
+
                     self.logger.info('Executing command: {0}'.format(cmd))
                     os.chdir(self.temp_dir)
                     try:
@@ -163,10 +165,19 @@ class Stack():
         log.close()
         self.logger.info('Stacking of %s %s %s %s complete!' %(field, band, my, self.chips))
         self.logger.info('******************************************************')
-    def run_stack_sex(self,cuts={'zp':-0.15,'psf':2.5}):
+    def run_stack_sex(self,cuts={'zp':-0.15,'psf':2.5},final=None):
         self.logger.info("******** Preparing to extract and match soures *******")
+        if final ==None:
+            #check to make sure we haven't just forgotten to say this is a temporary run of Sextractor
+            try:
+                final = self.final
+            except AttributeError:
+                final = True
+        self.final = final
         zp_cut = cuts['zp']
         psf_cut = cuts['psf']
+        self.zp_cut = zp_cut
+        self.psf_cut = psf_cut
         qual_df = pd.DataFrame()
         for chip in self.chips:
             # create file structure and copy defaults accross
@@ -189,7 +200,8 @@ class Stack():
             ana_dir = os.path.join(chip_dir,'ana')
             if not os.path.isdir(ana_dir):
                 os.mkdir(ana_dir)
-
+            self.chip_dir = chip_dir
+            self.ana_dir = ana_dir
             if not os.path.isfile(os.path.join(ana_dir,'default.sex')):
                 copyfile(os.path.join(self.config_dir,'default.sex'),os.path.join(ana_dir,'default.sex'))
             if not os.path.isfile(os.path.join(ana_dir,'default.param')):
@@ -205,13 +217,15 @@ class Stack():
             sexcat = sex_for_cat(self,chip,cuts)
             # Compare new catalog to old one, get the ZP and FWHM out
             zp,sex_fwhm = astrometry(self,chip,sexcat)
-            qual = open(os.path.join(ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut)),'a')
+            zp_psf,psf_fwhm = astrometry(self,chip,sexcat,phot_type = 'PSF')
+            qual = open(os.path.join(ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut)),'w')
             print ('# Quality parameters for %s %s %s %s' %(self.my,self.field,self.band,chip),file =qual)
             print ('# Parameters:',file=qual)
             print ('# Zeropoint from sextractor',file=qual)
+            print ('# Zeropoint from PSF matches', file = qual)
             print ('# FWHM from PSFex',file = qual)
             print ('# FWHM from SExtractor using PSF model',file = qual)
-            print ('%s %s %s'%(zp,model_fwhm,sex_fwhm),file=qual)
+            print ('%s %s %s %s'%(zp,zp_psf,model_fwhm,sex_fwhm),file=qual)
             qual.close()
             self.logger.info("Written quality factors to %s_%s_ana.qual" %(zp_cut,psf_cut))
             qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}

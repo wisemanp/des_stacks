@@ -18,9 +18,9 @@ def sex_for_psfex(stack,chip,cuts=None):
         zp_cut,psf_cut = cuts['zp'],cuts['psf']
     except:
         pass
-    img = band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
-
-    if not os.path.isfile(img):
+    if stack.final == False:
+        img = band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
+    else:
         img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
     os.chdir(os.path.join(band_dir,chip,'psf'))
     #run SExtractor
@@ -76,8 +76,9 @@ def sex_for_cat(stack,chip,cuts = None):
         zp_cut,psf_cut = cuts['zp'],cuts['psf']
     except:
         pass
-    img = band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
-    if not os.path.isfile(img):
+    if stack.final == False:
+        img = band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
+    else:
         img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
     stack.logger.info("Starting source extraction using the modelled PSF")
     start = float(time.time())

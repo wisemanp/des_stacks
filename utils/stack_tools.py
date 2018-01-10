@@ -142,6 +142,10 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
     logger.debug(good_table)
     good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
     logger.info('Writing out good exposure list to {0}'.format(good_fn))
+    try:
+        os.remove(good_fn)
+    except OSError:
+        pass
     good_table.write(good_fn)
     return good_frame
 
@@ -188,7 +192,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%.3f_%s.fits'%(chip,band,zp_cut,psf_cut)
     else:
         fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,band,zp_cut,psf_cut)
-    
+
     if not os.path.isfile(fn_out):
         swarp_cmd = ['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),'@{0}'.format(fn_list),'-c','default.swarp']
     else:

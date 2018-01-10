@@ -73,7 +73,7 @@ def init_phot(stack,chip,sexcat):
     av_fwhm = quals[2]
     zp_kr = quals[0]
     zp_psf = quals[1]
-    sexcat = Table.read(os.path.join(ana_dir,'%s_%s_%s_%s.sexcat'%(stack.my,stack.field,stack.band,stack.chip)))
+    sexcat = Table.read(os.path.join(ana_dir,'%s_%s_%s_%s.sexcat'%(stack.my,stack.field,stack.band,chip)))
     sexcat = sexcat.to_pandas()
     cat['MAG_AUTO']=sexcat['MAG_AUTO']+zp_kr
     # get rid of clearly wrong values
@@ -83,8 +83,8 @@ def init_phot(stack,chip,sexcat):
     psf = sexcat.iloc[psftruth.values]
     psf['MAG_PSF']=psf['MAG_PSF']+zp_psf
     # make region files for ds9
-    krreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_auto.reg'%(stack.my,stack.field,stack.band,stack.chip)),'w')
-    psfreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_psf.reg'%(stack.my,stack.field,stack.band,stack.chip)),'w')
+    krreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_auto.reg'%(stack.my,stack.field,stack.band,chip)),'w')
+    psfreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_psf.reg'%(stack.my,stack.field,stack.band,chip)),'w')
     print ('global color=red',file=psfreg)
     for i in range(len(cat['X_WORLD'].values)):
         print ('fk5; circle(%s,%s,10p) # text={%.2f +/- %.2f}'%(cat['X_WORLD'].iloc[i],cat['Y_WORLD'].iloc[i],cat['MAG_AUTO'].iloc[i],cat['MAGERR_AUTO'].iloc[i]),file=krreg)
@@ -105,7 +105,7 @@ def init_phot(stack,chip,sexcat):
     pdf = skewnorm.pdf(x,a,loc=mu,scale=sig)
     ax.set_xlabel('Mag')
     ax.set_ylabel('Frequency Density')
-    ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s' %(s.my,s.field,s.chips[0]))
+    ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s' %(s.my,s.field,chip))
     #ax.set_yscale('log')
     hst,bin_edges = np.histogram(cat['MAG_AUTO'],bins=150,density=True)
     hstpsf,binspsf = np.histogram(psf['MAG_PSF'],bins=150,density=True)
@@ -122,7 +122,7 @@ def init_phot(stack,chip,sexcat):
     ax.vlines(kr_lim,0,1.1*np.max(y2),linestyle='--',label='Limiting Kron magnitude',c='r')
     ax.vlines(psf_lim,0,1.1*np.max(y3),linestyle='-.',label='Limiting Kron magnitude',c='g')
     ax.legend()
-    f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.png'%(stack.my,stack.field,stack.band,stack.chip)))
+    f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.png'%(stack.my,stack.field,stack.band,chip)))
 
     f2,ax2 = plt.subplots()
     cat.plot.scatter('MAG_AUTO','MAGERR_AUTO',s=5,ax=axscat,label='Kron Magnitudes',c='r')
@@ -134,7 +134,7 @@ def init_phot(stack,chip,sexcat):
     ax2.set_xlim(16,30)
     ax2.set_ylim(-0.03,0.35)
     ax2.legend()
-    f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.png'%(stack.my,stack.field,stack.band,stack.chip)))
+    f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.png'%(stack.my,stack.field,stack.band,chip)))
 
     b_hi = errthresh +(errthresh/500)
     b_lo = errthresh -(errthresh/500)
@@ -165,7 +165,7 @@ def init_phot(stack,chip,sexcat):
     mlim = zmag -skymag
 
 
-    resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(stack.my,stack.field,stack.band,stack.chip)),'w')
+    resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(stack.my,stack.field,stack.band,chip)),'w')
 
     radec=psf[['X_WORLD','Y_WORLD']].applymap("{0:.5f}".format)
     rest = psf[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:.3f}".format)

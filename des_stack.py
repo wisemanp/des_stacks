@@ -45,7 +45,7 @@ class Stack():
         self.temp_dir = os.path.join(self.coadding_dir,'temp')
         self.db_dir = os.path.join(self.coadding_dir,'db')
         self.list_dir = os.path.join(self.coadding_dir,'good_img_lists')
-        self.band_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.band)
+        self.band_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band)
     ########################################################
     def _init_log(self):
         '''Sets up the logger'''

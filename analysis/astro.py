@@ -11,7 +11,7 @@ import os
 import logging
 import time
 import seaborn as sns
-from scipy.interpolate import UniveriateSpline as spln
+from scipy.interpolate import UnivariateSpline as spln
 
 def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
@@ -88,7 +88,7 @@ def init_phot(stack,chip,sexcat):
         print ('fk5; circle(%s,%s,5p) # text={%.2f +/- %.2f}'%(psf['X_WORLD'].iloc[i],psf['Y_WORLD'].iloc[i],psf['MAG_PSF'].iloc[i],psf['MAGERR_PSF'].iloc[i]),file=psfreg)
     krreg.close()
     psfreg.close()
-    sns.set_palette('Dark2
+    sns.set_palette('Dark2')
     sns.set_color_codes(palette='colorblind')
     f,ax=plt.subplots()
     alp= 0.75
@@ -152,7 +152,7 @@ def init_phot(stack,chip,sexcat):
     h = fits.getheader(imgname)
     exptime= h['EXPTIME']
     pixscale=0.27
-    qual = os.path.join(stack.ana_dir,
+    qual = os.path.join(stack.ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut))
     thresh = 5
     skyflux = skynoise*np.sqrt(np.pi*(av_fwhm/pixscale)**2)
     skymag = 2.5*np.log10(thresh*skyflux)
@@ -181,7 +181,7 @@ def init_phot(stack,chip,sexcat):
     reshead +='# Total exposure time: %s\n' %exptime
     reshead +='# Limiting Kron magnitude: %.3f\n'% kr_lim
     reshead +='# Limiting PSF magnitude: %.3f\n'% psf_lim
-    reshead +='%s sigma limiting magnitude based on matched objects: %.3f'%(limsig,psf_lim2))
+    reshead +='%s sigma limiting magnitude based on matched objects: %.3f'%(limsig,psf_lim2)
     reshead +='%s sigma limiting magnitude using zeropoint %s: %.3f' %(thresh,zmag,mlim)
     resfile.write(reshead)
     resfile.write(re)

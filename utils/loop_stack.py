@@ -1,4 +1,6 @@
+'''loop_stack.py: runs through the iterative process to get the best quality stack'''
 from des_stacks import des_stack as stack
+
 def init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir):
     #do initial stack
     s = stack.Stack(f,b,my,chips,workdir)
@@ -52,12 +54,12 @@ def iterate_sex_loop(logger,f,b,my,chip,loop_type,init_cut,init_step,workdir,dir
             n-=nstep
             cuts = {'zp':zp_start-(n*step[0]),'psf':psf_start-(n*step[1])}
             carryon = False
-        else: 
+        else:
            cuts = {'zp':zp_start,'psf':psf_start}
         s.do_my_stack(cuts,final=False)
         new_qual = s.run_stack_sex(cuts)
         impr = new_qual.loc[chip,'zp']-quals.loc[chip,'zp']
-       
+
         if impr>0.01:
             logger.info("Iteration %s improved the zp by %s mag; carrying on" %(n-1,impr))
             n+=nstep
@@ -68,7 +70,7 @@ def iterate_sex_loop(logger,f,b,my,chip,loop_type,init_cut,init_step,workdir,dir
             logger.info("Iteration %s didn't improve the zp at all; stopping."% (n-1))
             n=2
             carryon = False
-            
+
         else:
             logger.info("Converged to a best zp of %s mag after %s iterations" %(new_qual.loc[chip,'zp'],n-1))
             s.do_my_stack(cuts,final = True)

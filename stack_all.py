@@ -27,6 +27,8 @@ def parser():
     parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "zp", "b" or "both")',required = False, default = 'both')
     parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, default =0.25)
     parser.add_argument('-zs','--zpstep', help ='Size of the cut step for zeropoint cuts',required=False,default = 0.025)
+    parser.add_argument('-c','--cuts', help ='Define zp and/or psf cuts to do a stack with',required=False,default= [-0.150,2.5])
+    parser.add_argument('-ic','--initcuts',help = 'Define starting cuts for a loop stack',required=False,default= [-0.150,2.5])
     args=parser.parse_args()
     parsed = {}
     try:
@@ -100,6 +102,14 @@ def parser():
         parsed['zp_step']=args.zpstep
     except:
         parsed['zp_step'] = 0.05
+    try:
+        parsed['cuts'] = args.cuts
+    except:
+        parsed['cuts'] = [-0.150,2.5]
+    try:
+        parsed['init_cuts'] = args.initcuts
+    except:
+        parsed['init_cuts'] = [-0.150,2.5]
     return parsed
 
 def simple_stack(logger,parsed):
@@ -116,9 +126,9 @@ def simple_stack(logger,parsed):
             for my in mys:
                 s = stack.Stack(f,b,my,chips,workdir)
                 s.do_my_stack()
-                s.run_stack_sex(cut=-0.15)
-
-def looped_stack(logger,parsed,init_cut,init_step):
+                s.run_stack_sex(cuts=-0.15)
+                s.init_phot()
+def looped_stack(logger,parsed):
     fields = parsed['fields']
     bands = parsed['bands']
     mys = parsed['mys']
@@ -126,36 +136,40 @@ def looped_stack(logger,parsed,init_cut,init_step):
     workdir = parsed['workdir']
     loop_type = parsed['looptype']
     psfstep = parsed['psf_step']
+    init_cut,init_step = parsed['init_cuts'],[parsed['zp_step'],parsed['psf_step']]
     for f in fields:
         for b in bands:
             for my in mys:
                 logger.info("Doing the initial stack")
-                norm,stringent,generous= init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir)
+                norm,normlim,stringent,stringentlim,generous,generouslim= init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir)
+
                 for chip in chips:
                     logger.info("Now starting the loop to get the best stack for chip %s" %chip)
+                    av_normlim, av_strinlim,av_genlim = np.median(normlim[chip]),np.median(stringentlim[chip],np.median(generouslim[chip]))
                     # find out which of the stacks is deeper
-                    if generous.loc[chip,'zp']>norm.loc[chip,'zp']:
+                    if av_genlim>av_normlim:
                         logger.info("Generous cut gives deeper stack than normal stack")
-                        if generous.loc[chip,'zp']>stringent.loc[chip,'zp']:
+                        if av_genlim>av_strinlim:
                             logger.info("Generous cut gives deeper stack than stringent stack")
                             logger.info("Heading in the generous direction!")
                             # The generous stack is deepest, so go a bit further
-                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'ge',norm)
+                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'ge',av_genlim)
                             logger.info("Saved stack and exiting loop for chip %s" %chip)
-                        elif generous.loc[chip,'zp']<=stringent.loc[chip,'zp']:
+                        elif av_genlim<=av_strinlim:
                             logger.info("Generous cut not as deep as stringent stack. Exploring options.")
+                            logger.info("Not been told to do anything, exiting")
                             # explore some options. Unlikely to get to this point.
-                    elif generous.loc[chip,'zp']<norm.loc[chip,'zp']:
+                    elif av_genlim<av_normlim:
                         logger.info("Stack with a generous cut not as deep as the normal stack")
-                        if norm.loc[chip,'zp']<stringent.loc[chip,'zp']:
+                        if av_normlim<av_strinlim:
                             # The stringent cut is deepest, so go more stringent
                             logger.info("Stack with a normal cut also not as deep as the stringent cut")
                             logger.info("Heading in the stringent direction!")
-                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',norm)
+                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',av_strinlim)
                             logger.info("Saved stack and exiting loop for chip %s" %chip)
-                        elif norm.loc[chip,'zp']>stringent.loc[chip,'zp']:
+                        elif av_normlim>av_strinlim:
                             logger.info("Stack with normal cut is deeper than the stringent cut. Exploring options")
-
+                            logger.info("Not been told to do anything, exiting")
 if __name__=="__main__":
     logger = logging.getLogger('stack_all.py')
     logger.setLevel(logging.DEBUG)
@@ -170,7 +184,7 @@ if __name__=="__main__":
     parsed = parser()
     if 'looptype' in parsed.keys():
         if parsed['looptype']in ['b','both','zp','z','psf']:
-            looped_stack(logger,parsed,[-0.15,2.5],[parsed['zp_step'],parsed['psf_step']])
+            looped_stack(logger,parsed)
         else:
             simple_stack(logger,parsed)
     else:

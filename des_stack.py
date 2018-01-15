@@ -179,6 +179,7 @@ class Stack():
         self.zp_cut = zp_cut
         self.psf_cut = psf_cut
         qual_df = pd.DataFrame()
+        self.sexcats=[]
         for chip in self.chips:
             # create file structure and copy defaults accross
             chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,chip)
@@ -215,6 +216,7 @@ class Stack():
             os.chdir(ana_dir)
             # Do SExtractor on the complete stacks
             sexcat = sex_for_cat(self,chip,cuts)
+            self.sexcats.append(sexcat)
             # Compare new catalog to old one, get the ZP and FWHM out
             zp,sex_fwhm = astrometry(self,chip,sexcat)
             zp_psf,psf_fwhm = astrometry(self,chip,sexcat,phot_type = 'PSF')
@@ -234,7 +236,10 @@ class Stack():
         self.logger.info("********** Done measuring quality of stack! **********")
         self.logger.info("******************************************************")
         return qual_df
-    def qual_loop(self):
 
-        pass
-        # Have a look at the sex files and compare them to something.
+    def init_phot(self):
+        limmags = {}
+        for counter,chip in enumerate(self.chips):
+            sexcat = self.sexcats[counter]
+            limmags[chip]=astrometry.init_phot(self,chip,sexcat)
+        returm limmags

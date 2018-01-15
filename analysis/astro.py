@@ -158,7 +158,7 @@ def init_phot(stack,chip,cat):
     skyflux = skynoise*np.sqrt(np.pi*(av_fwhm/pixscale)**2)
     skymag = 2.5*np.log10(thresh*skyflux)
     zmag = zp_psf
-    mlim = zmag -skymag
+    skylim = zmag -skymag
 
 
     resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(stack.my,stack.field,stack.band,chip)),'w')
@@ -167,8 +167,9 @@ def init_phot(stack,chip,cat):
         psf['FWHM_WORLD'].values[i] = float(psf['FWHM_WORLD'].values[i])
     radec=psf[['X_WORLD','Y_WORLD']].applymap("{0:7.5f}".format)
     rest = psf[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
-    
+
     rest[['X_WORLD','Y_WORLD']]=radec[['X_WORLD','Y_WORLD']]
+    rest['CLASS_STAR']==psf['CLASS_STAR'].applymap("{0:3.2f}".format)
     cols = rest.columns.tolist()
     rearranged = cols[-2:]+cols[:-2]
     re = rest[rearranged]
@@ -185,7 +186,7 @@ def init_phot(stack,chip,cat):
     reshead +='# Limiting Kron magnitude based on matched objects: %.3f\n'% kr_lim
     reshead +='# Limiting magnitude based on PSF photometry: %.3f\n'% psf_lim
     reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,psf_lim2)
-    reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zmag,mlim)
+    reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zmag,skylim)
     reshead +='# Columns:\n'
     reshead +='# RA (J2000)\n'
     reshead +='# Dec (J2000)\n'
@@ -197,3 +198,4 @@ def init_phot(stack,chip,cat):
     reshead +='# Elongation of source\n'
     resfile.write(reshead)
     resfile.write(psfstring)
+    return (kr_lim,psf_lim,psf_lim2,skylim)

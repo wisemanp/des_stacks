@@ -11,6 +11,7 @@ import os
 import logging
 import time
 import seaborn as sns
+import matplotlib.pyplot as plt
 from scipy.interpolate import UnivariateSpline as spln
 
 def astrometry(stack,chip,sexcat,phot_type='AUTO'):
@@ -48,7 +49,7 @@ def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     psf = np.median(new['FWHM_WORLD']*3600)
     return zp,psf
 
-def init_phot(stack,chip,sexcat):
+def init_phot(stack,chip,cat):
     try:
          ana_dir = stack.ana_dir
     except:
@@ -70,17 +71,16 @@ def init_phot(stack,chip,sexcat):
     q = q.read()
     quals = q.split('\n')[-2]
     quals = quals.split(' ')
-    av_fwhm = quals[2]
-    zp_kr = quals[0]
-    zp_psf = quals[1]
-    sexcat = Table.read(os.path.join(ana_dir,'%s_%s_%s_%s.sexcat'%(stack.my,stack.field,stack.band,chip)))
-    sexcat = sexcat.to_pandas()
-    cat['MAG_AUTO']=sexcat['MAG_AUTO']+zp_kr
+    av_fwhm = float(quals[2])
+    zp_kr = float(quals[0])
+    zp_psf = float(quals[1])
+    cat = cat.sort_values(by='X_WORLD')
+    cat['MAG_AUTO']=cat['MAG_AUTO']+zp_kr
     # get rid of clearly wrong values
     truth =cat['MAG_AUTO']<35
     cat = cat.iloc[truth.values]
-    psftruth = sexcat['MAG_PSF']<98
-    psf = sexcat.iloc[psftruth.values]
+    psftruth = cat['MAG_PSF']<98
+    psf = cat.iloc[psftruth.values]
     psf['MAG_PSF']=psf['MAG_PSF']+zp_psf
     # make region files for ds9
     krreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_auto.reg'%(stack.my,stack.field,stack.band,chip)),'w')
@@ -96,16 +96,11 @@ def init_phot(stack,chip,sexcat):
     sns.set_color_codes(palette='colorblind')
     f,ax=plt.subplots()
     alp= 0.75
-    cat.hist(column='MAG_AUTO',bins=150,normed=True,ax=ax,alpha=alp+0.25,label='Kron Magnitudes',c='r')
-    psf.hist(column='MAG_PSF',bins=150,normed=True,ax=ax,alpha=alp,label='PSF Magnitudes',c='g')
-    x = np.linspace(0,30,10000)
-    mu = 26.3
-    sig = 2.1
-    a = -3
-    pdf = skewnorm.pdf(x,a,loc=mu,scale=sig)
+    cat.hist(column='MAG_AUTO',bins=150,normed=True,ax=ax,alpha=alp+0.25,label='Kron Magnitudes',color='r')
+    psf.hist(column='MAG_PSF',bins=150,normed=True,ax=ax,alpha=alp,label='PSF Magnitudes',color='g')
     ax.set_xlabel('Mag')
     ax.set_ylabel('Frequency Density')
-    ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s' %(s.my,s.field,chip))
+    ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s, %s' %(stack.my,stack.field,chip,stack.band))
     #ax.set_yscale('log')
     hst,bin_edges = np.histogram(cat['MAG_AUTO'],bins=150,density=True)
     hstpsf,binspsf = np.histogram(psf['MAG_PSF'],bins=150,density=True)
@@ -117,24 +112,26 @@ def init_phot(stack,chip,sexcat):
     y3 = splpsf(x3)
     ax.plot(x2,y2,c='r')
     ax.plot(x3,y3,c='g')
+    ax.set_xlim(17,30)
     kr_lim = x2[np.argmax(y2)]
     psf_lim = x3[np.argmax(y3)]
-    ax.vlines(kr_lim,0,1.1*np.max(y2),linestyle='--',label='Limiting Kron magnitude',c='r')
-    ax.vlines(psf_lim,0,1.1*np.max(y3),linestyle='-.',label='Limiting Kron magnitude',c='g')
+    ax.vlines(kr_lim,0,1.1*np.max(y2),linestyle='--',label='Limiting Kron magnitude',color='r')
+    ax.vlines(psf_lim,0,1.1*np.max(y3),linestyle='-.',label='Limiting PSF magnitude',color='g')
     ax.legend()
-    f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.png'%(stack.my,stack.field,stack.band,chip)))
+    f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.jpg'%(stack.my,stack.field,stack.band,chip)))
 
     f2,ax2 = plt.subplots()
-    cat.plot.scatter('MAG_AUTO','MAGERR_AUTO',s=5,ax=axscat,label='Kron Magnitudes',c='r')
-    psf.plot.scatter('MAG_PSF','MAGERR_PSF',s=5,ax=axscat,label='PSF Magnitudes',c='g')
+    cat.plot.scatter('MAG_AUTO','MAGERR_AUTO',s=5,ax=ax2,label='Kron Magnitudes',color='r')
+    psf.plot.scatter('MAG_PSF','MAGERR_PSF',s=5,ax=ax2,label='PSF Magnitudes',color='g')
     ax2.set_xlabel('Magnitude')
     ax2.set_ylabel('Magnitude Error')
+    limsig = 10
     errthresh = 2.5*np.log10(1+(1/limsig))
-    ax2.hlines(errthresh,15,30,linestyle='--',c='#7570b3')
-    ax2.set_xlim(16,30)
+    ax2.hlines(errthresh,15,30,linestyle='--',color='#7570b3')
+    ax2.set_xlim(17,30)
     ax2.set_ylim(-0.03,0.35)
     ax2.legend()
-    f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.png'%(stack.my,stack.field,stack.band,chip)))
+    f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.jpg'%(stack.my,stack.field,stack.band,chip)))
 
     b_hi = errthresh +(errthresh/500)
     b_lo = errthresh -(errthresh/500)
@@ -152,7 +149,6 @@ def init_phot(stack,chip,sexcat):
 
     out = iraf.imstat(imgname,fields='midpt,stddev',format=0,Stdout=1,nclip=nclip,usigma=2.8,lsigma=2.8)
     mean,skynoise = map(float, out[0].split())
-    print (skynoise)
     h = fits.getheader(imgname)
     exptime= h['EXPTIME']
     pixscale=0.27
@@ -166,27 +162,38 @@ def init_phot(stack,chip,sexcat):
 
 
     resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(stack.my,stack.field,stack.band,chip)),'w')
-
-    radec=psf[['X_WORLD','Y_WORLD']].applymap("{0:.5f}".format)
-    rest = psf[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:.3f}".format)
-
-    for i in range(len(rest['FWHM_WORLD'].values)):
-        rest['FWHM_WORLD'].values[i] = float(rest['FWHM_WORLD'].values[i])
+    psf['FWHM_WORLD'] = psf['FWHM_WORLD']*3600
+    for i in range(len(psf['FWHM_WORLD'].values)):
+        psf['FWHM_WORLD'].values[i] = float(psf['FWHM_WORLD'].values[i])
+    radec=psf[['X_WORLD','Y_WORLD']].applymap("{0:7.5f}".format)
+    rest = psf[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
+    
     rest[['X_WORLD','Y_WORLD']]=radec[['X_WORLD','Y_WORLD']]
     cols = rest.columns.tolist()
     rearranged = cols[-2:]+cols[:-2]
     re = rest[rearranged]
-
-    psfstring = re.to_csv(sep = ' ', index=False)
+    re.to_csv('/home/wiseman/temp.csv',index=False,sep=' ')
+    stringthing = open('/home/wiseman/temp.csv','r')
+    psfstring = stringthing.read()
+    stringthing.close()
     reshead = '# Result file for a stack of Dark Energy Survey data taken by DECam\n'
-    reshead +='# Field: %s\n'% stack.fields
+    reshead +='# Field: %s\n'% stack.field
     reshead +='# Minus year: %s\n'% stack.my
     reshead +='# Band: %s\n' % stack.band
     reshead +='# CCD Number: %s\n' % chip
-    reshead +='# Total exposure time: %s\n' %exptime
-    reshead +='# Limiting Kron magnitude: %.3f\n'% kr_lim
-    reshead +='# Limiting PSF magnitude: %.3f\n'% psf_lim
-    reshead +='%s sigma limiting magnitude based on matched objects: %.3f'%(limsig,psf_lim2)
-    reshead +='%s sigma limiting magnitude using zeropoint %s: %.3f' %(thresh,zmag,mlim)
+    reshead +='# Total exposure time: %s s\n' %exptime
+    reshead +='# Limiting Kron magnitude based on matched objects: %.3f\n'% kr_lim
+    reshead +='# Limiting magnitude based on PSF photometry: %.3f\n'% psf_lim
+    reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,psf_lim2)
+    reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zmag,mlim)
+    reshead +='# Columns:\n'
+    reshead +='# RA (J2000)\n'
+    reshead +='# Dec (J2000)\n'
+    reshead +='# Kron Magnitude\n'
+    reshead +='# Kron Magnitude error\n'
+    reshead +='# PSF Magnitude\n'
+    reshead +='# PSF Magnitude error\n'
+    reshead +='# FWHM of the source (arcsec)\n'
+    reshead +='# Elongation of source\n'
     resfile.write(reshead)
-    resfile.write(re)
+    resfile.write(psfstring)

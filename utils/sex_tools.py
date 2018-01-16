@@ -32,7 +32,7 @@ def sex_for_psfex(stack,chip,cuts=None):
         out,errs = sex_process.communicate()
         end = float(time.time())
         stack.logger.info("Successfully ran SExtractor on {0}".format(img))
-        stack.logger.info("Took %10.2f seconds" %(end - start))
+        stack.logger.info("Took %.2f seconds" %(end - start))
         stack.logger.info("Saved at {0}".format(sexcat))
         return sexcat
     except (OSError, IOError):
@@ -53,7 +53,7 @@ def psfex(stack,chip,retval='FWHM',cuts=None):
     out,errs = psf_process.communicate()
     end = float(time.time())
     stack.logger.info("Successfully made the PSF model")
-    stack.logger.info("Took %10.2f secconds" % (end-start))
+    stack.logger.info("Took %.2f secconds" % (end-start))
     copyfile(os.path.join(band_dir,chip,'%s_%s_temp.psf'%(chip,stack.band)),os.path.join(band_dir,chip,'ana','default.psf'))
     if retval == 'FWHM':
 
@@ -67,10 +67,11 @@ def sex_for_cat(stack,chip,cuts = None):
     band_dir = os.path.join(stack.out_dir, 'MY%s' %stack.my, stack.field, stack.band)
     ana_dir = os.path.join(band_dir,chip,'ana')
     os.chdir(ana_dir)
+    
     if not cuts:
         sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s.sexcat' %(stack.my,stack.field,stack.band,chip))
     else:
-        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%s_%s.sexcat' %(stack.my,stack.field,stack.band,chip,cuts['zp'],cuts['psf']))
+        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%.3f_%s.sexcat' %(stack.my,stack.field,stack.band,chip,cuts['zp'],cuts['psf']))
 
     try:
         zp_cut,psf_cut = cuts['zp'],cuts['psf']
@@ -89,7 +90,7 @@ def sex_for_cat(stack,chip,cuts = None):
         out,errs = sex_process.communicate()
         stack.logger.info("Successfully ran SExtractor on {0}".format(img))
         end = float(time.time())
-        stack.logger.info("Took %10.2f seconds" % (end-start))
+        stack.logger.info("Took %.2f seconds" % (end-start))
         stack.logger.info("Saved at {0}".format(sexcat))
         return sexcat
     except (OSError, IOError):

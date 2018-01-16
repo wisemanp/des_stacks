@@ -13,6 +13,7 @@ import configparser
 import os
 import logging
 import argparse
+import glob
 from time import gmtime, strftime
 from des_stacks import des_stack as stack
 from des_stacks.utils.loop_stack import iterate_sex_loop, init_sex_loop
@@ -137,15 +138,23 @@ def looped_stack(logger,parsed):
     loop_type = parsed['looptype']
     psfstep = parsed['psf_step']
     init_cut,init_step = parsed['init_cuts'],[parsed['zp_step'],parsed['psf_step']]
+    logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for f in fields:
         for b in bands:
             for my in mys:
-                logger.info("Doing the initial stack")
+                logger.info("Doing the initial stack for %s, %s band, MY %s" %(f,b,my))
                 norm,normlim,stringent,stringentlim,generous,generouslim= init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir)
 
                 for chip in chips:
+                    av_normlim= np.median(normlim[chip])
+                    av_strinlim=np.median(stringentlim[chip])
+                    av_genlim =np.median(generouslim[chip])
+                    logger.info("Average limiting magnitude for generous stack: %.3f" %av_genlim)
+                    logger.info("Average limiting magnitude for middle stack: %.3f" %av_normlim)
+                    logger.info("Average limiting magnitude for stringent stack: %.3f" %av_strinlim)
+                    logger.info("******************************************************")
                     logger.info("Now starting the loop to get the best stack for chip %s" %chip)
-                    av_normlim, av_strinlim,av_genlim = np.median(normlim[chip]),np.median(stringentlim[chip],np.median(generouslim[chip]))
+
                     # find out which of the stacks is deeper
                     if av_genlim>av_normlim:
                         logger.info("Generous cut gives deeper stack than normal stack")
@@ -156,7 +165,9 @@ def looped_stack(logger,parsed):
                             cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'ge',av_genlim)
                             logger.info("Saved stack and exiting loop for chip %s" %chip)
                         elif av_genlim<=av_strinlim:
-                            logger.info("Generous cut not as deep as stringent stack. Exploring options.")
+                            logger.info("Generous cut not as deep as stringent stack.")
+                            logger.info("Heading in the stringent direction!")
+                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',av_strinlim)
                             logger.info("Not been told to do anything, exiting")
                             # explore some options. Unlikely to get to this point.
                     elif av_genlim<av_normlim:
@@ -168,8 +179,18 @@ def looped_stack(logger,parsed):
                             cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',av_strinlim)
                             logger.info("Saved stack and exiting loop for chip %s" %chip)
                         elif av_normlim>av_strinlim:
-                            logger.info("Stack with normal cut is deeper than the stringent cut. Exploring options")
-                            logger.info("Not been told to do anything, exiting")
+                            logger.info("Stack with normal cut is deeper than the stringent cut. Normal is good.\n Doing it again as a final stack.")
+                            s = stack.Stack(f,b,my,[chip],workdir)
+                            cuts = {'zp':init_cut[0],'psf':init_cut[1]}
+                            s.do_my_stack(cuts,final=True)
+                            s.run_stack_sex(cuts)
+                            s.init_phot()
+                    if parsed['tidy']==True:
+ 
+                        logger.info("********************* Tidying up *********************")
+                        for filename in glob.glob(os.path.join(s.band_dir,'*temp.fits'))+glob.glob(os.path.join(s.band_dir,chip,'*temp.fits')):
+                            os.remove(filename)
+    logger.info("Done! stack_all.py finished. Enjoy your stacked data!")
 if __name__=="__main__":
     logger = logging.getLogger('stack_all.py')
     logger.setLevel(logging.DEBUG)
@@ -185,6 +206,7 @@ if __name__=="__main__":
     if 'looptype' in parsed.keys():
         if parsed['looptype']in ['b','both','zp','z','psf']:
             looped_stack(logger,parsed)
+           
         else:
             simple_stack(logger,parsed)
     else:

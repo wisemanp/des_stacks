@@ -12,6 +12,7 @@ import logging
 import time
 import seaborn as sns
 import matplotlib.pyplot as plt
+import copy
 from scipy.interpolate import UnivariateSpline as spln
 
 def astrometry(stack,chip,sexcat,phot_type='AUTO'):
@@ -80,7 +81,7 @@ def init_phot(stack,chip,cat):
     truth =cat['MAG_AUTO']<35
     cat = cat.iloc[truth.values]
     psftruth = cat['MAG_PSF']<98
-    psf = cat.iloc[psftruth.values]
+    psf = copy.deepcopy(cat.iloc[psftruth.values])
     psf['MAG_PSF']=psf['MAG_PSF']+zp_psf
     # make region files for ds9
     krreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_auto.reg'%(stack.my,stack.field,stack.band,chip)),'w')
@@ -167,9 +168,8 @@ def init_phot(stack,chip,cat):
         psf['FWHM_WORLD'].values[i] = float(psf['FWHM_WORLD'].values[i])
     radec=psf[['X_WORLD','Y_WORLD']].applymap("{0:7.5f}".format)
     rest = psf[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
-
     rest[['X_WORLD','Y_WORLD']]=radec[['X_WORLD','Y_WORLD']]
-    rest['CLASS_STAR']==psf['CLASS_STAR'].applymap("{0:3.2f}".format)
+    rest['CLASS_STAR']=psf['CLASS_STAR']
     cols = rest.columns.tolist()
     rearranged = cols[-2:]+cols[:-2]
     re = rest[rearranged]

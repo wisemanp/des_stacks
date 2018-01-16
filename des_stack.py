@@ -13,6 +13,7 @@ import os
 import subprocess
 import logging
 from shutil import copyfile
+import time
 
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
@@ -149,16 +150,18 @@ class Stack():
 
                 else:
 
-                    self.logger.info('Executing command: {0}'.format(cmd))
+                    self.logger.info('Stacking... please be patient.'.format(cmd))
                     os.chdir(self.temp_dir)
                     try:
+                        starttime=time.time()
                         p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                         outs,errs = p.communicate()
-
+                        endtime=time.time()
+                        
                     except (OSError, IOError):
                         self.logger.warn("Swarp failed.", exc_info=1)
                     self.logger.info('Finish stacking chip {0}'.format(chip))
-
+                    self.logger.info('Took %.3f seconds' % endtime-starttime
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break
@@ -203,7 +206,7 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'default.sex'),os.path.join(ana_dir,'default.sex'))
             copyfile(os.path.join(self.config_dir,'default.param'),os.path.join(ana_dir,'default.param'))
             copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
-
+            copyfile(os.path.join(self.config_dir,'default.nnw'),os.path.join(ana_dir,'default.nnw'))
             # do psfex on sex, and get the fwhm from there
             model_fwhm = psfex(self,chip,retval='FWHM',cuts=cuts)
             # do sex on psf
@@ -226,7 +229,7 @@ class Stack():
             self.logger.info("Written quality factors to %s_%s_ana.qual" %(zp_cut,psf_cut))
             qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
             qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
-            self.logger.info("And the DataFrame %s" %qual_df)
+            self.logger.info("Quality of stack:\n %s" %qual_df)
         self.logger.info("********** Done measuring quality of stack! **********")
         self.logger.info("******************************************************")
         return qual_df

@@ -153,15 +153,15 @@ class Stack():
                     self.logger.info('Stacking... please be patient.'.format(cmd))
                     os.chdir(self.temp_dir)
                     try:
-                        starttime=time.time()
+                        starttime=float(time.time())
                         p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                         outs,errs = p.communicate()
-                        endtime=time.time()
+                        endtime=float(time.time())
                         
                     except (OSError, IOError):
                         self.logger.warn("Swarp failed.", exc_info=1)
                     self.logger.info('Finish stacking chip {0}'.format(chip))
-                    self.logger.info('Took %.3f seconds' % endtime-starttime
+                    self.logger.info('Took %.3f seconds' % (endtime-starttime))
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break

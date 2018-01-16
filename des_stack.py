@@ -16,7 +16,7 @@ from shutil import copyfile
 
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
-from des_stacks.analysis.astro import astrometry
+from des_stacks.analysis.astro import astrometry,init_phot
 
 class Stack():
     def __init__(self, field, band, my, chips ,working_dir):
@@ -188,12 +188,9 @@ class Stack():
             psf_dir = os.path.join(chip_dir,'psf')
             if not os.path.isdir(psf_dir):
                 os.mkdir(psf_dir)
-            if not os.path.isfile(os.path.join(psf_dir,'default.sex')):
-                copyfile(os.path.join(self.config_dir,'psf','default.sex'),os.path.join(psf_dir,'default.sex'))
-            if not os.path.isfile(os.path.join(psf_dir,'default.param')):
-                copyfile(os.path.join(self.config_dir,'psf','default.param'),os.path.join(psf_dir,'default.param'))
-            if not os.path.isfile(os.path.join(psf_dir,'default.conv')):
-                copyfile(os.path.join(self.config_dir,'psf','default.conv'),os.path.join(psf_dir,'default.conv'))
+            copyfile(os.path.join(self.config_dir,'psf','default.sex'),os.path.join(psf_dir,'default.sex'))
+            copyfile(os.path.join(self.config_dir,'psf','default.param'),os.path.join(psf_dir,'default.param'))
+            copyfile(os.path.join(self.config_dir,'psf','default.conv'),os.path.join(psf_dir,'default.conv'))
 
             # do sex for psfex
             sex_for_psfex(self,chip,cuts)
@@ -203,12 +200,9 @@ class Stack():
                 os.mkdir(ana_dir)
             self.chip_dir = chip_dir
             self.ana_dir = ana_dir
-            if not os.path.isfile(os.path.join(ana_dir,'default.sex')):
-                copyfile(os.path.join(self.config_dir,'default.sex'),os.path.join(ana_dir,'default.sex'))
-            if not os.path.isfile(os.path.join(ana_dir,'default.param')):
-                copyfile(os.path.join(self.config_dir,'default.param'),os.path.join(ana_dir,'default.param'))
-            if not os.path.isfile(os.path.join(ana_dir,'default.conv')):
-                copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
+            copyfile(os.path.join(self.config_dir,'default.sex'),os.path.join(ana_dir,'default.sex'))
+            copyfile(os.path.join(self.config_dir,'default.param'),os.path.join(ana_dir,'default.param'))
+            copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
 
             # do psfex on sex, and get the fwhm from there
             model_fwhm = psfex(self,chip,retval='FWHM',cuts=cuts)
@@ -241,5 +235,6 @@ class Stack():
         limmags = {}
         for counter,chip in enumerate(self.chips):
             sexcat = self.sexcats[counter]
-            limmags[chip]=astrometry.init_phot(self,chip,sexcat)
-        returm limmags
+            cat = Table.read(sexcat).to_pandas()
+            limmags[chip]=init_phot(self,chip,cat)
+        return limmags

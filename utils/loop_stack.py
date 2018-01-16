@@ -28,11 +28,11 @@ def init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir):
     qual_stringe = s.run_stack_sex(cuts)
     limmags_stringe = s.init_phot()
     logger.info("Quality of normal stack %s: " %qual)
-    logger.info("Limiting magnitudes of normal stack %s: ": limmags)
+    logger.info("Limiting magnitudes of normal stack %s: " %limmags)
     logger.info("Quality of generous stack %s: " %qual_gen)
-    logger.info("Limiting magnitudes of generous stack %s: ": limmags_gen)
+    logger.info("Limiting magnitudes of generous stack %s: " %limmags_gen)
     logger.info("Quality of stringent stack %s: " %qual_stringe)
-    logger.info("Limiting magnitudes of stringent stack %s: ": limmags_stringe)
+    logger.info("Limiting magnitudes of stringent stack %s: " %limmags_stringe)
 
 
     return (qual,limmags, qual_stringe, limmags_stringe, qual_gen, limmags_gen)

@@ -11,10 +11,11 @@ import os
 import logging
 import time
 import seaborn as sns
+import matplotlib
 import matplotlib.pyplot as plt
 import copy
 from scipy.interpolate import UnivariateSpline as spln
-
+matplotlib.use('Agg')
 def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
 

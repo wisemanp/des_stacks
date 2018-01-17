@@ -30,6 +30,7 @@ def parser():
     parser.add_argument('-zs','--zpstep', help ='Size of the cut step for zeropoint cuts',required=False,default = 0.025)
     parser.add_argument('-c','--cuts', help ='Define zp and/or psf cuts to do a stack with',required=False,default= [-0.150,2.5])
     parser.add_argument('-ic','--initcuts',help = 'Define starting cuts for a loop stack',required=False,default= [-0.150,2.5])
+    parser.add_argument('-t','--tidy',help = 'Tidy up temporary files after? 1 = Yes, 0 = no. Default = 1, turn off when testing',default = True)
     args=parser.parse_args()
     parsed = {}
     try:
@@ -112,7 +113,11 @@ def parser():
     except:
         parsed['init_cuts'] = [-0.150,2.5]
     return parsed
-
+    try:
+        parsed['tidy'] = args.tidy
+    except:
+        parsed['tidy'] = 1
+    parsed['tidy'] = bool(float(parsed['tidy']))
 def simple_stack(logger,parsed):
     '''code to run the stacks'''
     #read in parameters from the command line
@@ -186,7 +191,7 @@ def looped_stack(logger,parsed):
                             s.run_stack_sex(cuts)
                             s.init_phot()
                     if parsed['tidy']==True:
- 
+
                         logger.info("********************* Tidying up *********************")
                         for filename in glob.glob(os.path.join(s.band_dir,'*temp.fits'))+glob.glob(os.path.join(s.band_dir,chip,'*temp.fits')):
                             os.remove(filename)
@@ -206,7 +211,7 @@ if __name__=="__main__":
     if 'looptype' in parsed.keys():
         if parsed['looptype']in ['b','both','zp','z','psf']:
             looped_stack(logger,parsed)
-           
+
         else:
             simple_stack(logger,parsed)
     else:

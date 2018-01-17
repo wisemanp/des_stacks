@@ -18,11 +18,13 @@ from scipy.interpolate import UnivariateSpline as spln
 matplotlib.use('Agg')
 def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
-
+    stack.logger.info("Reading in catalog in order to do photometry")
     cmap = {'PSF':'red','AUTO':'green','cat':'blue'}
     old_cat = os.path.join(stack.cat_dir,'%s_All_filters_3.csv'%(stack.field[3]))
     old = pd.DataFrame.from_csv(old_cat)
     sexdat = fits.getdata(sexcat,ext=1)
+    stack.logger.info("Successfully read in catalog: %s" %old_cat)
+    stack.logger.info("Matching objects...")
     new =pd.DataFrame(sexdat)
     new_obj = SkyCoord(ra=new['X_WORLD']*u.degree,dec =new['Y_WORLD']*u.degree)
     old_obj = SkyCoord(ra=old['RA_%s'%stack.band]*u.degree,dec =old['DEC_%s'%stack.band]*u.degree)
@@ -30,6 +32,7 @@ def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     idx, d2d, d3d = new_obj.match_to_catalog_sky(old_obj)
     match_ids = idx
     match_dists = d2d.arcsec
+    stack.logger.info("Successfully matched %s objects!" %len(match_ids))
     # get old cat mags of the matched objects
     init_match_cat_mag =old['CLIPPED_MEAN_%s'%stack.band].iloc[match_ids]
     init_match_cat_magerr =old['CLIPPED_SIGMA_%s'%stack.band].iloc[match_ids]
@@ -39,7 +42,7 @@ def astrometry(stack,chip,sexcat,phot_type='AUTO'):
 
     good_new_ra = new['X_WORLD'].iloc[good_inds]
     good_new_dec = new['Y_WORLD'].iloc[good_inds]
-
+    stack.logger.info("Using catalog magnitudes to calibrate photometry and get zeropoint")
     # find the new mags that correspond to that
     good_new_mag = new['MAG_%s'%phot_type].iloc[good_inds]
     good_new_magerr = new['MAGERR_%s'%phot_type].iloc[good_inds]
@@ -49,9 +52,12 @@ def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     # subtract to get the frame ZP
     zp = np.median(good_cat_mag.values - good_new_mag.values)
     psf = np.median(new['FWHM_WORLD']*3600)
+    stack.logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(stack.field,stack.my,stack.band,chip))
     return zp,psf
 
 def init_phot(stack,chip,cat):
+    stack.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
+
     try:
          ana_dir = stack.ana_dir
     except:
@@ -61,7 +67,6 @@ def init_phot(stack,chip,cat):
     except AttributeError:
         final = True
     # first, get the raw magnitudes and add zero-points to make them proper magnitudes
-
 
     zp_cut,psf_cut = stack.zp_cut,stack.psf_cut
     if final ==True:
@@ -94,6 +99,7 @@ def init_phot(stack,chip,cat):
         print ('fk5; circle(%s,%s,5p) # text={%.2f +/- %.2f}'%(psf['X_WORLD'].iloc[i],psf['Y_WORLD'].iloc[i],psf['MAG_PSF'].iloc[i],psf['MAGERR_PSF'].iloc[i]),file=psfreg)
     krreg.close()
     psfreg.close()
+    stack.logger.info("Saved ds9 region files in /ana directory")
     sns.set_palette('Dark2')
     sns.set_color_codes(palette='colorblind')
     f,ax=plt.subplots()
@@ -161,7 +167,10 @@ def init_phot(stack,chip,cat):
     skymag = 2.5*np.log10(thresh*skyflux)
     zmag = zp_psf
     skylim = zmag -skymag
-
+    stack.logger.info("Limiting Kron magnitude based on matched objects: %.3f\n"% kr_lim)
+    stack.logger.info("Limiting magnitude based on PSF photometry: %.3f\n"% psf_lim)
+    stack.logger.info("%s sigma limiting magnitude based on matched objects: %.3f\n"%(limsig,psf_lim2))
+    stack.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zmag,skylim))
 
     resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(stack.my,stack.field,stack.band,chip)),'w')
     psf['FWHM_WORLD'] = psf['FWHM_WORLD']*3600
@@ -174,8 +183,8 @@ def init_phot(stack,chip,cat):
     cols = rest.columns.tolist()
     rearranged = cols[-2:]+cols[:-2]
     re = rest[rearranged]
-    re.to_csv('/home/wiseman/temp.csv',index=False,sep=' ')
-    stringthing = open('/home/wiseman/temp.csv','r')
+    re.to_csv(os.path.join(stack.temp_dir,'temp_cat.csv'),index=False,sep=' ')
+    stringthing = open(os.path.join(stack.temp_dir,'temp_cat.csv'),'r')
     psfstring = stringthing.read()
     stringthing.close()
     reshead = '# Result file for a stack of Dark Energy Survey data taken by DECam\n'
@@ -199,4 +208,6 @@ def init_phot(stack,chip,cat):
     reshead +='# Elongation of source\n'
     resfile.write(reshead)
     resfile.write(psfstring)
+    savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(stack.my,stack.field,stack.band,chip))
+    stack.logger.info("Saved result file to: %s"%savestring)
     return (kr_lim,psf_lim,psf_lim2,skylim)

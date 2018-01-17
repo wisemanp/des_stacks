@@ -159,7 +159,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     """function to make swarp command to stack Nminus1_year, field chip, band"""
-    logger.info('Initiating make_swarp_cmd in order to make the commands to pass to swarp')
+    logger.info('Preparing the frames to be stacked')
     #band = band + '    '
     ## Get the list of exposures for MY, field, chip, band.
     good = stack.good_frame

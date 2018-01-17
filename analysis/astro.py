@@ -95,9 +95,9 @@ def init_phot(stack,chip,cat):
     psfreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_psf.reg'%(stack.my,stack.field,stack.band,chip)),'w')
     print ('global color=red',file=psfreg)
     for i in range(len(cat['X_WORLD'].values)):
-        print ('fk5; circle(%s,%s,10p) # text={%.2f +/- %.2f}'%(cat['X_WORLD'].iloc[i],cat['Y_WORLD'].iloc[i],cat['MAG_AUTO'].iloc[i],cat['MAGERR_AUTO'].iloc[i]),file=krreg)
+        print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(cat['X_WORLD'].iloc[i],cat['Y_WORLD'].iloc[i],cat['MAG_AUTO'].iloc[i],cat['MAGERR_AUTO'].iloc[i]),file=krreg)
     for i in range(len(psf['X_WORLD'].values)):
-        print ('fk5; circle(%s,%s,5p) # text={%.2f +/- %.2f}'%(psf['X_WORLD'].iloc[i],psf['Y_WORLD'].iloc[i],psf['MAG_PSF'].iloc[i],psf['MAGERR_PSF'].iloc[i]),file=psfreg)
+        print ('fk5; circle(%s,%s,0.5") # text={%.2f +/- %.2f}'%(psf['X_WORLD'].iloc[i],psf['Y_WORLD'].iloc[i],psf['MAG_PSF'].iloc[i],psf['MAGERR_PSF'].iloc[i]),file=psfreg)
     krreg.close()
     psfreg.close()
     stack.logger.info("Saved ds9 region files in /ana directory")

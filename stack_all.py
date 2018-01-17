@@ -151,6 +151,7 @@ def looped_stack(logger,parsed):
                 norm,normlim,stringent,stringentlim,generous,generouslim= init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir)
 
                 for chip in chips:
+                    logger.info("Looping chip %s" %chip)
                     av_normlim= np.median(normlim[chip])
                     av_strinlim=np.median(stringentlim[chip])
                     av_genlim =np.median(generouslim[chip])

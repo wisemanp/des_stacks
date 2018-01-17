@@ -12,10 +12,11 @@ import logging
 import time
 import seaborn as sns
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import copy
 from scipy.interpolate import UnivariateSpline as spln
-matplotlib.use('Agg')
+
 def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
     stack.logger.info("Reading in catalog in order to do photometry")
@@ -127,7 +128,7 @@ def init_phot(stack,chip,cat):
     ax.vlines(psf_lim,0,1.1*np.max(y3),linestyle='-.',label='Limiting PSF magnitude',color='g')
     ax.legend()
     f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.jpg'%(stack.my,stack.field,stack.band,chip)))
-    f.close()
+
     f2,ax2 = plt.subplots()
     cat.plot.scatter('MAG_AUTO','MAGERR_AUTO',s=5,ax=ax2,label='Kron Magnitudes',color='r')
     psf.plot.scatter('MAG_PSF','MAGERR_PSF',s=5,ax=ax2,label='PSF Magnitudes',color='g')
@@ -140,7 +141,7 @@ def init_phot(stack,chip,cat):
     ax2.set_ylim(-0.03,0.35)
     ax2.legend()
     f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.jpg'%(stack.my,stack.field,stack.band,chip)))
-    f2.close()
+    plt.close('all')
     b_hi = errthresh +(errthresh/500)
     b_lo = errthresh -(errthresh/500)
 

@@ -112,11 +112,13 @@ def parser():
         parsed['init_cuts'] = args.initcuts
     except:
         parsed['init_cuts'] = [-0.150,2.5]
-    return parsed
     try:
         parsed['tidy'] = args.tidy
     except:
         parsed['tidy'] = 1
+    parsed['tidy'] = bool(float(parsed['tidy']))
+    return parsed
+
     parsed['tidy'] = bool(float(parsed['tidy']))
 def simple_stack(logger,parsed):
     '''code to run the stacks'''

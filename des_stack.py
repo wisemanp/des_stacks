@@ -177,8 +177,11 @@ class Stack():
             except AttributeError:
                 final = True
         self.final = final
-        zp_cut = cuts['zp']
-        psf_cut = cuts['psf']
+        try:
+            zp_cut = cuts['zp']
+            psf_cut = cuts['psf']
+        except TypeError:
+            zp_cut,psf_cut=None,None
         self.zp_cut = zp_cut
         self.psf_cut = psf_cut
         qual_df = pd.DataFrame()

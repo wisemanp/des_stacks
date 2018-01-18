@@ -70,10 +70,19 @@ def init_phot(stack,chip,cat):
     # first, get the raw magnitudes and add zero-points to make them proper magnitudes
 
     zp_cut,psf_cut = stack.zp_cut,stack.psf_cut
-    if final ==True:
-        imgname = os.path.join(stack.band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
+    if not zp_cut:
+         
+        if final ==True:
+            imgname = os.path.join(stack.band_dir,'ccd_%s.fits'%chip)
+        else:
+            imgname = stack.band_dir+'/ccd_%s_temp.fits'%chip
+
+   
     else:
-        imgname = stack.band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
+        if final ==True:
+            imgname = os.path.join(stack.band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
+        else:
+            imgname = stack.band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
     cuts = imgname.split('_')
     q= open(os.path.join(ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut)),'r')
     q = q.read()

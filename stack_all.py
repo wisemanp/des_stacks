@@ -133,8 +133,8 @@ def simple_stack(logger,parsed):
         for b in bands:
             for my in mys:
                 s = stack.Stack(f,b,my,chips,workdir)
-                s.do_my_stack()
-                s.run_stack_sex(cuts=-0.15)
+                s.do_my_stack(cuts={'zp':-0.15,'psf':2.5},final=True)
+                s.run_stack_sex(cuts={'zp':-0.15,'psf':2.5},final=True)
                 s.init_phot()
 def looped_stack(logger,parsed):
     fields = parsed['fields']
@@ -196,8 +196,11 @@ def looped_stack(logger,parsed):
                     if parsed['tidy']==True:
 
                         logger.info("********************* Tidying up *********************")
-                        for filename in glob.glob(os.path.join(s.band_dir,'*temp.fits'))+glob.glob(os.path.join(s.band_dir,chip,'*temp.fits')):
-                            os.remove(filename)
+                        try:
+                            for filename in glob.glob(os.path.join(s.band_dir,'*temp.fits'))+glob.glob(os.path.join(s.band_dir,chip,'*temp.fits')):
+                                os.remove(filename)
+                        except:
+                            pass
     logger.info("Done! stack_all.py finished. Enjoy your stacked data!")
 if __name__=="__main__":
     logger = logging.getLogger('stack_all.py')

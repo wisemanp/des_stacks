@@ -56,7 +56,7 @@ class Stack():
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-        fh = logging.FileHandler(os.path.join(self.log_dir,'stack_%s%s%s%s.log'%(self.field,self.band,self.my,self.chips)))
+        fh = logging.FileHandler(os.path.join(self.log_dir,'stack_%s%s%s.log'%(self.field,self.band,self.my)))
         fh.setFormatter(formatter)
         ch.setFormatter(formatter)
         logger.addHandler(ch)
@@ -134,7 +134,7 @@ class Stack():
         if chips == 'All':
             self.chips = self.info_df.CCDNUM.sort_values().unique()
         # get swarp commands
-        log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s_%s.log' %(field, band, my, self.chips)),'a')
+        log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s.log' %(field, band, my)),'a')
         log.flush()
         for y in my:
             # catch silly string issue
@@ -237,7 +237,7 @@ class Stack():
         self.logger.info("******************************************************")
         return qual_df
 
-    def init_phot(self):
+    def init_phot(self,pl='n'):
         limmags = {}
         for counter,chip in enumerate(self.chips):
             sexcat = self.sexcats[counter]

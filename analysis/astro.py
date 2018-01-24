@@ -56,7 +56,7 @@ def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     stack.logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(stack.field,stack.my,stack.band,chip))
     return zp,psf
 
-def init_phot(stack,chip,cat):
+def init_phot(stack,chip,cat,pl='n'):
     stack.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
 
     try:
@@ -112,13 +112,14 @@ def init_phot(stack,chip,cat):
     stack.logger.info("Saved ds9 region files in /ana directory")
     sns.set_palette('Dark2')
     sns.set_color_codes(palette='colorblind')
-    f,ax=plt.subplots()
-    alp= 0.75
-    cat.hist(column='MAG_AUTO',bins=150,normed=True,ax=ax,alpha=alp+0.25,label='Kron Magnitudes',color='r')
-    psf.hist(column='MAG_PSF',bins=150,normed=True,ax=ax,alpha=alp,label='PSF Magnitudes',color='g')
-    ax.set_xlabel('Mag')
-    ax.set_ylabel('Frequency Density')
-    ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s, %s' %(stack.my,stack.field,chip,stack.band))
+    if pl == 'y':
+        f,ax=plt.subplots()
+        alp= 0.75
+        cat.hist(column='MAG_AUTO',bins=150,normed=True,ax=ax,alpha=alp+0.25,label='Kron Magnitudes',color='r')
+        psf.hist(column='MAG_PSF',bins=150,normed=True,ax=ax,alpha=alp,label='PSF Magnitudes',color='g')
+        ax.set_xlabel('Mag')
+        ax.set_ylabel('Frequency Density')
+        ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s, %s' %(stack.my,stack.field,chip,stack.band))
     #ax.set_yscale('log')
     hst,bin_edges = np.histogram(cat['MAG_AUTO'],bins=150,density=True)
     hstpsf,binspsf = np.histogram(psf['MAG_PSF'],bins=150,density=True)
@@ -128,29 +129,32 @@ def init_phot(stack,chip,cat):
     y2= splkron(x2)
     x3 = np.linspace(binspsf[0],binspsf[-1],200)
     y3 = splpsf(x3)
-    ax.plot(x2,y2,c='r')
-    ax.plot(x3,y3,c='g')
-    ax.set_xlim(17,30)
     kr_lim = x2[np.argmax(y2)]
     psf_lim = x3[np.argmax(y3)]
-    ax.vlines(kr_lim,0,1.1*np.max(y2),linestyle='--',label='Limiting Kron magnitude',color='r')
-    ax.vlines(psf_lim,0,1.1*np.max(y3),linestyle='-.',label='Limiting PSF magnitude',color='g')
-    ax.legend()
-    f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.jpg'%(stack.my,stack.field,stack.band,chip)))
-
-    f2,ax2 = plt.subplots()
-    cat.plot.scatter('MAG_AUTO','MAGERR_AUTO',s=5,ax=ax2,label='Kron Magnitudes',color='r')
-    psf.plot.scatter('MAG_PSF','MAGERR_PSF',s=5,ax=ax2,label='PSF Magnitudes',color='g')
-    ax2.set_xlabel('Magnitude')
-    ax2.set_ylabel('Magnitude Error')
     limsig = 10
     errthresh = 2.5*np.log10(1+(1/limsig))
-    ax2.hlines(errthresh,15,30,linestyle='--',color='#7570b3')
-    ax2.set_xlim(17,30)
-    ax2.set_ylim(-0.03,0.35)
-    ax2.legend()
-    f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.jpg'%(stack.my,stack.field,stack.band,chip)))
-    plt.close('all')
+    if pl == 'y':   
+        ax.plot(x2,y2,c='r')
+        ax.plot(x3,y3,c='g')
+        ax.set_xlim(17,30)
+
+        ax.vlines(kr_lim,0,1.1*np.max(y2),linestyle='--',label='Limiting Kron magnitude',color='r')
+        ax.vlines(psf_lim,0,1.1*np.max(y3),linestyle='-.',label='Limiting PSF magnitude',color='g')
+        ax.legend()
+        f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.jpg'%(stack.my,stack.field,stack.band,chip)))
+
+        f2,ax2 = plt.subplots()
+        cat.plot.scatter('MAG_AUTO','MAGERR_AUTO',s=5,ax=ax2,label='Kron Magnitudes',color='r')
+        psf.plot.scatter('MAG_PSF','MAGERR_PSF',s=5,ax=ax2,label='PSF Magnitudes',color='g')
+        ax2.set_xlabel('Magnitude')
+        ax2.set_ylabel('Magnitude Error')
+
+        ax2.hlines(errthresh,15,30,linestyle='--',color='#7570b3')
+        ax2.set_xlim(17,30)
+        ax2.set_ylim(-0.03,0.35)
+        ax2.legend()
+        f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.jpg'%(stack.my,stack.field,stack.band,chip)))
+        plt.close('all')
     b_hi = errthresh +(errthresh/500)
     b_lo = errthresh -(errthresh/500)
 

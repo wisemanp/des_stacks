@@ -40,13 +40,37 @@ class Stack():
         elif self.coadding_dir == 'current':
             self.coadding_dir = os.curdir
         self.config_dir = os.path.join(self.coadding_dir,'config')
+        if not os.path.isdir(self.config_dir):
+            os.mkdir(self.config_dir)
         self.log_dir = os.path.join(self.coadding_dir,'log')
+        if not os.path.isdir(self.log_dir):
+            os.mkdir(self.log_dir)
         self.cat_dir = os.path.join(self.coadding_dir,'catalogs')
+        if not os.path.isdir(self.cat_dir):
+            os.mkdir(self.cat_dir)
         self.out_dir = os.path.join(self.coadding_dir,'stacks')
+        if not os.path.isdir(self.out_dir):
+            os.mkdir(self.out_dir)
         self.temp_dir = os.path.join(self.coadding_dir,'temp')
+        if not os.path.isdir(self.temp_dir):
+            os.mkdir(self.temp_dir)
         self.db_dir = os.path.join(self.coadding_dir,'db')
+        if not os.path.isdir(self.db_dir):
+            os.mkdir(self.db_dir)
         self.list_dir = os.path.join(self.coadding_dir,'good_img_lists')
+        if not os.path.isdir(self.list_dir):
+            os.mkdir(self.list_dir)
         self.band_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band)
+        if not os.path.isdir(self.band_dir):
+            if os.path.isdir(os.path.join(self.out_dir,'MY%s'%self.my,self.field)):
+                os.mkdir(self.band_dir)
+            else:
+                if os.path.isdir(os.path.join(self.out_dir,'MY%s'%self.my)):
+                    os.mkdir(os.path.join(self.out_dir,'MY%s'%self.my,self.field))
+                else:
+                    os.mkdir(os.path.join(self.out_dir,'MY%s'%self.my))
+                    os.mkdir(os.path.join(self.out_dir,'MY%s'%self.my,self.field))
+                    os.mkdir(self.band_dir)
     ########################################################
     def _init_log(self):
         '''Sets up the logger'''

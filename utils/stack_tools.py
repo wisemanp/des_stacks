@@ -310,3 +310,6 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
         else:
             pass
     #return None
+
+def rn_stack(stack):
+    pass

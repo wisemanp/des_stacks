@@ -1,6 +1,7 @@
-des_stacks
+#des_stacks
 ==========
-
+#v0.1.0
+==========
 des_stacks is a simple Python module based on SWarp and SExtractor,
 available for free at https://www.astromatic.net/software
 
@@ -20,3 +21,14 @@ For an optimized stack, some or all of the following parameters are needed in ad
   -ps: psf_step - If optimizing the psf, this is the step size of the iterations (in arcsec).    default = 0.25
   -zs: zp_step - If optimizing the zeropoint, this is the step size of the iterations (in mag).    default = 0.025
   -ic: init_cuts - Initial cuts in (residual) zeropoint and seeing. Default is [-0.150,2.5].
+
+# Requirements:
+## python packages
+ * numpy
+ * matplotlib
+ * scipy
+ * astropy
+ * aplpy
+ * pyraf (http://www.stsci.edu/institute/software_hardware/pyraf)
+ * pandas
+ * configparser

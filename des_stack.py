@@ -157,7 +157,7 @@ class Stack():
                         p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                         outs,errs = p.communicate()
                         endtime=float(time.time())
-                        
+
                     except (OSError, IOError):
                         self.logger.warn("Swarp failed.", exc_info=1)
                     self.logger.info('Finish stacking chip {0}'.format(chip))
@@ -240,6 +240,9 @@ class Stack():
     def init_phot(self,pl='n'):
         limmags = {}
         for counter,chip in enumerate(self.chips):
+            chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,chip)
+            ana_dir = os.path.join(chip_dir,'ana')
+            os.chdir(ana_dir)
             sexcat = self.sexcats[counter]
             cat = Table.read(sexcat).to_pandas()
             limmags[chip]=init_phot(self,chip,cat)

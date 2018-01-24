@@ -1,8 +1,0 @@
-2017-11-22 13:27:52,667 - stack_all.py - INFO - ***********************************
-2017-11-22 13:27:52,667 - stack_all.py - INFO - Initialising *** stack_all.py *** at 2017-11-22 13:27:52 UT
-2017-11-22 13:27:52,667 - stack_all.py - INFO - ***********************************
-2017-11-22 13:27:52,668 - stack_all.py - INFO - Parsed command line and will work on:
- Fields: ['SN-X2'] 
- Bands: ['r'] 
- MYs: ['1'] 
- Chips: All

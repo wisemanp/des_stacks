@@ -341,7 +341,7 @@ def chiplims(stack):
                 wcs = WCS(h)
                 lims =wcs.all_pix2world([[0,0],[0,lendec],[lenra,0],[lenra,lendec]],1)
                 chiplims[f][chip]=lims
-def get_y3a1
+def get_y3a1():
     import easyaccess as ea
     conn = ea.connect()
     fcents ={'C1':(54.2743,-27.1116),

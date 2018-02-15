@@ -2,7 +2,7 @@
 ==========
 #v0.1.0
 ==========
-des_stacks is a simple Python module based on SWarp and SExtractor,
+des_stacks is a simple Python module based on SWarp, SExtractor, and PSFEx
 available for free at https://www.astromatic.net/software
 
 For a simple stack, use stack_all.py with command line arguments:

@@ -180,7 +180,8 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         #chip = first['CCDNUM']
         this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip,logger)
         if this_exp_fn:
-            stack_fns.append(this_exp_fn)
+            for fn in this_exp_fn:
+                stack_fns.append(fn)
     logger.info('Added {} files'.format(counter))
     stack_fns = np.array(stack_fns)
     fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s_%.3f_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut))
@@ -293,6 +294,7 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
             rabbit_hole = False
     #------------------------------------
     # step 4 - CHECK THIS IS THE CORRECT EXPOSURE NUMBER!!!
+    obs_fns = []
     for base_obs_fn in os.listdir(os.path.dirname(obs_dir)):
         try:
             obs_fn = os.path.join(os.path.dirname(obs_dir),os.path.basename(base_obs_fn))
@@ -306,10 +308,68 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
             if year == 'Y4':
                 obs_fn = obs_fn+'[0]'
 
-            return obs_fn
+            obs_fns.append(obs_fn)
         else:
             pass
     #return None
 
 def rn_stack(stack):
     pass
+def chiplims(stack):
+    import os
+    import astropy.io.fits as fits
+    from astropy.wcs import WCS
+
+    root_dir = stack.out_dir+'/MYnone'
+    fields = ['E1','E2','S1','S2','C1','C2','C3','X1','X2','X3']
+    chips = range(1,63)
+    chiplims={}
+    for f in fields:
+        chiplims[f]={}
+        for chip in chips:
+
+            if chip not in [2,31,61]:
+                print ('Field:', f,'Chip',chip)
+                try:
+                    img = os.path.join(root_dir,'SN-%s'%f,'r','ccd_%s_r_-0.150_2.5.fits'%chip)
+                    h =fits.getheader(img)
+                except:
+                    img = os.path.join(root_dir,'SN-%s'%f,'r','ccd_%s.fits'%chip)
+                    h =fits.getheader(img)
+                lenra = h['NAXIS1']
+                lendec= h['NAXIS2']
+                wcs = WCS(h)
+                lims =wcs.all_pix2world([[0,0],[0,lendec],[lenra,0],[lenra,lendec]],1)
+                chiplims[f][chip]=lims
+def get_y3a1
+    import easyaccess as ea
+    conn = ea.connect()
+    fcents ={'C1':(54.2743,-27.1116),
+    'C2':(54.2743,-29.0884),
+    'C3':(52.6484,-28.1000),
+    'E1':(7.8744,-43.0096),
+    'E2':(9.5000,-43.9980),
+    'S1':(42.8200,0.0000),
+    'S2':(41.1944,-0.9884),
+    'X1':(34.4757,-4.9295),
+    'X2':(35.6645,-6.4121),
+    'X3':(36.4500,-4.6000)}
+    fields = ['E1','E2','S1','S2','C1','C2','C3','X1','X2','X3']
+    for f in fields:
+        ra,dec = fcents[f]
+        RAMIN,RAMAX,DECMIN,DECMAX = ra-1.6,ra+1.6,dec-1.6,dec+1.6
+        q = 'select Y3A1_COADD_OBJECT_SUMMARY.COADD_OBJECT_ID, RA, DEC, \
+        MAGERR_AUTO_G, MAGERR_AUTO_R, MAGERR_AUTO_I, MAGERR_AUTO_Z,\
+        MAGERR_DETMODEL_G, MAGERR_DETMODEL_R, MAGERR_DETMODEL_I, MAGERR_DETMODEL_Z,\
+        MAG_AUTO_G, MAG_AUTO_R, MAG_AUTO_I, MAG_AUTO_Z, \
+        MAG_DETMODEL_G, MAG_DETMODEL_R, MAG_DETMODEL_I, MAG_DETMODEL_Z, \
+        SPREAD_MODEL_G, SPREAD_MODEL_R, SPREAD_MODEL_I, SPREAD_MODEL_Z, \
+        SPREADERR_MODEL_G, SPREADERR_MODEL_R, SPREADERR_MODEL_I, SPREADERR_MODEL_Z, \
+        FLAGS_G, FLAGS_I, FLAGS_R, FLAGS_Z \
+        from Y3A1_COADD_OBJECT_SUMMARY where RA between %s and %s and DEC between %s AND %s and \
+        flags_g = 0 and flags_r = 0 and flags_i = 0 and flags_z = 0 and \
+        imaflags_iso_g = 0 and imaflags_iso_r = 0 and imaflags_iso_i = 0 and imaflags_iso_z = 0\
+        order by DEC, RA'%(RAMIN,RAMAX,DECMIN,DECMAX)
+
+        dat = conn.query_to_pandas(q)
+        dat.to_csv('/home/wiseman/y3a1_%s_summary.csv'%f)

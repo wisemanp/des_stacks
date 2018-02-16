@@ -12,7 +12,8 @@ import configparser
 import os
 import glob
 import logging
-
+import time
+import subprocess
 def reduce_info(info,**kwargs):
     pass
     #Get a smaller info dataframe based on kwargs
@@ -184,7 +185,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         first = this_exp.iloc[0]
         night = first['NITE']
         #chip = first['CCDNUM']
-        this_exp_fn = stack_tools.get_dessn_obs(stack,field,band,night,exp,chip,logger)
+        this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip,logger)
         #logger.info("Adding file from %s" %night)
         if this_exp_fn:
             for fn in this_exp_fn:
@@ -210,7 +211,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
             '/ccd_%s_%s_%.3f_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut,j)
         if os.path.isfile(fn_out):
             cmd_list = False
-        wgtmap = make_weightmap(stack,fn_list,y,chip,logger)
+        wgtmap = make_weightmap(stack,fn_list,MY,chip,logger)
         cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
         '@%s'%fn_list,'-c','default.swarp','-COMBINE_TYPE',
         'WEIGHTED','-WEIGHT_SUFFIX','.rms.fits','-WEIGHT_TYPE','MAP_RMS',

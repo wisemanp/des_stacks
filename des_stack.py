@@ -60,6 +60,9 @@ class Stack():
         self.list_dir = os.path.join(self.coadding_dir,'good_img_lists')
         if not os.path.isdir(self.list_dir):
             os.mkdir(self.list_dir)
+        self.weight_dir = os.path.join(self.coadding_dir,'weights')
+        if not os.path.isdir(self.weight_dir):
+            os.mkdir(self.weight_dir)
         self.band_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band)
         if not os.path.isdir(self.band_dir):
             if os.path.isdir(os.path.join(self.out_dir,'MY%s'%self.my,self.field)):

@@ -150,6 +150,8 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
     return good_frame
 
 def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut =2.5,final=True):
+    if not os.path.isdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band)):
+        os.mkdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -171,38 +173,50 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         good_band_my = good_band[good_band['YEAR']!='Y{0}'.format(MY)]
     good_my_exps = good_band_my['EXPNUM'].unique()
     #for each good exposure, find it's file
-    stack_fns = []
+    stack_fns = {}
     logger.info('Adding files to the stack')
+    good_band_my.sort_values('CHIP_ZERO_POINT',ascending=False,inplace=True)
+    n,l=0,0
+    stack_fns[0]=[]
     for counter,exp in enumerate(good_my_exps):
+
         this_exp = good_band_my[good_band_my['EXPNUM']==exp]
         first = this_exp.iloc[0]
         night = first['NITE']
         #chip = first['CCDNUM']
-        this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip,logger)
-
+        this_exp_fn = stack_tools.get_dessn_obs(stack,field,band,night,exp,chip,logger)
+        #logger.info("Adding file from %s" %night)
         if this_exp_fn:
-
             for fn in this_exp_fn:
-              
-                stack_fns.append(fn)
-
+                n+=1
+                stack_fns[l].append(fn)
+                if n%100.0 == 0:
+                    l+=1
+                    stack_fns[l]=[]
     logger.info('Added {} files'.format(counter))
-    stack_fns = np.array(stack_fns)
-    fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s_%.3f_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut))
-    logger.info('Saving list of files to stack at {0}'.format(fn_list))
-    np.savetxt(fn_list,stack_fns,fmt='%s')
-    if not os.path.isdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band)):
-        os.mkdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band))
-    if final == True:
-        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%.3f_%s.fits'%(chip,band,zp_cut,psf_cut)
-    else:
-        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,band,zp_cut,psf_cut)
+    cmd_list = {}
+    for j in range(0,l+1):
+        fns = np.array(stack_fns[j])
+        fn_list = os.path.join(stack.temp_dir,\
+        'stack_fns_MY%s_%s_%s_%s_%.3f_%s_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut,j))
+        logger.info('Saving list of files to stack at {0}'.format(fn_list))
+        np.savetxt(fn_list,fns,fmt='%s')
 
-    if not os.path.isfile(fn_out):
-        swarp_cmd = ['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),'@{0}'.format(fn_list),'-c','default.swarp']
-    else:
-        swarp_cmd = False
-    return swarp_cmd
+        if final == True:
+            fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
+            '/ccd_%s_%s_%.3f_%s_%s.fits'%(chip,band,zp_cut,psf_cut,j)
+        else:
+            fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
+            '/ccd_%s_%s_%.3f_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut,j)
+        if os.path.isfile(fn_out):
+            cmd_list = False
+        wgtmap = make_weightmap(stack,fn_list,y,chip,logger)
+        cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
+        '@%s'%fn_list,'-c','default.swarp','-COMBINE_TYPE',
+        'WEIGHTED','-WEIGHT_SUFFIX','.rms.fits','-WEIGHT_TYPE','MAP_RMS',
+        '-RESCALE_WEIGHTS','N','@%s'%wgtmap],fn_out)
+
+    return cmd_list
 #############################################
 def get_des_obs_year(night,logger=None):
     if not logger:
@@ -308,12 +322,12 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
             #logger.info(base_obs_fn)
             #logger.info(fits.getheader(obs_fn)['EXPNUM'])
             continue
-        
+
         if year == 'Y4':
             obs_fn = obs_fn+'[0]'
         if base_obs_fn[:3]!='DSN':
             obs_fns.append(obs_fn)
-        
+
     return obs_fns
 
 def rn_stack(stack):
@@ -376,3 +390,21 @@ def get_y3a1():
 
         dat = conn.query_to_pandas(q)
         dat.to_csv('/home/wiseman/y3a1_%s_summary.csv'%f)
+
+def make_weightmap(s,lst,y,chip,logger):
+    img_list = np.loadtxt(lst,dtype='str')
+    starttime=float(time.time())
+    logger.info('Creating weightmaps for individual input exposures')
+    for img in img_list:
+        imgname = os.path.split(img)
+        expnum = imgname[3:9]
+        wgtmap = os.path.join(s.weight_dir,'%s_%s_%s_%s_%s.rms.fits'%(y,s.field,s.band,chip,expnum))
+        os.chdir(os.path.join(s.temp_dir,'weight'))
+        sex_cmd = ['sex',img,'-CHECKIMAGE_NAME',wgtmap]
+
+        logger.info('Creating weightmap for %s'%img)
+        p = subprocess.Popen(sex_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        outs,errs = p.communicate()
+        endtime=float(time.time())
+    logger.info('Finished creating weightmaps, took %.3f seconds'%(endtime-starttime))
+    return wgtmap

@@ -15,7 +15,7 @@ import logging
 from shutil import copyfile
 import time
 
-from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year
+from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year,make_weightmap
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 from des_stacks.analysis.astro import astrometry,init_phot
 
@@ -167,25 +167,35 @@ class Stack():
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
             for chip in self.chips:
 
-                self.logger.info('Stacking CCD {0}'.format(chip))
-                cmd = make_swarp_cmd(self,y,field,chip,band,self.logger,zp_cut,psf_cut,final)
-                if cmd == False:
-                    self.logger.info("Already stacked this chip with these cuts, going straight to astrometry")
+                self.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
+                cmd_list = make_swarp_cmd(self,y,field,chip,band,self.logger,zp_cut,psf_cut,final)
+                staged_imgs = []
+                for key,value in cmd_list.items():
 
-                else:
+                    cmd,outname = value
+                    staged_imgs.append(outname)
+                    if cmd == False:
+                        self.logger.info("Already stacked this chip with these cuts, going straight to astrometry")
+                    else:
+                        self.logger.info('Stacking... please be patient.'.format(cmd))
+                        os.chdir(self.temp_dir)
+                        try:
+                            starttime=float(time.time())
+                            p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                            outs,errs = p.communicate()
+                            endtime=float(time.time())
 
-                    self.logger.info('Stacking... please be patient.'.format(cmd))
-                    os.chdir(self.temp_dir)
-                    try:
-                        starttime=float(time.time())
-                        p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                        outs,errs = p.communicate()
-                        endtime=float(time.time())
-
-                    except (OSError, IOError):
-                        self.logger.warn("Swarp failed.", exc_info=1)
-                    self.logger.info('Finish stacking chip {0}'.format(chip))
-                    self.logger.info('Took %.3f seconds' % (endtime-starttime))
+                        except (OSError, IOError):
+                            self.logger.warn("Swarp failed.", exc_info=1)
+                        self.logger.info('Finish stacking chip {0}'.format(chip))
+                        self.logger.info('Took %.3f seconds' % (endtime-starttime))
+                self.logger.info('Now combining mini-stacks into final science frame')
+                final_list = np.array(staged_imgs)
+                final_listname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s'%(y,self.field,self.band,chip,zp_cut,psf_cut))
+                np.savetxt(final_listname,final_list)
+                imgout_name = final_list[0][-6]+'_sci.fits'
+                weightout_name = final_list[0][-6]+'_wgt.fits'
+                swarp_cmd = ['swarp','@%s'%final_listname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name]
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break

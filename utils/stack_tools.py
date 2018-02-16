@@ -179,9 +179,13 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         night = first['NITE']
         #chip = first['CCDNUM']
         this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip,logger)
+
         if this_exp_fn:
+
             for fn in this_exp_fn:
+              
                 stack_fns.append(fn)
+
     logger.info('Added {} files'.format(counter))
     stack_fns = np.array(stack_fns)
     fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s_%.3f_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut))
@@ -304,14 +308,13 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
             #logger.info(base_obs_fn)
             #logger.info(fits.getheader(obs_fn)['EXPNUM'])
             continue
-        if fits_expnum == expnum:
-            if year == 'Y4':
-                obs_fn = obs_fn+'[0]'
-
+        
+        if year == 'Y4':
+            obs_fn = obs_fn+'[0]'
+        if base_obs_fn[:3]!='DSN':
             obs_fns.append(obs_fn)
-        else:
-            pass
-    #return None
+        
+    return obs_fns
 
 def rn_stack(stack):
     pass

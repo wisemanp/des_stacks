@@ -211,12 +211,12 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
             '/ccd_%s_%s_%.3f_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut,j)
         if os.path.isfile(fn_out):
             cmd_list = False
-        wgtmap = make_weightmap(stack,fn_list,MY,chip,logger)
+        wgtlst = make_weightmap(stack,fn_list,MY,chip,logger)
         cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
         '@%s'%fn_list,'-c','default.swarp','-COMBINE_TYPE',
         'WEIGHTED','-WEIGHT_SUFFIX','.rms.fits','-WEIGHT_TYPE','MAP_RMS',
-        '-RESCALE_WEIGHTS','N','@%s'%wgtmap],fn_out)
-        
+        '-RESCALE_WEIGHTS','N','-WEIGHT_IMAGE''@%s'%wgtlst],fn_out)
+
     logger.info(cmd_list)
     return cmd_list
 #############################################
@@ -397,16 +397,18 @@ def make_weightmap(s,lst,y,chip,logger):
     img_list = np.loadtxt(lst,dtype='str')
     starttime=float(time.time())
     logger.info('Creating weightmaps for individual input exposures')
+    weightlist = []
     for img in img_list:
         imgname = os.path.split(img)
         expnum = imgname[3:9]
         wgtmap = os.path.join(s.weight_dir,'%s_%s_%s_%s_%s.rms.fits'%(y,s.field,s.band,chip,expnum))
+        weightlist.append(wgtmap)
         os.chdir(os.path.join(s.temp_dir,'weight'))
         sex_cmd = ['sex',img,'-CHECKIMAGE_NAME',wgtmap]
-
         logger.info('Creating weightmap for %s'%img)
         p = subprocess.Popen(sex_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         outs,errs = p.communicate()
         endtime=float(time.time())
     logger.info('Finished creating weightmaps, took %.3f seconds'%(endtime-starttime))
-    return wgtmap
+    weightlist = np.array(weightlist)
+    return weightlist

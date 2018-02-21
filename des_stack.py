@@ -196,8 +196,8 @@ class Stack():
                 final_list = np.array(staged_imgs)
                 final_listname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s'%(y,self.field,self.band,chip,zp_cut,psf_cut))
                 np.savetxt(final_listname,final_list,fmt='%s')
-                imgout_name = final_list[0][-6]+'_sci.fits'
-                weightout_name = final_list[0][-6]+'_wgt.fits'
+                imgout_name = final_list[0][:-7]+'_sci.fits'
+                weightout_name = final_list[0][:-7]+'_wgt.fits'
                 final_cmd = ['swarp','@%s'%final_listname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name]
                 final_start = float(time.time())
                 pf = subprocess.Popen(final_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)

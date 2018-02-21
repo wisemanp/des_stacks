@@ -216,7 +216,8 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         '@%s'%fn_list,'-c','default.swarp','-COMBINE_TYPE',
         'WEIGHTED','-WEIGHT_SUFFIX','.rms.fits','-WEIGHT_TYPE','MAP_RMS',
         '-RESCALE_WEIGHTS','N','@%s'%wgtmap],fn_out)
-
+        
+    logger.info(cmd_list)
     return cmd_list
 #############################################
 def get_des_obs_year(night,logger=None):

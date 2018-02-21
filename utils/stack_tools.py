@@ -211,7 +211,9 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
             '/ccd_%s_%s_%.3f_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut,j)
         if os.path.isfile(fn_out):
             cmd_list = False
-        wgtlst = make_weightmap(stack,fn_list,MY,chip,logger)
+        weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s.wgt.lst'%(y,s.field,s.band,chip,j))
+        if not os.path.isfile(weightlist_name):
+            weightlist_name = make_weightmap(stack,fn_list,MY,chip,j,logger)
         cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
         '@%s'%fn_list,'-c','default.swarp','-COMBINE_TYPE',
         'WEIGHTED','-WEIGHT_SUFFIX','.rms.fits','-WEIGHT_TYPE','MAP_RMS',
@@ -393,7 +395,7 @@ def get_y3a1():
         dat = conn.query_to_pandas(q)
         dat.to_csv('/home/wiseman/y3a1_%s_summary.csv'%f)
 
-def make_weightmap(s,lst,y,chip,logger):
+def make_weightmap(s,lst,y,chip,j,logger):
     img_list = np.loadtxt(lst,dtype='str')
     starttime=float(time.time())
     logger.info('Creating weightmaps for individual input exposures')
@@ -411,4 +413,6 @@ def make_weightmap(s,lst,y,chip,logger):
         endtime=float(time.time())
     logger.info('Finished creating weightmaps, took %.3f seconds'%(endtime-starttime))
     weightlist = np.array(weightlist)
-    return weightlist
+    weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s.wgt.lst'%(y,s.field,s.band,chip,j))
+    np.savetxt(weightlist_name,weightlist)
+    return weightlist_name

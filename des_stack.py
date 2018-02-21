@@ -198,7 +198,14 @@ class Stack():
                 np.savetxt(final_listname,final_list,fmt='%s')
                 imgout_name = final_list[0][-6]+'_sci.fits'
                 weightout_name = final_list[0][-6]+'_wgt.fits'
-                swarp_cmd = ['swarp','@%s'%final_listname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name]
+                final_cmd = ['swarp','@%s'%final_listname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name]
+                final_start = float(time.time())
+                pf = subprocess.Popen(final_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                f_out,f_errs = pf.communicate()
+                final_end = float(time.time())
+                self.logger.info("Done combining mini-stacks, took %.3f seconds"%(final_end -final_start))
+                self.logger.info("Saved final science frame at %s"%imgout_name)
+                self.logger.info("And final weightmap at %s"%weightout_name)
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break

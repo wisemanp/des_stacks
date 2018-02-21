@@ -216,7 +216,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
             weightlist_name = make_weightmap(stack,fn_list,MY,chip,j,logger)
         cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
         '@%s'%fn_list,'-c','default.swarp','-COMBINE_TYPE',
-        'WEIGHTED','-WEIGHT_SUFFIX','.rms.fits','-WEIGHT_TYPE','MAP_RMS',
+        'WEIGHTED','-WEIGHT_TYPE','MAP_RMS',
         '-RESCALE_WEIGHTS','N','-WEIGHT_IMAGE''@%s'%weightlist_name],fn_out)
 
     logger.info(cmd_list)

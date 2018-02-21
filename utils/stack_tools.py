@@ -401,7 +401,7 @@ def make_weightmap(s,lst,y,chip,j,logger):
     logger.info('Creating weightmaps for individual input exposures')
     weightlist = []
     for img in img_list:
-        imgname = os.path.split(img)
+        imgname = os.path.split(img)[-1]
         expnum = imgname[3:9]
         wgtmap = os.path.join(s.weight_dir,'%s_%s_%s_%s_%s.rms.fits'%(y,s.field,s.band,chip,expnum))
         weightlist.append(wgtmap)

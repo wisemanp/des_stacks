@@ -209,9 +209,10 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         else:
             fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
             '/ccd_%s_%s_%.3f_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut,j)
-        
+
         weightlist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.wgt.lst'%(MY,stack.field,stack.band,chip,zp_cut,psf_cut,j))
         resamplist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.resamp.lst'%(MY,stack.field,stack.band,chip,zp_cut,psf_cut,j))
+        weightout_name = fn_out[:-4]+'wgt.fits'
         if not os.path.isfile(weightlist_name):
             weightlist_name,resamplist_name = make_weightmap(stack,fn_list,MY,chip,zp_cut,psf_cut,j,logger)
         if os.path.isfile(fn_out):
@@ -220,7 +221,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
             cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
          '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
          'WEIGHTED','-WEIGHT_TYPE','MAP_WEIGHT',
-         '-RESCALE_WEIGHTS','N','-WEIGHT_IMAGE','@%s'%weightlist_name],fn_out)
+         '-RESCALE_WEIGHTS','N','-WEIGHT_IMAGE','@%s'%weightlist_name],'-WEIGHOUT_NAME','%s'%weightout_name,fn_out)
 
     logger.info(cmd_list)
     return cmd_list

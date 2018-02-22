@@ -209,17 +209,18 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         else:
             fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
             '/ccd_%s_%s_%.3f_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut,j)
-        if os.path.isfile(fn_out):
-            cmd_list[j] = False
+        
         weightlist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.wgt.lst'%(MY,stack.field,stack.band,chip,zp_cut,psf_cut,j))
         resamplist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.resamp.lst'%(MY,stack.field,stack.band,chip,zp_cut,psf_cut,j))
         if not os.path.isfile(weightlist_name):
             weightlist_name,resamplist_name = make_weightmap(stack,fn_list,MY,chip,zp_cut,psf_cut,j,logger)
-
-        cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
-        '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
-        'WEIGHTED','-WEIGHT_TYPE','MAP_WEIGHT',
-        '-RESCALE_WEIGHTS','N','-WEIGHT_IMAGE','@%s'%weightlist_name],fn_out)
+        if os.path.isfile(fn_out):
+            cmd_list[j] = (False,fn_out)
+        else:
+            cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
+         '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
+         'WEIGHTED','-WEIGHT_TYPE','MAP_WEIGHT',
+         '-RESCALE_WEIGHTS','N','-WEIGHT_IMAGE','@%s'%weightlist_name],fn_out)
 
     logger.info(cmd_list)
     return cmd_list
@@ -405,12 +406,13 @@ def make_weightmap(s,lst,y,chip,zp_cut,psf_cut,j,logger):
     resamplist = []
     for img in img_list:
         imgname = os.path.split(img)[-1]
-        imgroot = img_name[:-5]
-        weightlist.append(imgroot +'.resamp.weight.fits')
-        resamplist.append(imgroot+'.resamp.fits')
-    os.chdir(os.path.join(s.temp_dir,'weight'))
-    swarp_cmd = ['swarp','@%s'%img_list,'-COMBINE','N','-RESAMPLE','Y','-c','default.swarp']
-    logger.info('Creating weightmap for %s'%img)
+        imgroot = imgname[:-5]
+        if imgroot[-2:]=='fi':
+            imgroot = imgroot[:-3]
+        weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
+        resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
+    os.chdir(s.temp_dir)
+    swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-c','default.swarp']
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())
@@ -418,7 +420,7 @@ def make_weightmap(s,lst,y,chip,zp_cut,psf_cut,j,logger):
     weightlist = np.array(weightlist)
     weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.wgt.lst'%(y,s.field,s.band,chip,zp_cut,psf_cut,j))
     np.savetxt(weightlist_name,weightlist,fmt='%s')
-    resamplist = np.array(weightlist)
+    resamplist = np.array(resamplist)
     resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.resamp.lst'%(y,s.field,s.band,chip,zp_cut,psf_cut,j))
     np.savetxt(resamplist_name,resamplist,fmt='%s')
     return (weightlist_name,resamplist_name)

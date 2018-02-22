@@ -173,13 +173,10 @@ class Stack():
                 self.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
                 cmd_list = make_swarp_cmd(self,y,field,chip,band,self.logger,zp_cut,psf_cut,final)
                 staged_imgs = []
-                staged_weights = []
                 for key,value in cmd_list.items():
 
                     cmd,outname = value
                     staged_imgs.append(outname)
-                    stage_wgt_name = outname[:-4]+'wgt.fits'
-                    staged_weights.append(stage_wgt_name)
                     if cmd == False:
                         self.logger.info("Already stacked this chip with these cuts, going straight to astrometry")
                     else:
@@ -197,17 +194,27 @@ class Stack():
                         self.logger.info('Took %.3f seconds' % (endtime-starttime))
                     self.logger.info('Added %s to list of images to make final stack' %outname)
                 self.logger.info('Now combining mini-stacks into final science frame')
-                final_list = np.array(staged_imgs)
-                final_weights = np.array(staged_weights)
+                staged_list = np.array(staged_imgs)
                 self.logger.info('Combining these frames:')
                 self.logger.info(final_list)
-                final_listname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s_final.lst'%(y,self.field,self.band,chip,zp_cut,psf_cut))
+                staged_listname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s_staged.lst'%(y,self.field,self.band,chip,zp_cut,psf_cut))
+                np.savetxt(staged_listname,staged_list,fmt='%s')
+                resamp_cmd =['swarp','@%s'%staged_listname,'-COMBINE','N','-RESAMPLE','Y','-c','default.swarp']
+                weightlist = []
+                resamplist = []
+                for img in final_list:
+                    imgname = os.path.split(img)[-1]
+
+                    imgnameroot = imgname[:-5]
+                    weightlist.append(os.path.join(s.band_dir,imgnameroot +'.resamp.weight.fits'))
+                    resamplist.append(os.path.join(s.band_dir,imgnameroot+'.resamp.fits'))
+
                 final_weightname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s_final.wgt.lst'%(y,self.field,self.band,chip,zp_cut,psf_cut))
-                np.savetxt(final_listname,final_list,fmt='%s')
+                final_resampname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s_final.lst'%(y,self.field,self.band,chip,zp_cut,psf_cut))
                 np.savetxt(final_weightname,final_weights,fmt='%s')
                 imgout_name = final_list[0][:-7]+'_sci.fits'
                 weightout_name = final_list[0][:-7]+'_wgt.fits'
-                final_cmd = ['swarp','@%s'%final_listname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-COMBINE_TYPE','WEIGHTED','-WEIGHT_IMAGE','@%s'%final_weightname,'-WEIGHTOUT_NAME',weightout_name]
+                final_cmd = ['swarp','@%s'%final_resampname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-COMBINE_TYPE','WEIGHTED','-WEIGHT_IMAGE','@%s'%final_weightname,'-WEIGHTOUT_NAME',weightout_name]
                 self.logger.info('Doing this command to do the final stack:\n %s'%final_cmd)
                 final_start = float(time.time())
                 pf = subprocess.Popen(final_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)

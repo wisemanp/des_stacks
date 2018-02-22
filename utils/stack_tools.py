@@ -221,7 +221,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
             cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
          '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
          'WEIGHTED','-WEIGHT_TYPE','MAP_WEIGHT',
-         '-RESCALE_WEIGHTS','N','-WEIGHT_IMAGE','@%s'%weightlist_name],'-WEIGHOUT_NAME','%s'%weightout_name,fn_out)
+         '-RESCALE_WEIGHTS','N','-WEIGHT_IMAGE','@%s'%weightlist_name,'-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
 
     logger.info(cmd_list)
     return cmd_list

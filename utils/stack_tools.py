@@ -150,6 +150,8 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
     return good_frame
 
 def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut =2.5,final=True):
+    if not os.path.isdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band)):
+        os.mkdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -171,38 +173,50 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         good_band_my = good_band[good_band['YEAR']!='Y{0}'.format(MY)]
     good_my_exps = good_band_my['EXPNUM'].unique()
     #for each good exposure, find it's file
-    stack_fns = []
+    stack_fns = {}
     logger.info('Adding files to the stack')
+    good_band_my.sort_values('CHIP_ZERO_POINT',ascending=False,inplace=True)
+    n,l=0,0
+    stack_fns[0]=[]
     for counter,exp in enumerate(good_my_exps):
+
         this_exp = good_band_my[good_band_my['EXPNUM']==exp]
         first = this_exp.iloc[0]
         night = first['NITE']
         #chip = first['CCDNUM']
         this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip,logger)
-
+        #logger.info("Adding file from %s" %night)
         if this_exp_fn:
-
             for fn in this_exp_fn:
-              
-                stack_fns.append(fn)
-
+                n+=1
+                stack_fns[l].append(fn)
+                if n%100.0 == 0:
+                    l+=1
+                    stack_fns[l]=[]
     logger.info('Added {} files'.format(counter))
-    stack_fns = np.array(stack_fns)
-    fn_list = os.path.join(stack.temp_dir,'stack_fns_MY%s_%s_%s_%s_%.3f_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut))
-    logger.info('Saving list of files to stack at {0}'.format(fn_list))
-    np.savetxt(fn_list,stack_fns,fmt='%s')
-    if not os.path.isdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band)):
-        os.mkdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band))
-    if final == True:
-        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%.3f_%s.fits'%(chip,band,zp_cut,psf_cut)
-    else:
-        fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,band,zp_cut,psf_cut)
+    cmd_list = {}
+    for j in range(0,l+1):
+        fns = np.array(stack_fns[j])
+        fn_list = os.path.join(stack.temp_dir,\
+        'stack_fns_MY%s_%s_%s_%s_%.3f_%s_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut,j))
+        logger.info('Saving list of files to stack at {0}'.format(fn_list))
+        np.savetxt(fn_list,fns,fmt='%s')
 
-    if not os.path.isfile(fn_out):
-        swarp_cmd = ['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),'@{0}'.format(fn_list),'-c','default.swarp']
-    else:
-        swarp_cmd = False
-    return swarp_cmd
+        if final == True:
+            fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
+            '/ccd_%s_%s_%.3f_%s_%s.fits'%(chip,band,zp_cut,psf_cut,j)
+        else:
+            fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
+            '/ccd_%s_%s_%.3f_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut,j)
+        if os.path.isfile(fn_out):
+            cmd_list[j] = False
+        
+        cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
+        '@%s'%fn_list,'-c','default.swarp','-COMBINE_TYPE',
+        'WEIGHTED'],fn_out)
+
+    logger.info(cmd_list)
+    return cmd_list
 #############################################
 def get_des_obs_year(night,logger=None):
     if not logger:

@@ -18,8 +18,8 @@ def reduce_info(info,**kwargs):
     pass
     #Get a smaller info dataframe based on kwargs
 
-def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
-    """Returns a list of images for a certain chip that are of quality better than zp_cut and psf_cut.
+def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
+    """Returns a list of images for a certain chip that are of quality better than a given cut.
     Arguments:
     field (str): (e.g. 'X2')
     band (str): (e.g. 'g')
@@ -51,106 +51,121 @@ def make_good_frame_list(stack,field,band,zp_cut = -0.15, psf_cut = 2.5):
     logger.info('Getting median zeropoint for each exposure, calculating residual for each image')
 
     info = stack.info_df
+    qual = stack.qual_tab
     import math
     info = info[info['FIELD']==field]
     logger.debug('These are the bands available for field {0}'.format(field))
     logger.debug(info.BAND.unique())
     info = info[info['BAND']==band]
-    info['ZP_EXPRES']=''
-    for counter,exp in enumerate(info.EXPNUM.unique()):
-        this_exp = info[info['EXPNUM']==exp]
-        exp_idx = this_exp.index
-        med_zp = this_exp['CHIP_ZERO_POINT'].median()
-        info.loc[exp_idx,'ZP_EXPRES'] = this_exp['CHIP_ZERO_POINT']-med_zp
+    if cuts['zp']:
+            info['ZP_EXPRES']=''
+        for counter,exp in enumerate(info.EXPNUM.unique()):
+            this_exp = info[info['EXPNUM']==exp]
+            exp_idx = this_exp.index
+            med_zp = this_exp['CHIP_ZERO_POINT'].median()
+            info.loc[exp_idx,'ZP_EXPRES'] = this_exp['CHIP_ZERO_POINT']-med_zp
 
-    logger.debug('Here is the column of initial residuals for each exposure')
-    logger.debug(info['ZP_EXPRES'])
-    ######################################################
-    ## 2
-    ## Calculate the average residual from part 1 over all exposures for that chip (field,band)
-    logger.info('Getting the median zeropoint residual for all exposures for each chip')
-    info['ZP_ADJ1'] = ''
-    info['ZP_SIG_ADJ1'] = ''
-    for counter, chip in enumerate(info.CCDNUM.unique()):
+        logger.debug('Here is the column of initial residuals for each exposure')
+        logger.debug(info['ZP_EXPRES'])
+        ######################################################
+        ## 2
+        ## Calculate the average residual from part 1 over all exposures for that chip (field,band)
+        logger.info('Getting the median zeropoint residual for all exposures for each chip')
+        info['ZP_ADJ1'] = ''
+        info['ZP_SIG_ADJ1'] = ''
+        for counter, chip in enumerate(info.CCDNUM.unique()):
 
-        this_chip = info[info['CCDNUM']==chip]
-        chip_idx = this_chip.index
-        med_zp = this_chip['ZP_EXPRES'].median()
-        sig_chip_zps = this_chip['ZP_EXPRES'].std()
-        ## 3
-        ## Subtract that average residual from the given ZP to give an adjusted ZP
-        info.loc[chip_idx,'ZP_ADJ1']=this_chip['CHIP_ZERO_POINT']-med_zp
-        info.loc[chip_idx,'ZP_SIG_ADJ1']=sig_chip_zps
-    logger.debug('Here is the column of adjusted zeropoints')
-    logger.debug(info['ZP_ADJ1'])
-    #####################################################
-    ## 4
-    ## Subtract the average ZP for each year off the individual zps for that year
+            this_chip = info[info['CCDNUM']==chip]
+            chip_idx = this_chip.index
+            med_zp = this_chip['ZP_EXPRES'].median()
+            sig_chip_zps = this_chip['ZP_EXPRES'].std()
+            ## 3
+            ## Subtract that average residual from the given ZP to give an adjusted ZP
+            info.loc[chip_idx,'ZP_ADJ1']=this_chip['CHIP_ZERO_POINT']-med_zp
+            info.loc[chip_idx,'ZP_SIG_ADJ1']=sig_chip_zps
+        logger.debug('Here is the column of adjusted zeropoints')
+        logger.debug(info['ZP_ADJ1'])
+        #####################################################
+        ## 4
+        ## Subtract the average ZP for each year off the individual zps for that year
 
-    years =['Y1','Y2','Y3','Y4']
-    info['ZP_RES']=''
-    for year in years:
-        logger.info('Subtracting the median zeropoint for {0} from all exposures that year'.format(year))
-        this_year = info[info['YEAR']==year]
-        year_idx = this_year.index
-        year_med = this_year['ZP_ADJ1'].median()
-        year_sig = this_year['ZP_ADJ1'].std()
-        final_resid = this_year['ZP_ADJ1']-year_med
-        info.loc[year_idx,'ZP_RES']=final_resid
+        years =['Y1','Y2','Y3','Y4']
+        info['ZP_RES']=''
+        for year in years:
+            logger.info('Subtracting the median zeropoint for {0} from all exposures that year'.format(year))
+            this_year = info[info['YEAR']==year]
+            year_idx = this_year.index
+            year_med = this_year['ZP_ADJ1'].median()
+            year_sig = this_year['ZP_ADJ1'].std()
+            final_resid = this_year['ZP_ADJ1']-year_med
+            info.loc[year_idx,'ZP_RES']=final_resid
 
-    #####################################################################
-    ## 5
-    ## Now cut exposures (field,band,chip) based on whether they make the cut and return them
-    logger.info('Getting rid of exposures whose ZP residual is below {0}'.format(zp_cut))
-    exps = info.EXPNUM.unique()
-    zp_cut     = float(zp_cut)
-    psf_cut = float(psf_cut)
-    nbad = 15
-    good_exps = []
-    good_frame = pd.DataFrame()
-    for exp in exps:
-        this_exp = info[info['EXPNUM']==exp]
-        logger.debug('Cutting in exposure {0}'.format(exp))
-        resids = this_exp['ZP_RES']
-        resids = resids.as_matrix()
+        #####################################################################
+        ## 5
+        ## Now cut exposures (field,band,chip) based on whether they make the cut and return them
+        logger.info('Getting rid of exposures whose ZP residual is below {0}'.format(zp_cut))
+        exps = info.EXPNUM.unique()
+        zp_cut     = float(zp_cut)
+        if cuts['psf']:
+            psf_cut = float(cuts['psf'])
+        nbad = 15
+        good_exps = []
+        good_frame = pd.DataFrame()
+        for exp in exps:
+            this_exp = info[info['EXPNUM']==exp]
+            logger.debug('Cutting in exposure {0}'.format(exp))
+            resids = this_exp['ZP_RES']
+            resids = resids.as_matrix()
 
-        bad_resids = 0
-        reformatted_resids = []
-        for i in range(len(resids)):
-            res = resids[i]
-            res = float(res)
-            reformatted_resids.append(res)
-            if float(res)<zp_cut:
-                bad_resids +=1
-        this_exp['ZP_RES']=np.array(reformatted_resids)
-        logger.debug('Number of frames in exposure {0} that fail the ZP cut: {1}'.format(exp,bad_resids))
-        bads =bad_resids+len(this_exp[this_exp['PSF_NEA']>psf_cut])
-        logger.info("Number of frames failing the combined ZP and PSF cut: %s" %bads)
-        if bads <nbad:
-            #is a good frame
-            logger.debug('...is a good frame!')
-            good_exps.append(exp)
+            bad_resids = 0
+            reformatted_resids = []
+            for i in range(len(resids)):
+                res = resids[i]
+                res = float(res)
+                reformatted_resids.append(res)
+                if float(res)<zp_cut:
+                    bad_resids +=1
+            this_exp['ZP_RES']=np.array(reformatted_resids)
+            logger.debug('Number of frames in exposure {0} that fail the ZP cut: {1}'.format(exp,bad_resids))
+            bads =bad_resids+len(this_exp[this_exp['PSF_NEA']>psf_cut])
+            logger.info("Number of frames failing the combined ZP and PSF cut: %s" %bads)
+            if bads <nbad:
+                #is a good frame
+                logger.debug('...is a good frame!')
+                good_exps.append(exp)
 
-            good_frame = good_frame.append(this_exp)
-    logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
+                good_frame = good_frame.append(this_exp)
+        good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
+        logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
     ## Save results
-    np.savetxt(os.path.join(stack.list_dir,'good_exps_%s_%s.txt'%(field,band)),good_exps,fmt='%s')
+elif cuts['teff']:
+        good_frame = pd.DataFrame()
+        for counter,exp in enumerate(info.EXPNUM.unique()):
+            this_exp = info[info['EXPNUM']==exp]
+            exp_idx = this_exp.index
+            this_qual= qual[qual['EXPNUM']==exp]
+            t_eff = this_qual['T_EFF']
+            if t_eff > cuts['teff']:
+                this_exp['T_EFF'] = t_eff
+                good_frame = good_frame.append(this_exp)
+
+        good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,t_cut))
+    txtname = good_fn[:-4]+'.txt'
+    np.savetxt(txtname,good_exps,fmt='%s')
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
     except ValueError:
-        logger.exception("Not enough good frames!!")
+        pass
     logger.debug('Here is the good_table, to write to fits format')
     logger.debug(good_table)
-    good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
+
     logger.info('Writing out good exposure list to {0}'.format(good_fn))
-    try:
+    if os.path.isfile(good_fn):
         os.remove(good_fn)
-    except OSError:
-        pass
     good_table.write(good_fn)
     return good_frame
 
-def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut =2.5,final=True):
+def make_swarp_cmd(stack,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
     if not os.path.isdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)
@@ -199,22 +214,22 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
     for j in range(0,l+1):
         fns = np.array(stack_fns[j])
         fn_list = os.path.join(stack.temp_dir,\
-        'stack_fns_MY%s_%s_%s_%s_%.3f_%s_%s.lst' %(MY,field,band,chip,zp_cut,psf_cut,j))
+        'stack_fns_MY%s_%s_%s_%s_%s_%s.lst' %(MY,field,band,chip,s.cutstring,j))
         logger.info('Saving list of files to stack at {0}'.format(fn_list))
         np.savetxt(fn_list,fns,fmt='%s')
 
         if final == True:
             fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
-            '/ccd_%s_%s_%.3f_%s_%s.fits'%(chip,band,zp_cut,psf_cut,j)
+            '/ccd_%s_%s_%s_%s.fits'%(chip,band,s.cutstring,j)
         else:
             fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
-            '/ccd_%s_%s_%.3f_%s_%s_temp.fits'%(chip,band,zp_cut,psf_cut,j)
+            '/ccd_%s_%s_%s_%s_temp.fits'%(chip,band,s.cutstring,j)
 
-        weightlist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.wgt.lst'%(MY,stack.field,stack.band,chip,zp_cut,psf_cut,j))
-        resamplist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.resamp.lst'%(MY,stack.field,stack.band,chip,zp_cut,psf_cut,j))
+        weightlist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(MY,stack.field,stack.band,chip,s.cutstring,j))
+        resamplist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,stack.field,stack.band,chip,s.cutstring,j))
         weightout_name = fn_out[:-4]+'wgt.fits'
         if not os.path.isfile(weightlist_name):
-            weightlist_name,resamplist_name = make_weightmap(stack,fn_list,MY,chip,zp_cut,psf_cut,j,logger)
+            weightlist_name,resamplist_name = make_weightmap(stack,fn_list,MY,chip,cuts,j,logger)
         if os.path.isfile(fn_out):
             cmd_list[j] = (False,fn_out)
         else:
@@ -398,7 +413,8 @@ def get_y3a1():
         dat = conn.query_to_pandas(q)
         dat.to_csv('/home/wiseman/y3a1_%s_summary.csv'%f)
 
-def make_weightmap(s,lst,y,chip,zp_cut,psf_cut,j,logger):
+def make_weightmap(s,lst,y,chip,cuts,j,logger):
+
     img_list = np.loadtxt(lst,dtype='str')
     starttime=float(time.time())
     logger.info('Creating weightmaps for individual input exposures')
@@ -418,9 +434,9 @@ def make_weightmap(s,lst,y,chip,zp_cut,psf_cut,j,logger):
     endtime=float(time.time())
     logger.info('Finished creating weightmaps, took %.3f seconds'%(endtime-starttime))
     weightlist = np.array(weightlist)
-    weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.wgt.lst'%(y,s.field,s.band,chip,zp_cut,psf_cut,j))
+    weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(y,s.field,s.band,chip,s.cutstring,j))
     np.savetxt(weightlist_name,weightlist,fmt='%s')
     resamplist = np.array(resamplist)
-    resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%.3f_%s_%s.resamp.lst'%(y,s.field,s.band,chip,zp_cut,psf_cut,j))
+    resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(y,s.field,s.band,chip,s.cutstring,j))
     np.savetxt(resamplist_name,resamplist,fmt='%s')
     return (weightlist_name,resamplist_name)

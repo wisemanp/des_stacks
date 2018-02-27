@@ -220,8 +220,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,zp_cut = -0.15,psf_cut
         else:
             cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
          '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
-         'WEIGHTED','-WEIGHT_TYPE','MAP_WEIGHT',
-         '-RESCALE_WEIGHTS','N','-RESAMPLE','N','-WEIGHT_IMAGE','@%s'%weightlist_name,'-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
+         'CLIPPED','-RESAMPLE','N','-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
 
     logger.info(cmd_list)
     return cmd_list
@@ -413,7 +412,7 @@ def make_weightmap(s,lst,y,chip,zp_cut,psf_cut,j,logger):
         weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
         resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
     os.chdir(s.temp_dir)
-    swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-c','default.swarp']
+    swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())

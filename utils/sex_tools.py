@@ -28,7 +28,7 @@ def sex_for_psfex(stack,chip,cuts=None):
         if not cuts:
             img = band_dir+'/ccd_%s.fits'%chip
         else:
-            img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
+            img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s_sci.fits'%(chip,stack.band,zp_cut,psf_cut))
     os.chdir(os.path.join(band_dir,chip,'psf'))
     #run SExtractor
     sex_cmd = ['sex','-CATALOG_NAME',sexcat,'-CATALOG_TYPE','FITS_LDAC',img]
@@ -78,7 +78,7 @@ def sex_for_cat(stack,chip,cuts = None):
     if not cuts:
         sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s.sexcat' %(stack.my,stack.field,stack.band,chip))
     else:
-        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%.3f_%s.sexcat' %(stack.my,stack.field,stack.band,chip,cuts['zp'],cuts['psf']))
+        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%.3f_%s_sci.sexcat' %(stack.my,stack.field,stack.band,chip,cuts['zp'],cuts['psf']))
 
     try:
         zp_cut,psf_cut = cuts['zp'],cuts['psf']
@@ -94,7 +94,7 @@ def sex_for_cat(stack,chip,cuts = None):
         if not cuts:
             img = band_dir+'/ccd_%s.fits'%chip
         else:
-            img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
+            img = os.path.join(band_dir,'ccd_%s_%s_%.3f_%s_sci.fits'%(chip,stack.band,zp_cut,psf_cut))
     stack.logger.info("Starting source extraction using the modelled PSF")
     start = float(time.time())
     sex_cmd = ['sex','-CATALOG_NAME',sexcat,img]

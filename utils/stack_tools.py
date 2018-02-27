@@ -36,17 +36,17 @@ def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    if zp_cut>0:
+    '''if zp_cut>0:
         logger.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-        ch.setLevel(logging.INFO)
+    else:'''
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     logger.info('Initiating make_good_frame_list.py')
-    logger.info('Finding good frames for {0}, in {1}, clipping ZP at {2}'.format(field,band,zp_cut))
+    logger.info('Finding good frames for {0}, in {1}')#, clipping ZP at {2}'.format(field,band,zp_cut))
 
     logger.info('Getting median zeropoint for each exposure, calculating residual for each image')
 
@@ -58,7 +58,7 @@ def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None
     logger.debug(info.BAND.unique())
     info = info[info['BAND']==band]
     if cuts['zp']:
-            info['ZP_EXPRES']=''
+        info['ZP_EXPRES']=''
         for counter,exp in enumerate(info.EXPNUM.unique()):
             this_exp = info[info['EXPNUM']==exp]
             exp_idx = this_exp.index
@@ -138,24 +138,25 @@ def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None
         good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
         logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
     ## Save results
-elif cuts['teff']:
+    elif cuts['teff']:
         good_frame = pd.DataFrame()
+        good_exps = []
         for counter,exp in enumerate(info.EXPNUM.unique()):
             this_exp = info[info['EXPNUM']==exp]
             exp_idx = this_exp.index
             this_qual= qual[qual['EXPNUM']==exp]
-            t_eff = this_qual['T_EFF']
+            t_eff = this_qual['T_EFF'].values[0]
             if t_eff > cuts['teff']:
-                this_exp['T_EFF'] = t_eff
+                this_exp['T_EFF']= t_eff
                 good_frame = good_frame.append(this_exp)
-
-        good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,t_cut))
+                good_exps.append(exp)
+        good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cuts['teff']))
     txtname = good_fn[:-4]+'.txt'
     np.savetxt(txtname,good_exps,fmt='%s')
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
     except ValueError:
-        pass
+        good_table = Table.from_pandas(good_frame)
     logger.debug('Here is the good_table, to write to fits format')
     logger.debug(good_table)
 

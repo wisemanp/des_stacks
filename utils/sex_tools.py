@@ -28,7 +28,7 @@ def sex_for_psfex(s,chip,cuts=None):
         if not cuts:
             img = band_dir+'/ccd_%s.fits'%chip
         else:
-            img = os.path.join(band_dir,'ccd_%s_%s_%s_sci.fits'%(chip,s.band,s.cutstring)
+            img = os.path.join(band_dir,'ccd_%s_%s_%s_sci.fits'%(chip,s.band,s.cutstring))
     os.chdir(os.path.join(band_dir,chip,'psf'))
     #run SExtractor
     sex_cmd = ['sex','-CATALOG_NAME',sexcat,'-CATALOG_TYPE','FITS_LDAC',img]

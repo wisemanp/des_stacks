@@ -149,7 +149,7 @@ class Stack():
         #does list of good frames exist?
         if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,self.cutstring))):
             #get the list of good frames
-            self.logger.info('No good frame list yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(t_cut,zp_cut,psf_cut))
+            self.logger.info('No good frame list yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(self.t_cut,self.zp_cut,self.psf_cut))
             self.good_frame = make_good_frame_list(self,field,band,cuts)
 
         else:
@@ -294,7 +294,7 @@ class Stack():
             # Compare new catalog to old one, get the ZP and FWHM out
             zp,sex_fwhm = astrometry(self,chip,sexcat)
             zp_psf,psf_fwhm = astrometry(self,chip,sexcat,phot_type = 'PSF')
-            qual = open(os.path.join(ana_dir,'%s_ana.qual'%self.cutstring,'w')
+            qual = open(os.path.join(ana_dir,'%s_ana.qual'%self.cutstring),'w')
             print ('# Quality parameters for %s %s %s %s' %(self.my,self.field,self.band,chip),file =qual)
             print ('# Parameters:',file=qual)
             print ('# Zeropoint from sextractor',file=qual)

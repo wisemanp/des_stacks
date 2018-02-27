@@ -178,7 +178,7 @@ def init_phot(s,chip,cat,pl='n'):
     exptime= h['EXPTIME']
     pixscale=0.27
 
-    qual = os.path.join(ana_dir,'%s_ana.qual'%s.cutstring
+    qual = os.path.join(ana_dir,'%s_ana.qual'%s.cutstring)
     thresh = 5
     skyflux = skynoise*np.sqrt(np.pi*(av_fwhm/pixscale)**2)
     skymag = 2.5*np.log10(thresh*skyflux)

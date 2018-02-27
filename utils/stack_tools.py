@@ -18,7 +18,7 @@ def reduce_info(info,**kwargs):
     pass
     #Get a smaller info dataframe based on kwargs
 
-def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
+def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     """Returns a list of images for a certain chip that are of quality better than a given cut.
     Arguments:
     field (str): (e.g. 'X2')
@@ -50,8 +50,8 @@ def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None
 
     logger.info('Getting median zeropoint for each exposure, calculating residual for each image')
 
-    info = stack.info_df
-    qual = stack.qual_tab
+    info = s.info_df
+    qual = s.qual_tab
     import math
     info = info[info['FIELD']==field]
     logger.debug('These are the bands available for field {0}'.format(field))
@@ -135,7 +135,7 @@ def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None
                 good_exps.append(exp)
 
                 good_frame = good_frame.append(this_exp)
-        good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
+        good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
         logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
     ## Save results
     elif cuts['teff']:
@@ -150,7 +150,7 @@ def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None
                 this_exp['T_EFF']= t_eff
                 good_frame = good_frame.append(this_exp)
                 good_exps.append(exp)
-        good_fn = os.path.join(stack.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cuts['teff']))
+        good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cuts['teff']))
     txtname = good_fn[:-4]+'.txt'
     np.savetxt(txtname,good_exps,fmt='%s')
     try:
@@ -166,9 +166,9 @@ def make_good_frame_list(stack,field,band,cuts={'teff':0.2, 'zp':None,'psf':None
     good_table.write(good_fn)
     return good_frame
 
-def make_swarp_cmd(stack,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
-    if not os.path.isdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band)):
-        os.mkdir(os.path.join(stack.out_dir,'MY%s'%MY,field,band))
+def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
+    if not os.path.isdir(os.path.join(s.out_dir,'MY%s'%MY,field,band)):
+        os.mkdir(os.path.join(s.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -181,7 +181,7 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp'
     logger.info('Preparing the frames to be stacked')
     #band = band + '    '
     ## Get the list of exposures for MY, field, chip, band.
-    good = stack.good_frame
+    good = s.good_frame
     good_band = good[good['BAND']==band]
     if MY == 'none':
         good_band_my =good_band
@@ -214,20 +214,20 @@ def make_swarp_cmd(stack,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp'
     cmd_list = {}
     for j in range(0,l+1):
         fns = np.array(stack_fns[j])
-        fn_list = os.path.join(stack.temp_dir,\
+        fn_list = os.path.join(s.temp_dir,\
         'stack_fns_MY%s_%s_%s_%s_%s_%s.lst' %(MY,field,band,chip,s.cutstring,j))
         logger.info('Saving list of files to stack at {0}'.format(fn_list))
         np.savetxt(fn_list,fns,fmt='%s')
 
         if final == True:
-            fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
+            fn_out = os.path.join(s.out_dir,'MY%s'%MY,field,band)+\
             '/ccd_%s_%s_%s_%s.fits'%(chip,band,s.cutstring,j)
         else:
-            fn_out = os.path.join(stack.out_dir,'MY%s'%MY,field,band)+\
+            fn_out = os.path.join(s.out_dir,'MY%s'%MY,field,band)+\
             '/ccd_%s_%s_%s_%s_temp.fits'%(chip,band,s.cutstring,j)
 
-        weightlist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(MY,stack.field,stack.band,chip,s.cutstring,j))
-        resamplist_name = os.path.join(stack.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,stack.field,stack.band,chip,s.cutstring,j))
+        weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
+        resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
         weightout_name = fn_out[:-4]+'wgt.fits'
         if not os.path.isfile(weightlist_name):
             weightlist_name,resamplist_name = make_weightmap(stack,fn_list,MY,chip,cuts,j,logger)
@@ -298,7 +298,7 @@ def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
     year = get_des_obs_year(night,logger)
     #------------------------------------
     # step 2 - find the directory for this night
-    year_dir = stack.data_dirs[year]
+    year_dir = s.data_dirs[year]
     glob_str = year_dir+night+'-r????'
     subdir = glob.glob(glob_str)[-1]+'/'
     # then this field
@@ -360,7 +360,7 @@ def chiplims(stack):
     import astropy.io.fits as fits
     from astropy.wcs import WCS
 
-    root_dir = stack.out_dir+'/MYnone'
+    root_dir = s.out_dir+'/MYnone'
     fields = ['E1','E2','S1','S2','C1','C2','C3','X1','X2','X3']
     chips = range(1,63)
     chiplims={}

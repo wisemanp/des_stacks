@@ -28,7 +28,7 @@ def parser():
     parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "zp", "b" or "both")',required = False, default = 'both')
     parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, default =0.25)
     parser.add_argument('-zs','--zpstep', help ='Size of the cut step for zeropoint cuts',required=False,default = 0.025)
-    parser.add_argument('-c','--cuts', help ='Define zp and/or psf cuts to do a stack with',required=False,default= [-0.150,2.5,0.15])
+    parser.add_argument('-c','--cuts', help ='Define zp and/or psf cuts to do a stack with',required=False,nargs=3,default= [-0.150,2.5,0.15])
     parser.add_argument('-ic','--initcuts',help = 'Define starting cuts for a loop stack',required=False,default= [-0.150,2.5])
     parser.add_argument('-t','--tidy',help = 'Tidy up temporary files after? 1 = Yes, 0 = no. Default = 1, turn off when testing',default = True)
     args=parser.parse_args()

@@ -28,7 +28,7 @@ def parser():
     parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "zp", "b" or "both")',required = False, default = 'both')
     parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, default =0.25)
     parser.add_argument('-zs','--zpstep', help ='Size of the cut step for zeropoint cuts',required=False,default = 0.025)
-    parser.add_argument('-c','--cuts', help ='Define zp and/or psf cuts to do a stack with',required=False,default= [-0.150,2.5])
+    parser.add_argument('-c','--cuts', help ='Define zp and/or psf cuts to do a stack with',required=False,default= [-0.150,2.5,0.15])
     parser.add_argument('-ic','--initcuts',help = 'Define starting cuts for a loop stack',required=False,default= [-0.150,2.5])
     parser.add_argument('-t','--tidy',help = 'Tidy up temporary files after? 1 = Yes, 0 = no. Default = 1, turn off when testing',default = True)
     args=parser.parse_args()
@@ -107,7 +107,7 @@ def parser():
     try:
         parsed['cuts'] = args.cuts
     except:
-        parsed['cuts'] = [-0.150,2.5]
+        parsed['cuts'] = [None,None,0.15]
     try:
         parsed['init_cuts'] = args.initcuts
     except:
@@ -128,13 +128,14 @@ def simple_stack(logger,parsed):
     mys = parsed['mys']
     chips = parsed['chips']
     workdir = parsed['workdir']
+    cuts=parsed['cuts']
     logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for f in fields:
         for b in bands:
             for my in mys:
                 s = stack.Stack(f,b,my,chips,workdir)
-                s.do_my_stack(cuts={'zp':-0.15,'psf':2.5},final=True)
-                s.run_stack_sex(cuts={'zp':-0.15,'psf':2.5},final=True)
+                s.do_my_stack(cuts=cuts,final=True)
+                s.run_stack_sex(cuts=cuts,final=True)
                 s.init_phot()
 def looped_stack(logger,parsed):
     fields = parsed['fields']

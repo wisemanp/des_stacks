@@ -128,7 +128,7 @@ def simple_stack(logger,parsed):
     mys = parsed['mys']
     chips = parsed['chips']
     workdir = parsed['workdir']
-    cuts={'zp':parsed['cuts'][0],'psf':parsed['cuts'][1],'teff':parsed['cuts'][2]
+    cuts={'zp':parsed['cuts'][0],'psf':parsed['cuts'][1],'teff':parsed['cuts'][2]}
     logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for f in fields:
         for b in bands:

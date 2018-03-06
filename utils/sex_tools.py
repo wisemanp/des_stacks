@@ -46,7 +46,7 @@ def sex_for_psfex(s,chip,cuts=None):
         s.logger.info("SExtractor failed...")
         return None
 
-def psfex(stack,chip,retval='FWHM',cuts=None):
+def psfex(s,chip,retval='FWHM',cuts=None):
     '''Runs PSFex on a SExtracted catalog to get the PSF Model'''
 
     band_dir = os.path.join(s.out_dir, 'MY%s' %s.my, s.field, s.band)
@@ -69,7 +69,7 @@ def psfex(stack,chip,retval='FWHM',cuts=None):
         fwhm = h['PSF_FWHM']*0.27 #convert from pixels to arcsec using DES chip pixel scale of 0.27 pix/arcsec
         return fwhm
 
-def sex_for_cat(stack,chip,cuts = None):
+def sex_for_cat(s,chip,cuts = None):
     '''Runs SExtractor on a certain stacked frame, given a PSF model from PSFex'''
     band_dir = os.path.join(s.out_dir, 'MY%s' %s.my, s.field, s.band)
     ana_dir = os.path.join(band_dir,chip,'ana')

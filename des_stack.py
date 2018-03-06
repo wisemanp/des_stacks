@@ -216,9 +216,10 @@ class Stack():
                     imgnameroot = imgname[:-5]
                     resamplist.append(os.path.join(self.band_dir,imgnameroot+'.resamp.fits'))
                     weightlist.append(os.path.join(self.band_dir,imgnameroot+'.resamp.weight.fits'))
-                final_resampname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.lst'%(y,self.field,self.band,chip,self.cutlist))
-                final_weightname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.wgt.lst'%(y,self.field,self.band,chip,self.cutlist))
+                final_resampname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.lst'%(y,self.field,self.band,chip,self.cutstring))
+                final_weightname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.wgt.lst'%(y,self.field,self.band,chip,self.cutstring))
                 np.savetxt(final_resampname,resamplist,fmt='%s')
+                np.savetxt(final_weightname,weightlist,fmt='%s')
                 imgout_name = staged_list[0][:-7]+'_sci.fits'
                 weightout_name = staged_list[0][:-7]+'_wgt.fits'
                 final_cmd = ['swarp','@%s'%final_resampname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name,'-COMBINE_TYPE','WEIGHTED','-WEIGHT_IMAGE','@%s'%final_weightname]

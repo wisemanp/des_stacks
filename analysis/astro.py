@@ -72,14 +72,14 @@ def init_phot(s,chip,cat,pl='n'):
     if not s.cuts:
 
         if final ==True:
-            imgname = os.path.join(s.band_dir,'ccd_%s.fits'%chip)
+            imgname = os.path.join(s.band_dir,'ccd_%s_sci.fits'%chip)
         else:
             imgname = s.band_dir+'/ccd_%s_temp.fits'%chip
 
 
     else:
         if final ==True:
-            imgname = os.path.join(s.band_dir,'ccd_%s_%s_%s.fits'%(chip,s.band,s.cutstring))
+            imgname = os.path.join(s.band_dir,'ccd_%s_%s_%s_sci.fits'%(chip,s.band,s.cutstring))
         else:
             imgname = s.band_dir+'/ccd_%s_%s_%s_temp.fits'%(chip,s.band,s.cutstring)
     cuts = imgname.split('_')
@@ -227,4 +227,4 @@ def init_phot(s,chip,cat,pl='n'):
     resfile.write(psfstring)
     savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip))
     s.logger.info("Saved result file to: %s"%savestring)
-    return (kr_lim,psf_lim,psf_lim2,skylim)
+    return (kr_lim,psf_lim,psf_lim2,skylim,np.mean([kr_lim,psf_lim,psf_lim2,skylim]))

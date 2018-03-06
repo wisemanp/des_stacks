@@ -144,8 +144,11 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         for counter,exp in enumerate(info.EXPNUM.unique()):
             this_exp = info[info['EXPNUM']==exp]
             exp_idx = this_exp.index
-            this_qual= qual[qual['EXPNUM']==exp]
-            t_eff = this_qual['T_EFF'].values[0]
+            try:
+                this_qual= qual[qual['EXPNUM']==exp]
+                t_eff = this_qual['T_EFF'].values[0]
+            except:
+                t_eff = 2
             if t_eff > cuts['teff']:
                 this_exp['T_EFF']= t_eff
                 good_frame = good_frame.append(this_exp)
@@ -201,7 +204,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         first = this_exp.iloc[0]
         night = first['NITE']
         #chip = first['CCDNUM']
-        this_exp_fn = get_dessn_obs(stack,field,band,night,exp,chip,logger)
+        this_exp_fn = get_dessn_obs(s,field,band,night,exp,chip,logger)
         #logger.info("Adding file from %s" %night)
         if this_exp_fn:
             for fn in this_exp_fn:
@@ -230,7 +233,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
         weightout_name = fn_out[:-4]+'wgt.fits'
         if not os.path.isfile(weightlist_name):
-            weightlist_name,resamplist_name = make_weightmap(stack,fn_list,MY,chip,cuts,j,logger)
+            weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
         if os.path.isfile(fn_out):
             cmd_list[j] = (False,fn_out)
         else:
@@ -278,7 +281,7 @@ def get_des_obs_year(night,logger=None):
     return year
 ###############################################
 
-def get_dessn_obs(stack, field, band, night, expnum, chipnum,logger=None):
+def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
     '''Function to get the filename for a DES image for a
        given field, band, night, chip, and expnum.
        Uses an object of the Stack class.

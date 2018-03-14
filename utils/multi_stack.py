@@ -55,7 +55,7 @@ def do_stack(s,y,field,band,logger,cuts,final,chip):
                 s.logger.warn("Swarp failed.", exc_info=1)
             s.logger.info('Finish stacking chip {0}'.format(chip))
             se.logger.info('Took %.3f seconds' % (endtime-starttime))
-        se.logger.info('Added %s to list of images to make final stack' %outname)
+        s.logger.info('Added %s to list of images to make final stack' %outname)
     s.logger.info('Now combining mini-stacks into final science frame')
     staged_list = np.array(staged_imgs)
     s.logger.info('Combining these frames:')

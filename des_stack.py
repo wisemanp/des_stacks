@@ -135,8 +135,8 @@ class Stack():
         none
         '''
         def creator(chips,q):
-            self.logger.info("Queuing up chip %s to be stacked"%args[3])
             for chip in chips:
+                self.logger.info("Queuing up chip %s to be stacked"%chips)
                 q.put(chip)
         def consumer(q):
             while True:

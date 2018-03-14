@@ -101,7 +101,7 @@ def multitask(s,y,field,band,logger,cuts,final):
     for c in cons:
         c.start()
     n_jobs = n_chips
-    for chip in range(n_chips):
+    for chip in s.chips:
         tasks.put(do_stack(s,y,field,band,logger,cuts,final,chip))
     for i in range(n_con):
         tasks.put(None)

@@ -17,7 +17,7 @@ from shutil import copyfile
 import time
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year,make_weightmap
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
-import des_stacks.utils.multi_stack
+import des_stacks.utils.multi_stack as multi_stack
 from des_stacks.analysis.astro import astrometry,init_phot
 
 class Stack():

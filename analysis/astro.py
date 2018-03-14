@@ -17,33 +17,33 @@ import matplotlib.pyplot as plt
 import copy
 from scipy.interpolate import UnivariateSpline as spln
 
-def astrometry(stack,chip,sexcat,phot_type='AUTO'):
+def astrometry(s,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
-    stack.logger.info("Reading in catalog in order to do photometry")
+    s.logger.info("Reading in catalog in order to do photometry")
     cmap = {'PSF':'red','AUTO':'green','cat':'blue'}
-    old_cat = os.path.join(stack.cat_dir,'%s_All_filters_3.csv'%(stack.field[3]))
+    old_cat = os.path.join(s.cat_dir,'%s_All_filters_3.csv'%(s.field[3]))
     old = pd.DataFrame.from_csv(old_cat)
     sexdat = fits.getdata(sexcat,ext=1)
-    stack.logger.info("Successfully read in catalog: %s" %old_cat)
-    stack.logger.info("Matching objects...")
+    s.logger.info("Successfully read in catalog: %s" %old_cat)
+    s.logger.info("Matching objects...")
     new =pd.DataFrame(sexdat)
     new_obj = SkyCoord(ra=new['X_WORLD']*u.degree,dec =new['Y_WORLD']*u.degree)
-    old_obj = SkyCoord(ra=old['RA_%s'%stack.band]*u.degree,dec =old['DEC_%s'%stack.band]*u.degree)
+    old_obj = SkyCoord(ra=old['RA_%s'%s.band]*u.degree,dec =old['DEC_%s'%s.band]*u.degree)
     # match the catalogs
     idx, d2d, d3d = new_obj.match_to_catalog_sky(old_obj)
     match_ids = idx
     match_dists = d2d.arcsec
-    stack.logger.info("Successfully matched %s objects!" %len(match_ids))
+    s.logger.info("Successfully matched %s objects!" %len(match_ids))
     # get old cat mags of the matched objects
-    init_match_cat_mag =old['CLIPPED_MEAN_%s'%stack.band].iloc[match_ids]
-    init_match_cat_magerr =old['CLIPPED_SIGMA_%s'%stack.band].iloc[match_ids]
+    init_match_cat_mag =old['CLIPPED_MEAN_%s'%s.band].iloc[match_ids]
+    init_match_cat_magerr =old['CLIPPED_SIGMA_%s'%s.band].iloc[match_ids]
     # get indices of the objects that are within a specified distance of their matches
     dist_cut =2.0
     good_inds = np.nonzero(match_dists < dist_cut)[0]
 
     good_new_ra = new['X_WORLD'].iloc[good_inds]
     good_new_dec = new['Y_WORLD'].iloc[good_inds]
-    stack.logger.info("Using catalog magnitudes to calibrate photometry and get zeropoint")
+    s.logger.info("Using catalog magnitudes to calibrate photometry and get zeropoint")
     # find the new mags that correspond to that
     good_new_mag = new['MAG_%s'%phot_type].iloc[good_inds]
     good_new_magerr = new['MAGERR_%s'%phot_type].iloc[good_inds]
@@ -53,38 +53,37 @@ def astrometry(stack,chip,sexcat,phot_type='AUTO'):
     # subtract to get the frame ZP
     zp = np.median(good_cat_mag.values - good_new_mag.values)
     psf = np.median(new['FWHM_WORLD']*3600)
-    stack.logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(stack.field,stack.my,stack.band,chip))
+    s.logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(s.field,s.my,s.band,chip))
     return zp,psf
 
-def init_phot(stack,chip,cat,pl='n'):
-    stack.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
+def init_phot(s,chip,cat,pl='n'):
+    s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
 
     try:
-         ana_dir = stack.ana_dir
+         ana_dir = s.ana_dir
     except:
-        ana_dir = os.path.join(stack.band_dir,chip,'ana')
+        ana_dir = os.path.join(s.band_dir,chip,'ana')
     try:
-        final = stack.final
+        final = s.final
     except AttributeError:
         final = True
     # first, get the raw magnitudes and add zero-points to make them proper magnitudes
 
-    zp_cut,psf_cut = stack.zp_cut,stack.psf_cut
-    if not zp_cut:
-         
-        if final ==True:
-            imgname = os.path.join(stack.band_dir,'ccd_%s.fits'%chip)
-        else:
-            imgname = stack.band_dir+'/ccd_%s_temp.fits'%chip
+    if not s.cuts:
 
-   
+        if final ==True:
+            imgname = os.path.join(s.band_dir,'ccd_%s_sci.fits'%chip)
+        else:
+            imgname = s.band_dir+'/ccd_%s_temp.fits'%chip
+
+
     else:
         if final ==True:
-            imgname = os.path.join(stack.band_dir,'ccd_%s_%s_%.3f_%s.fits'%(chip,stack.band,zp_cut,psf_cut))
+            imgname = os.path.join(s.band_dir,'ccd_%s_%s_%s_sci.fits'%(chip,s.band,s.cutstring))
         else:
-            imgname = stack.band_dir+'/ccd_%s_%s_%.3f_%s_temp.fits'%(chip,stack.band,zp_cut,psf_cut)
+            imgname = s.band_dir+'/ccd_%s_%s_%s_temp.fits'%(chip,s.band,s.cutstring)
     cuts = imgname.split('_')
-    q= open(os.path.join(ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut)),'r')
+    q= open(os.path.join(ana_dir,'%s_ana.qual'%s.cutstring),'r')
     q = q.read()
     quals = q.split('\n')[-2]
     quals = quals.split(' ')
@@ -100,8 +99,8 @@ def init_phot(stack,chip,cat,pl='n'):
     psf = copy.deepcopy(cat.iloc[psftruth.values])
     psf['MAG_PSF']=psf['MAG_PSF']+zp_psf
     # make region files for ds9
-    krreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_auto.reg'%(stack.my,stack.field,stack.band,chip)),'w')
-    psfreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_psf.reg'%(stack.my,stack.field,stack.band,chip)),'w')
+    krreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_auto.reg'%(s.my,s.field,s.band,chip)),'w')
+    psfreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_psf.reg'%(s.my,s.field,s.band,chip)),'w')
     print ('global color=red',file=psfreg)
     for i in range(len(cat['X_WORLD'].values)):
         print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(cat['X_WORLD'].iloc[i],cat['Y_WORLD'].iloc[i],cat['MAG_AUTO'].iloc[i],cat['MAGERR_AUTO'].iloc[i]),file=krreg)
@@ -109,7 +108,7 @@ def init_phot(stack,chip,cat,pl='n'):
         print ('fk5; circle(%s,%s,0.5") # text={%.2f +/- %.2f}'%(psf['X_WORLD'].iloc[i],psf['Y_WORLD'].iloc[i],psf['MAG_PSF'].iloc[i],psf['MAGERR_PSF'].iloc[i]),file=psfreg)
     krreg.close()
     psfreg.close()
-    stack.logger.info("Saved ds9 region files in /ana directory")
+    s.logger.info("Saved ds9 region files in /ana directory")
     sns.set_palette('Dark2')
     sns.set_color_codes(palette='colorblind')
     if pl == 'y':
@@ -119,7 +118,7 @@ def init_phot(stack,chip,cat,pl='n'):
         psf.hist(column='MAG_PSF',bins=150,normed=True,ax=ax,alpha=alp,label='PSF Magnitudes',color='g')
         ax.set_xlabel('Mag')
         ax.set_ylabel('Frequency Density')
-        ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s, %s' %(stack.my,stack.field,chip,stack.band))
+        ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s, %s' %(s.my,s.field,chip,s.band))
     #ax.set_yscale('log')
     hst,bin_edges = np.histogram(cat['MAG_AUTO'],bins=150,density=True)
     hstpsf,binspsf = np.histogram(psf['MAG_PSF'],bins=150,density=True)
@@ -133,7 +132,7 @@ def init_phot(stack,chip,cat,pl='n'):
     psf_lim = x3[np.argmax(y3)]
     limsig = 10
     errthresh = 2.5*np.log10(1+(1/limsig))
-    if pl == 'y':   
+    if pl == 'y':
         ax.plot(x2,y2,c='r')
         ax.plot(x3,y3,c='g')
         ax.set_xlim(17,30)
@@ -141,7 +140,7 @@ def init_phot(stack,chip,cat,pl='n'):
         ax.vlines(kr_lim,0,1.1*np.max(y2),linestyle='--',label='Limiting Kron magnitude',color='r')
         ax.vlines(psf_lim,0,1.1*np.max(y3),linestyle='-.',label='Limiting PSF magnitude',color='g')
         ax.legend()
-        f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.jpg'%(stack.my,stack.field,stack.band,chip)))
+        f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.jpg'%(s.my,s.field,s.band,chip)))
 
         f2,ax2 = plt.subplots()
         cat.plot.scatter('MAG_AUTO','MAGERR_AUTO',s=5,ax=ax2,label='Kron Magnitudes',color='r')
@@ -153,7 +152,7 @@ def init_phot(stack,chip,cat,pl='n'):
         ax2.set_xlim(17,30)
         ax2.set_ylim(-0.03,0.35)
         ax2.legend()
-        f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.jpg'%(stack.my,stack.field,stack.band,chip)))
+        f2.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_mag_vs_err.jpg'%(s.my,s.field,s.band,chip)))
         plt.close('all')
     b_hi = errthresh +(errthresh/500)
     b_lo = errthresh -(errthresh/500)
@@ -168,29 +167,29 @@ def init_phot(stack,chip,cat,pl='n'):
     psf_lim2 = psf2['MAG_AUTO'].median()
 
     nclip=50
-    stack.logger.info("Running iraf.imstat on %s in order to get sky noise" %imgname)
+    s.logger.info("Running iraf.imstat on %s in order to get sky noise" %imgname)
     out = iraf.imstat(imgname,fields='midpt,stddev',format=0,Stdout=1,nclip=nclip,usigma=2.8,lsigma=2.8)
     try:
         mean,skynoise = map(float, out[0].split())
     except ValueError:
-        stack.logger.error("iraf.imstat failed on %s with following output: %s" %(imgname,out))
+        s.logger.error("iraf.imstat failed on %s with following output: %s" %(imgname,out))
         mean,skynoise = None,None
     h = fits.getheader(imgname)
     exptime= h['EXPTIME']
     pixscale=0.27
 
-    qual = os.path.join(ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut))
+    qual = os.path.join(ana_dir,'%s_ana.qual'%s.cutstring)
     thresh = 5
     skyflux = skynoise*np.sqrt(np.pi*(av_fwhm/pixscale)**2)
     skymag = 2.5*np.log10(thresh*skyflux)
     zmag = zp_psf
     skylim = zmag -skymag
-    stack.logger.info("Limiting Kron magnitude based on matched objects: %.3f\n"% kr_lim)
-    stack.logger.info("Limiting magnitude based on PSF photometry: %.3f\n"% psf_lim)
-    stack.logger.info("%s sigma limiting magnitude based on matched objects: %.3f\n"%(limsig,psf_lim2))
-    stack.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zmag,skylim))
+    s.logger.info("Limiting Kron magnitude based on matched objects: %.3f\n"% kr_lim)
+    s.logger.info("Limiting magnitude based on PSF photometry: %.3f\n"% psf_lim)
+    s.logger.info("%s sigma limiting magnitude based on matched objects: %.3f\n"%(limsig,psf_lim2))
+    s.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zmag,skylim))
 
-    resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(stack.my,stack.field,stack.band,chip)),'w')
+    resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip)),'w')
     psf['FWHM_WORLD'] = psf['FWHM_WORLD']*3600
     for i in range(len(psf['FWHM_WORLD'].values)):
         psf['FWHM_WORLD'].values[i] = float(psf['FWHM_WORLD'].values[i])
@@ -201,22 +200,22 @@ def init_phot(stack,chip,cat,pl='n'):
     cols = rest.columns.tolist()
     rearranged = cols[-2:]+cols[:-2]
     re = rest[rearranged]
-    re.to_csv(os.path.join(stack.temp_dir,'temp_cat.csv'),index=False,sep=' ')
-    stringthing = open(os.path.join(stack.temp_dir,'temp_cat.csv'),'r')
+    re.to_csv(os.path.join(s.temp_dir,'temp_cat.csv'),index=False,sep=' ')
+    stringthing = open(os.path.join(s.temp_dir,'temp_cat.csv'),'r')
     psfstring = stringthing.read()
     stringthing.close()
     reshead = '# Result file for a stack of Dark Energy Survey data taken by DECam\n'
-    reshead +='# Field: %s\n'% stack.field
-    reshead +='# Minus year: %s\n'% stack.my
-    reshead +='# Band: %s\n' % stack.band
+    reshead +='# Field: %s\n'% s.field
+    reshead +='# Minus year: %s\n'% s.my
+    reshead +='# Band: %s\n' % s.band
     reshead +='# CCD Number: %s\n' % chip
     reshead +='# Total exposure time: %s s\n' %exptime
+    reshead +='# Zeropoint based on PSF photometry: %s \n'%zp_psf
     reshead +='# Limiting Kron magnitude based on matched objects: %.3f\n'% kr_lim
     reshead +='# Limiting magnitude based on PSF photometry: %.3f\n'% psf_lim
     reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,psf_lim2)
     reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zmag,skylim)
     reshead +='# Columns:\n'
-    reshead +='# RA (J2000)\n'
     reshead +='# Dec (J2000)\n'
     reshead +='# Kron Magnitude\n'
     reshead +='# Kron Magnitude error\n'
@@ -226,6 +225,6 @@ def init_phot(stack,chip,cat,pl='n'):
     reshead +='# Elongation of source\n'
     resfile.write(reshead)
     resfile.write(psfstring)
-    savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(stack.my,stack.field,stack.band,chip))
-    stack.logger.info("Saved result file to: %s"%savestring)
-    return (kr_lim,psf_lim,psf_lim2,skylim)
+    savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip))
+    s.logger.info("Saved result file to: %s"%savestring)
+    return (kr_lim,psf_lim,psf_lim2,skylim,np.mean([kr_lim,psf_lim,psf_lim2,skylim]))

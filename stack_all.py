@@ -28,7 +28,10 @@ def parser():
     parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "zp", "b" or "both")',required = False, default = 'both')
     parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, default =0.25)
     parser.add_argument('-zs','--zpstep', help ='Size of the cut step for zeropoint cuts',required=False,default = 0.025)
-    parser.add_argument('-c','--cuts', help ='Define zp and/or psf cuts to do a stack with',required=False,default= [-0.150,2.5])
+    parser.add_argument('-zc','--zcut', help ='Define zp cut to do a stack with',required=False,nargs=1,default= None)
+    parser.add_argument('-pc','--pcut', help ='Define psf cut to do a stack with',required=False,nargs=1,default= None)
+    parser.add_argument('-tc','--tcut', help ='Define teff cut to do a stack with',required=False,nargs=1,default= None,type=float)
+
     parser.add_argument('-ic','--initcuts',help = 'Define starting cuts for a loop stack',required=False,default= [-0.150,2.5])
     parser.add_argument('-t','--tidy',help = 'Tidy up temporary files after? 1 = Yes, 0 = no. Default = 1, turn off when testing',default = True)
     args=parser.parse_args()
@@ -105,9 +108,17 @@ def parser():
     except:
         parsed['zp_step'] = 0.05
     try:
-        parsed['cuts'] = args.cuts
+        parsed['zcut'] = float(args.zcut[0])
     except:
-        parsed['cuts'] = [-0.150,2.5]
+        parsed['zcut'] = None
+    try:
+        parsed['pcut'] = float(args.pcut[0])
+    except:
+        parsed['pcut'] = None
+    try:
+        parsed['tcut'] = float(args.tcut[0])
+    except:
+        parsed['tcut'] = None
     try:
         parsed['init_cuts'] = args.initcuts
     except:
@@ -128,14 +139,24 @@ def simple_stack(logger,parsed):
     mys = parsed['mys']
     chips = parsed['chips']
     workdir = parsed['workdir']
+    cuts={'zp':parsed['zcut'],'psf':parsed['pcut'],'teff':parsed['tcut']}
     logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for f in fields:
         for b in bands:
             for my in mys:
                 s = stack.Stack(f,b,my,chips,workdir)
-                s.do_my_stack(cuts={'zp':-0.15,'psf':2.5},final=True)
-                s.run_stack_sex(cuts={'zp':-0.15,'psf':2.5},final=True)
+                s.do_my_stack(cuts=cuts,final=True)
+                s.run_stack_sex(cuts=cuts,final=True)
                 s.init_phot()
+                if parsed['tidy']in [1,True]:
+                    for temp_fn in glob.glob(os.path.join(s.temp_dir,'*resamp*')):
+                        if not os.path.isdir(temp_fn):
+                            os.remove(temp_fn)
+                    
+                    for temp_fn in glob.glob(s.band_dir):
+                        if temp_fn not in glob.glob(os.path.join(s.band_dir,'*sci*'))+glob.glob(os.path.join(s.band_dir,'*wgt*')):
+                            if not os.path.isdir(temp_fn):
+                                os.remove(temp_fn)
 def looped_stack(logger,parsed):
     fields = parsed['fields']
     bands = parsed['bands']

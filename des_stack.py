@@ -123,7 +123,8 @@ class Stack():
         '''Gets the current info file (originally from the DESDB)'''
         info_tab = Table.read(os.path.join(self.config_dir,'snobsinfo.fits'))
         self.info_df = info_tab.to_pandas()
-    def do_my_stack(self, cuts={'zp':-0.15,'psf':2.5},final=True):
+        self.qual_tab = pd.read_csv(os.path.join(self.config_dir,'SN_TABLE_EVAL.txt'),sep=' ')
+    def do_my_stack(self, cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
         '''Does a stack defined by the parameters from the Stack object it is passed.
         keyword arguments:
         zp_cut (float): the zeropoint cut to be used for the stack (default = -0.15)
@@ -133,10 +134,12 @@ class Stack():
         none
         '''
         self.final=final
-        zp_cut = cuts['zp']
-        psf_cut = cuts['psf']
-        self.zp_cut = zp_cut
-        self.psf_cut = psf_cut
+        self.logger.info("Cuts: %s"%cuts)
+        self.zp_cut,self.psf_cut,self.t_cut = cuts['zp'], cuts['psf'],cuts['teff']
+        if cuts['zp'] and cuts['psf'] and not cuts['teff']:
+            self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
+        elif cuts['teff']:
+            self.cutstring = '%s'%cuts['teff']
         field = self.field
         band = self.band
         my = self.my
@@ -144,13 +147,13 @@ class Stack():
         self.logger.info('Initiating stack on {0} in {1} band'.format(field,band))
         self.logger.info('******************************************************')
         #does list of good frames exist?
-        if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))):
+        if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,self.cutstring))):
             #get the list of good frames
-            self.logger.info('No good frame list yet, making a new one with ZP < %s and PSF < %s cut' %(zp_cut,psf_cut))
-            self.good_frame = make_good_frame_list(self,field,band,zp_cut,psf_cut)
+            self.logger.info('No good frame list yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(self.t_cut,self.zp_cut,self.psf_cut))
+            self.good_frame = make_good_frame_list(self,field,band,cuts)
 
         else:
-            good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
+            good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,self.cutstring))
             self.logger.info('Reading in list of good frames from {0}'.format(good_fn))
             good_table = Table.read(good_fn)
             self.good_frame = good_table.to_pandas()
@@ -170,7 +173,7 @@ class Stack():
             for chip in self.chips:
 
                 self.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
-                cmd_list = make_swarp_cmd(self,y,field,chip,band,self.logger,zp_cut,psf_cut,final)
+                cmd_list = make_swarp_cmd(self,y,field,chip,band,self.logger,cuts,final)
                 staged_imgs = []
                 for key,value in cmd_list.items():
 
@@ -196,7 +199,7 @@ class Stack():
                 staged_list = np.array(staged_imgs)
                 self.logger.info('Combining these frames:')
                 self.logger.info(staged_list)
-                staged_listname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s_staged.lst'%(y,self.field,self.band,chip,zp_cut,psf_cut))
+                staged_listname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_staged.lst'%(y,self.field,self.band,chip,self.cutstring))
                 np.savetxt(staged_listname,staged_list,fmt='%s')
                 resamp_cmd =['swarp','@%s'%staged_listname,'-COMBINE','N','-RESAMPLE','Y','-c','default.swarp']
                 os.chdir(self.band_dir)
@@ -213,9 +216,10 @@ class Stack():
                     imgnameroot = imgname[:-5]
                     resamplist.append(os.path.join(self.band_dir,imgnameroot+'.resamp.fits'))
                     weightlist.append(os.path.join(self.band_dir,imgnameroot+'.resamp.weight.fits'))
-                final_resampname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s_final.lst'%(y,self.field,self.band,chip,zp_cut,psf_cut))
-                final_weightname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_%s_final.wgt.lst'%(y,self.field,self.band,chip,zp_cut,psf_cut))
+                final_resampname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.lst'%(y,self.field,self.band,chip,self.cutstring))
+                final_weightname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.wgt.lst'%(y,self.field,self.band,chip,self.cutstring))
                 np.savetxt(final_resampname,resamplist,fmt='%s')
+                np.savetxt(final_weightname,weightlist,fmt='%s')
                 imgout_name = staged_list[0][:-7]+'_sci.fits'
                 weightout_name = staged_list[0][:-7]+'_wgt.fits'
                 final_cmd = ['swarp','@%s'%final_resampname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name,'-COMBINE_TYPE','WEIGHTED','-WEIGHT_IMAGE','@%s'%final_weightname]
@@ -233,8 +237,14 @@ class Stack():
         log.close()
         self.logger.info('Stacking of %s %s %s %s complete!' %(field, band, my, self.chips))
         self.logger.info('******************************************************')
-    def run_stack_sex(self,cuts={'zp':-0.15,'psf':2.5},final=None):
+    def run_stack_sex(self,cuts={'teff':0.2, 'zp':None,'psf':None},final=None):
+        self.cuts=cuts
         self.logger.info("******** Preparing to extract and match soures *******")
+        if not self.cutstring:
+            if cuts['zp'] and cuts['psf'] and not cuts['teff']:
+                self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
+            elif cuts['teff']:
+                self.cutstring = '%s'%cuts['teff']
         if final ==None:
             #check to make sure we haven't just forgotten to say this is a temporary run of Sextractor
             try:
@@ -245,10 +255,10 @@ class Stack():
         try:
             zp_cut = cuts['zp']
             psf_cut = cuts['psf']
+            t_cut = cuts['teff']
         except TypeError:
-            zp_cut,psf_cut=None,None
-        self.zp_cut = zp_cut
-        self.psf_cut = psf_cut
+            zp_cut,psf_cut,t_cut=None,None,None
+        self.zp_cut,self.psf_cut,self.t_cut = zp_cut,psf_cut,t_cut
         qual_df = pd.DataFrame()
         self.sexcats=[]
         for chip in self.chips:
@@ -285,7 +295,7 @@ class Stack():
             # Compare new catalog to old one, get the ZP and FWHM out
             zp,sex_fwhm = astrometry(self,chip,sexcat)
             zp_psf,psf_fwhm = astrometry(self,chip,sexcat,phot_type = 'PSF')
-            qual = open(os.path.join(ana_dir,'%s_%s_ana.qual'%(zp_cut,psf_cut)),'w')
+            qual = open(os.path.join(ana_dir,'%s_ana.qual'%self.cutstring),'w')
             print ('# Quality parameters for %s %s %s %s' %(self.my,self.field,self.band,chip),file =qual)
             print ('# Parameters:',file=qual)
             print ('# Zeropoint from sextractor',file=qual)
@@ -294,7 +304,7 @@ class Stack():
             print ('# FWHM from SExtractor using PSF model',file = qual)
             print ('%s %s %s %s'%(zp,zp_psf,model_fwhm,sex_fwhm),file=qual)
             qual.close()
-            self.logger.info("Written quality factors to %s_%s_ana.qual" %(zp_cut,psf_cut))
+            self.logger.info("Written quality factors to %s_ana.qual" %self.cutstring)
             qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
             qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
             self.logger.info("Quality of stack:\n %s" %qual_df)

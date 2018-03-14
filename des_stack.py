@@ -244,7 +244,7 @@ class Stack():
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
             procs =[]
-            q = Queue()
+            q = Queue(maxsize=30)
 
             proc1 = Process(target=creator, args=(self.chips,q))
             proc2 = Process(target=consumer,args = (q,))

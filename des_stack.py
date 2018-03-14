@@ -14,7 +14,6 @@ import subprocess
 import logging
 from shutil import copyfile
 import time
-
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year,make_weightmap
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 from des_stacks.analysis.astro import astrometry,init_phot

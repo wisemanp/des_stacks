@@ -28,9 +28,7 @@ class chip(object):
     def __str__(self):
         return 'Stacking chip %s' % (self.chip)
 
-
-
-def do_stack(s,y,field,band,s.logger,cuts,final,chip):
+def do_stack(s,y,field,band,logger,cuts,final,chip):
     s.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
     cmd_list = make_swarp_cmd(s,y,field,chip,band,s.logger,cuts,final)
     staged_imgs = []

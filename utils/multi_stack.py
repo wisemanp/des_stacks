@@ -13,7 +13,6 @@ class Consumer(multiprocessing.Process):
             if next_task is None:
                 self.task_queue.task_done()
                 break
-            print '%s: %s' % (proc_name, next_task)
             answer = next_task()
             self.task_queue.task_done()
             self.result_queue.put(answer)
@@ -23,7 +22,7 @@ class Consumer(multiprocessing.Process):
 class chip(object):
     def __init__(self, chip):
         self.chip = chip
-        
+
     def __call__(self):
         return 'Done Stacking chip %s' % (self.chip)
     def __str__(self):

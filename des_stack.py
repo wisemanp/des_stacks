@@ -140,7 +140,7 @@ class Stack():
                 q.put(chip)
         def consumer(q):
             while True:
-                    chip = q.get()
+                chip = q.get()
                 self.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
                 cmd_list = make_swarp_cmd(self,y,field,chip,band,self.logger,cuts,final)
                 staged_imgs = []

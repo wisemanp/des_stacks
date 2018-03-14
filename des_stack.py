@@ -136,11 +136,13 @@ class Stack():
         '''
         def creator(chips,q):
             for chip in chips:
-                self.logger.info("Queuing up chip %s to be stacked"%chips)
+                self.logger.info("Queuing up chip %s to be stacked"%chip)
                 q.put(chip)
         def consumer(q):
-            while True:
-                chip = q.get()
+            n=0
+            procs = []
+            def stack_proc(chip):
+
                 self.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
                 cmd_list = make_swarp_cmd(self,y,field,chip,band,self.logger,cuts,final)
                 staged_imgs = []
@@ -200,7 +202,10 @@ class Stack():
                 self.logger.info("Done combining mini-stacks, took %.3f seconds"%(final_end -final_start))
                 self.logger.info("Saved final science frame at %s"%imgout_name)
                 self.logger.info("And final weightmap at %s"%weightout_name)
-
+            chip = q.get()
+            proc = Process(target=stack_proc,args = (chip,))
+            proc.start
+            proc.join()
         self.final=final
         self.logger.info("Cuts: %s"%cuts)
         self.zp_cut,self.psf_cut,self.t_cut = cuts['zp'], cuts['psf'],cuts['teff']

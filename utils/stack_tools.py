@@ -247,6 +247,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
     logger.info(cmd_list)
     return cmd_list
 #############################################
+
 def get_des_obs_year(night,logger=None):
     if not logger:
         logger = logging.getLogger(__name__)
@@ -430,7 +431,7 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
     os.chdir(s.temp_dir)
     try:
         if len(img_list)>1:
-       
+
             for img in img_list:
                 imgname = os.path.split(img)[-1]
                 imgroot = imgname[:-5]
@@ -438,9 +439,9 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
                     imgroot = imgroot[:-3]
                 weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
- 
+
             swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
-    
+
     except TypeError:
         img = str(img_list)
         swarp_cmd = ['swarp','%s'%img,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
@@ -450,8 +451,8 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
             imgroot = imgroot[:-3]
         weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
         resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
-         
-    
+
+
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())

@@ -11,12 +11,13 @@ import datetime
 import configparser
 import os
 import subprocess
-from multiprocessing import Process, Queue
+import multiprocessing
 import logging
 from shutil import copyfile
 import time
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year,make_weightmap
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
+import des_stacks.utils.multi_stack
 from des_stacks.analysis.astro import astrometry,init_phot
 
 class Stack():
@@ -134,78 +135,7 @@ class Stack():
         returns:
         none
         '''
-        def creator(chips,q):
-            for chip in chips:
-                self.logger.info("Queuing up chip %s to be stacked"%chip)
-                q.put(chip)
-        def consumer(q):
-            n=0
-            procs = []
-            def stack_proc(chip):
 
-                self.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
-                cmd_list = make_swarp_cmd(self,y,field,chip,band,self.logger,cuts,final)
-                staged_imgs = []
-                for key,value in cmd_list.items():
-
-                    cmd,outname = value
-                    staged_imgs.append(outname)
-                    if cmd == False:
-                        self.logger.info("Already stacked this chip with these cuts, going straight to astrometry")
-                    else:
-                        self.logger.info('Stacking... please be patient.'.format(cmd))
-                        os.chdir(self.temp_dir)
-                        try:
-                            starttime=float(time.time())
-                            p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                            outs,errs = p.communicate()
-                            endtime=float(time.time())
-
-                        except (OSError, IOError):
-                            self.logger.warn("Swarp failed.", exc_info=1)
-                        self.logger.info('Finish stacking chip {0}'.format(chip))
-                        self.logger.info('Took %.3f seconds' % (endtime-starttime))
-                    self.logger.info('Added %s to list of images to make final stack' %outname)
-                self.logger.info('Now combining mini-stacks into final science frame')
-                staged_list = np.array(staged_imgs)
-                self.logger.info('Combining these frames:')
-                self.logger.info(staged_list)
-                staged_listname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_staged.lst'%(y,self.field,self.band,chip,self.cutstring))
-                np.savetxt(staged_listname,staged_list,fmt='%s')
-                resamp_cmd =['swarp','@%s'%staged_listname,'-COMBINE','N','-RESAMPLE','Y','-c','default.swarp']
-                os.chdir(self.band_dir)
-                self.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
-                res_start = float(time.time())
-                rf = subprocess.Popen(resamp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                r_out,r_errs = rf.communicate()
-                res_end = float(time.time())
-                self.logger.info('Done resampling intermediate stacks, took %.3f seconds'%(res_end-res_start))
-                resamplist = []
-                weightlist = []
-                for img in staged_list:
-                    imgname = os.path.split(img)[-1]
-                    imgnameroot = imgname[:-5]
-                    resamplist.append(os.path.join(self.band_dir,imgnameroot+'.resamp.fits'))
-                    weightlist.append(os.path.join(self.band_dir,imgnameroot+'.resamp.weight.fits'))
-                final_resampname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.lst'%(y,self.field,self.band,chip,self.cutstring))
-                final_weightname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.wgt.lst'%(y,self.field,self.band,chip,self.cutstring))
-                np.savetxt(final_resampname,resamplist,fmt='%s')
-                np.savetxt(final_weightname,weightlist,fmt='%s')
-                imgout_name = staged_list[0][:-7]+'_sci.fits'
-                weightout_name = staged_list[0][:-7]+'_wgt.fits'
-                final_cmd = ['swarp','@%s'%final_resampname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name,'-COMBINE_TYPE','WEIGHTED','-WEIGHT_IMAGE','@%s'%final_weightname]
-                self.logger.info('Doing this command to do the final stack:\n %s'%final_cmd)
-                final_start = float(time.time())
-                pf = subprocess.Popen(final_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                f_out,f_errs = pf.communicate()
-                final_end = float(time.time())
-                self.logger.info("Done combining mini-stacks, took %.3f seconds"%(final_end -final_start))
-                self.logger.info("Saved final science frame at %s"%imgout_name)
-                self.logger.info("And final weightmap at %s"%weightout_name)
-            chip = q.get()
-            proc = Process(target=stack_proc,args = (chip,))
-            proc.start()
-            proc.join()
         self.final=final
         self.logger.info("Cuts: %s"%cuts)
         self.zp_cut,self.psf_cut,self.t_cut = cuts['zp'], cuts['psf'],cuts['teff']
@@ -243,17 +173,7 @@ class Stack():
             if y in 'none':
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
-            procs =[]
-            q = Queue(maxsize=30)
-
-            proc1 = Process(target=creator, args=(self.chips,q))
-            proc2 = Process(target=consumer,args = (q,))
-            proc1.start()
-            proc2.start()
-            q.close()
-            q.join_thread()
-            proc1.join()
-            proc2.join()
+            multi_stack.multitask(s,y,field,band,s.logger,cuts,final)
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break

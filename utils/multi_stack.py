@@ -1,4 +1,7 @@
 import multiprocessing
+import os
+import subprocess
+from des_stacks.utils.stack_tools import make_swarp_cmd
 class Consumer(multiprocessing.Process):
 
     def __init__(self,task_queue, result_queue):

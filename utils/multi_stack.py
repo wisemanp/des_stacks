@@ -3,6 +3,8 @@ import os
 import subprocess
 from des_stacks.utils.stack_tools import make_swarp_cmd
 import time
+import numpy as np
+import os
 class Consumer(multiprocessing.Process):
 
     def __init__(self,task_queue, result_queue):

@@ -135,6 +135,7 @@ class Stack():
         none
         '''
         self.final=final
+        self.logger.info("Cuts: %s"%cuts)
         self.zp_cut,self.psf_cut,self.t_cut = cuts['zp'], cuts['psf'],cuts['teff']
         if cuts['zp'] and cuts['psf'] and not cuts['teff']:
             self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])

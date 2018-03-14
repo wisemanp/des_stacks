@@ -232,8 +232,11 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
         resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
         weightout_name = fn_out[:-4]+'wgt.fits'
-        if not os.path.isfile(weightlist_name):
+        if not os.path.isfile(resamplist_name):
+            logger.info("Going to do resampling!")
             weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
+        else:
+            logger.info("Resamplist exists: %s"%resamplist_name)
         if os.path.isfile(fn_out):
             cmd_list[j] = (False,fn_out)
         else:
@@ -424,15 +427,31 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
     logger.info('Creating weightmaps for individual input exposures')
     weightlist = []
     resamplist = []
-    for img in img_list:
+    os.chdir(s.temp_dir)
+    try:
+        if len(img_list)>1:
+       
+            for img in img_list:
+                imgname = os.path.split(img)[-1]
+                imgroot = imgname[:-5]
+                if imgroot[-2:]=='fi':
+                    imgroot = imgroot[:-3]
+                weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
+                resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
+ 
+            swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
+    
+    except TypeError:
+        img = str(img_list)
+        swarp_cmd = ['swarp','%s'%img,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
         imgname = os.path.split(img)[-1]
         imgroot = imgname[:-5]
         if imgroot[-2:]=='fi':
             imgroot = imgroot[:-3]
         weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
         resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
-    os.chdir(s.temp_dir)
-    swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
+         
+    
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())

@@ -90,7 +90,6 @@ def do_stack(s,y,field,band,logger,cuts,final,chip):
     s.logger.info("And final weightmap at %s"%weightout_name)
 
 def multitask(s,y,field,band,logger,cuts,final):
-    args = (s,y,field,band,logger,cuts,final)
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
     n_chips = len(s.chips)
@@ -99,8 +98,8 @@ def multitask(s,y,field,band,logger,cuts,final):
     for c in cons:
         c.start()
     n_jobs = n_chips
-    for i in range(n_jobs):
-        tasks.put(do_stack((args)+(chip,)))
+    for chip in range(n_chips):
+        tasks.put(do_stack(s,y,field,band,logger,cuts,final,chip))
     for i in range(n_con):
         tasks.put(None)
     tasks.join()

@@ -89,8 +89,8 @@ def do_stack(s,y,field,band,logger,cuts,final,chip):
     s.logger.info("Saved final science frame at %s"%imgout_name)
     s.logger.info("And final weightmap at %s"%weightout_name)
 
-def multitask(s,y,field,band,s.logger,cuts,final):
-    args = (s,y,field,band,s.logger,cuts,final)
+def multitask(s,y,field,band,logger,cuts,final):
+    args = (s,y,field,band,logger,cuts,final)
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
     n_chips = len(s.chips)

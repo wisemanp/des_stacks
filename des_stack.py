@@ -241,7 +241,7 @@ class Stack():
             procs =[]
             q = Queue()
 
-            proc1 = Process(target=creator, args=(chips,q))
+            proc1 = Process(target=creator, args=(self.chips,q))
             proc2 = Process(target=consumer,args = (q,))
             proc1.start()
             proc2.start()

@@ -204,7 +204,7 @@ class Stack():
                 self.logger.info("And final weightmap at %s"%weightout_name)
             chip = q.get()
             proc = Process(target=stack_proc,args = (chip,))
-            proc.start
+            proc.start()
             proc.join()
         self.final=final
         self.logger.info("Cuts: %s"%cuts)

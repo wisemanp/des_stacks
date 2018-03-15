@@ -6,6 +6,7 @@ import time
 import numpy as np
 import os
 
+
 class multistacker():
     def __init__(self,s,y,field,band,cuts,final):
         self.s = s#args['s']
@@ -88,7 +89,7 @@ class multistacker():
         pool = multiprocessing.Pool(processes=pool_size,
                                     maxtasksperchild=2,
                                     )
-        results = pool.map(self.worker,self.s.chips)
+        results = pool.map(do_a_thing,self.s.chips)
         pool.close()
         pool.join()
         return results

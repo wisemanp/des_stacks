@@ -5,25 +5,6 @@ from des_stacks.utils.stack_tools import make_swarp_cmd
 import time
 import numpy as np
 import os
-class Consumer(multiprocessing.Process):
-
-    def __init__(self,task_queue, result_queue):
-        multiprocessing.Process.__init__(self)
-        self.task_queue=task_queue
-        self.result_queue = result_queue
-
-    def run(self):
-        proc_name = self.name
-        while True:
-            next_task = self.task_queue.get()
-            if next_task is None:
-                self.task_queue.task_done()
-                break
-            answer = next_task()
-            self.task_queue.task_done()
-            self.result_queue.put(answer)
-        return
-
 
 class chip(object):
     def __init__(self, chip):
@@ -34,7 +15,9 @@ class chip(object):
     def __str__(self):
         return 'Stacking chip %s' % (self.chip)
 
-def do_stack(s,y,field,band,logger,cuts,final,chip):
+def worker(args,chip):
+    started = float(time.time)
+    y,field,band,logger,cuts,final,chip=[args[i]for i in range(len(args))]
     s.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
     cmd_list = make_swarp_cmd(s,y,field,chip,band,s.logger,cuts,final)
     staged_imgs = []
@@ -94,22 +77,24 @@ def do_stack(s,y,field,band,logger,cuts,final,chip):
     s.logger.info("Done combining mini-stacks, took %.3f seconds"%(final_end -final_start))
     s.logger.info("Saved final science frame at %s"%imgout_name)
     s.logger.info("And final weightmap at %s"%weightout_name)
+    t_tot = float(time.time()) - started
+    return t_tot
+
+def start_swarp(s):
+    s.logger.info("Starting", multiprocessing.current_process().name)
 
 def multitask(s,y,field,band,logger,cuts,final):
-    tasks = multiprocessing.JoinableQueue()
-    results = multiprocessing.Queue()
+
     n_chips = len(s.chips)
-    n_con= multiprocessing.cpu_count()*2
-    cons = [Consumer(tasks,results) for ch in s.chips]
-    for c in cons:
-        c.start()
-    n_jobs = n_chips
-    for chip in s.chips:
-        tasks.put(do_stack(s,y,field,band,logger,cuts,final,chip))
-    for i in range(n_con):
-        tasks.put(None)
-    tasks.join()
-    while n_jobs:
-        result = results.get()
-        num_jobs -=1
-    return 'Done'
+    pool_size = multiprocessing.cpu_count()*2
+    pool = multiprocessing.Pool(processes=pool_size,
+                                initializer = start_swarp(s),
+                                maxtasksperchild=2,
+                                )
+    args = (s,y,field,band,logger,cuts,final)
+
+    results = [pool.apply(worker,args=(args,chip,)) for chip in s.chips]
+    pool.close()
+    pool.join()
+    return results
+                            

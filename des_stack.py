@@ -173,7 +173,7 @@ class Stack():
             if y in 'none':
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
-            multi_stack.multitask(self,y,field,band,self.logger,cuts,final)
+            multi_stack.multitask(self,y,field,band,cuts,final)
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break

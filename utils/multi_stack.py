@@ -8,14 +8,14 @@ import os
 
 class multistacker():
     def __init__(self,s,y,field,band,cuts,final):
-        self.s = s
-        self.y = y
-        self.field = field
-        self.band = band
-        self.cuts = cuts
-        self.final = final
+        self.s = s#args['s']
+        self.y = y#args['y']
+        self.field = field #args['field']
+        self.band = band#args['band']
+        self.cuts = cuts#args['cuts']
+        self.final = final #args['final']
 
-    def __call__(self,chip):
+    def worker(self,chip):
 
 
         started = float(time.time)
@@ -81,16 +81,18 @@ class multistacker():
         t_tot = float(time.time()) - started
         return t_tot
 
+    def multi(self):
+
+        n_chips = len(self.s.chips)
+        pool_size = multiprocessing.cpu_count()*2
+        pool = multiprocessing.Pool(processes=pool_size,
+                                    maxtasksperchild=2,
+                                    )
+        results = pool.map(self.worker,self.s.chips)
+        pool.close()
+        pool.join()
+        return results
+
 def multitask(s,y,field,band,cuts,final):
-
-    n_chips = len(s.chips)
-    pool_size = multiprocessing.cpu_count()*2
-    pool = multiprocessing.Pool(processes=pool_size,
-                                maxtasksperchild=2,
-                                )
-    args = {'s':s,'y':y,'field':field,'band':band,'cuts':cuts,'final':final)
-
-    results = pool.map(worker(args),s.chips)
-    pool.close()
-    pool.join()
-    return results
+    m = multistacker(s,y,field,band,cuts,final)
+    return m.multi()

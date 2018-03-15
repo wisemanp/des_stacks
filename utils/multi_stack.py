@@ -83,7 +83,7 @@ def multitask(s,y,field,band,logger,cuts,final):
                                 )
     args = (s,y,field,band,logger,cuts,final)
 
-    results = [pool.apply(worker,args=([args,chip],)) for chip in s.chips]
+    results = [pool.apply(worker,args=(chip,)) for chip in s.chips]
     pool.close()
     pool.join()
     return results

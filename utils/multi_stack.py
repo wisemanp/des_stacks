@@ -6,15 +6,6 @@ import time
 import numpy as np
 import os
 
-class chip(object):
-    def __init__(self, chip):
-        self.chip = chip
-
-    def __call__(self):
-        return 'Done Stacking chip %s' % (self.chip)
-    def __str__(self):
-        return 'Stacking chip %s' % (self.chip)
-
 def worker(args,chip):
     started = float(time.time)
     y,field,band,logger,cuts,final,chip=[args[i]for i in range(len(args))]
@@ -88,7 +79,6 @@ def multitask(s,y,field,band,logger,cuts,final):
     n_chips = len(s.chips)
     pool_size = multiprocessing.cpu_count()*2
     pool = multiprocessing.Pool(processes=pool_size,
-                                initializer = start_swarp(s),
                                 maxtasksperchild=2,
                                 )
     args = (s,y,field,band,logger,cuts,final)

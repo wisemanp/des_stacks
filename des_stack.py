@@ -206,7 +206,7 @@ class Stack():
         self.sexcats=[]
         for chip in self.chips:
             # create file structure and copy defaults accross
-            chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,chip)
+            chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,str(chip))
             if not os.path.isdir(chip_dir):
                 os.mkdir(chip_dir)
             psf_dir = os.path.join(chip_dir,'psf')

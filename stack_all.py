@@ -146,8 +146,8 @@ def simple_stack(logger,parsed):
             for my in mys:
                 s = stack.Stack(f,b,my,chips,workdir)
                 s.do_my_stack(cuts=cuts,final=True)
-                #s.run_stack_sex(cuts=cuts,final=True)
-                #s.init_phot()
+                s.run_stack_sex(cuts=cuts,final=True)
+                s.init_phot()
                 #if parsed['tidy']in [1,True]:
                     #for temp_fn in glob.glob(os.path.join(s.temp_dir,'*resamp*')):
                         #if not os.path.isdir(temp_fn):

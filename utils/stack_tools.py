@@ -261,7 +261,7 @@ def get_des_obs_year(night,logger=None):
     night = int(night)
     cp=configparser.ConfigParser()
     # read the .ini file
-    cp.read('/media/data1/wiseman/des/coadding/config/snobs_params.ini')
+    cp.read('/media/data3/wiseman/des/coadding/config/snobs_params.ini')
     # Make a list of years
     years= ['Y1','Y2','Y3','Y4']
     year_night_lims = {}

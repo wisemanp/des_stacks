@@ -37,7 +37,7 @@ class Stack():
     def _define_paths(self):
         '''Sets the base paths in which to do all of the work'''
         if self.coadding_dir == 'coadding':
-            self.coadding_dir = '/media/data1/wiseman/des/coadding/'
+            self.coadding_dir = '/media/data3/wiseman/des/coadding/'
         elif self.coadding_dir == 'current':
             self.coadding_dir = os.curdir
         self.config_dir = os.path.join(self.coadding_dir,'config')

@@ -1,5 +1,6 @@
 import pathos.pools as pp
 import multiprocessing
+from multiprocessing import Process
 import os
 import subprocess
 from des_stacks.utils.stack_tools import make_swarp_cmd
@@ -109,9 +110,16 @@ def multitask(s,y,field,band,cuts,final):
 
     pool_size = multiprocessing.cpu_count()*2
     s.logger.info("Starting %s processes"%pool_size)
+    act = multiprocessing.active_children()
+    s.logger.info("There are currently %s active workers"%len(act))
+    
+        
     pool = pp.ProcessPool(processes=pool_size,
                                 maxtasksperchild=2,
                                 )
+    pool._clear()
+    pool._serve()
+
     chips = list(s.chips)
     logger = multiprocessing.get_logger()
     logger.setLevel(logging.INFO)
@@ -119,7 +127,10 @@ def multitask(s,y,field,band,cuts,final):
     all_args = []
     for c in chips:
         all_args.append([args,c])
+        #p = Process(target=worker,args=(args,c))
+        #p.start()
+        #p.join()
     results = pool.map(worker,all_args)
     pool.close()
     pool.join()
-    return results
+    return 'Done'

@@ -164,7 +164,10 @@ class Stack():
         # how many chips are we stacking?
         chips = self.chips
         if chips == 'All':
-            self.chips = self.info_df.CCDNUM.sort_values().unique()
+            self.chips =[]
+            chips = self.info_df.CCDNUM.sort_values().unique()
+            for c in chips:
+                self.chips.append(str(c))
         # get swarp commands
         log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s.log' %(field, band, my)),'a')
         log.flush()

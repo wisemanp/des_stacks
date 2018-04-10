@@ -54,8 +54,8 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     qual = s.qual_tab
     import math
     info = info[info['FIELD']==field]
-    logger.debug('These are the bands available for field {0}'.format(field))
-    logger.debug(info.BAND.unique())
+    logger.info('These are the bands available for field {0}'.format(field))
+    logger.info(info.BAND.unique())
     info = info[info['BAND']==band]
     if cuts['zp']:
         info['ZP_EXPRES']=''
@@ -65,8 +65,8 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
             med_zp = this_exp['CHIP_ZERO_POINT'].median()
             info.loc[exp_idx,'ZP_EXPRES'] = this_exp['CHIP_ZERO_POINT']-med_zp
 
-        logger.debug('Here is the column of initial residuals for each exposure')
-        logger.debug(info['ZP_EXPRES'])
+        logger.info('Here is the column of initial residuals for each exposure')
+        logger.info(info['ZP_EXPRES'])
         ######################################################
         ## 2
         ## Calculate the average residual from part 1 over all exposures for that chip (field,band)
@@ -139,9 +139,12 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
     ## Save results
     elif cuts['teff']:
+        logger.info('Doing the cut based on T_eff > %s'%cuts['teff'])
         good_frame = pd.DataFrame()
         good_exps = []
+       
         for counter,exp in enumerate(info.EXPNUM.unique()):
+            
             this_exp = info[info['EXPNUM']==exp]
             exp_idx = this_exp.index
             try:
@@ -159,6 +162,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
     except ValueError:
+        
         good_table = Table.from_pandas(good_frame)
     logger.debug('Here is the good_table, to write to fits format')
     logger.debug(good_table)

@@ -219,9 +219,6 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'psf','default.param'),os.path.join(psf_dir,'default.param'))
             copyfile(os.path.join(self.config_dir,'psf','default.conv'),os.path.join(psf_dir,'default.conv'))
 
-            # do sex for psfex
-            sex_for_psfex(self,chip,cuts)
-
             ana_dir = os.path.join(chip_dir,'ana')
             if not os.path.isdir(ana_dir):
                 os.mkdir(ana_dir)
@@ -231,32 +228,12 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'default.param'),os.path.join(ana_dir,'default.param'))
             copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
             copyfile(os.path.join(self.config_dir,'default.nnw'),os.path.join(ana_dir,'default.nnw'))
-            # do psfex on sex, and get the fwhm from there
-            model_fwhm = psfex(self,chip,retval='FWHM',cuts=cuts)
-            # do sex on psf
-            os.chdir(ana_dir)
-            # Do SExtractor on the complete stacks
-            sexcat = sex_for_cat(self,chip,cuts)
-            self.sexcats.append(sexcat)
+
+        self.sexcats = multi_stack.multitask(sex_for_cat(self,y,field,band,cuts,final,w='sex'))
+
             # Compare new catalog to old one, get the ZP and FWHM out
-            zp,sex_fwhm = astrometry(self,chip,sexcat)
-            zp_psf,psf_fwhm = astrometry(self,chip,sexcat,phot_type = 'PSF')
-            qual = open(os.path.join(ana_dir,'%s_ana.qual'%self.cutstring),'w')
-            print ('# Quality parameters for %s %s %s %s' %(self.my,self.field,self.band,chip),file =qual)
-            print ('# Parameters:',file=qual)
-            print ('# Zeropoint from sextractor',file=qual)
-            print ('# Zeropoint from PSF matches', file = qual)
-            print ('# FWHM from PSFex',file = qual)
-            print ('# FWHM from SExtractor using PSF model',file = qual)
-            print ('%s %s %s %s'%(zp,zp_psf,model_fwhm,sex_fwhm),file=qual)
-            qual.close()
-            self.logger.info("Written quality factors to %s_ana.qual" %self.cutstring)
-            qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
-            qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
-            self.logger.info("Quality of stack:\n %s" %qual_df)
-        self.logger.info("********** Done measuring quality of stack! **********")
-        self.logger.info("******************************************************")
-        return qual_df
+
+        
 
     def init_phot(self,pl='n'):
         limmags = {}

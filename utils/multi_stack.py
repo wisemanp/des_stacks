@@ -10,7 +10,7 @@ import os
 from itertools import repeat
 from functools import partial
 import logging
-def worker(arg_pair):
+def stack_worker(arg_pair):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
@@ -55,7 +55,7 @@ def worker(arg_pair):
             except (OSError, IOError):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('Swarp failed for some reason in chip %s'%chip)
-                
+
             print('Finish stacking chip {0}'.format(chip))
             print('Took %.3f seconds' % (endtime-starttime))
         print('Added %s to list of images to make final stack' %outname)
@@ -103,7 +103,45 @@ def worker(arg_pair):
     t_tot = float(time.time()) - started
     return t_tot
 
-def multitask(s,y,field,band,cuts,final):
+def sex_worker(arg_pair):
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    '''if zp_cut>0:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:'''
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    chip,args =arg_pair[1],arg_pair[0]
+    s,y,field,band,cuts,final,logger2= [args[i]for i in range(len(args))]
+    started = float(time.time())
+    sex_for_psfex()
+    model_fwhm = psfex(s,chip,retval='FWHM',cuts=cuts)
+    os.chdir(s.ana_dir)
+    sexcat = sex_for_cat(s,chip,cuts)
+    zp,sex_fwhm = astrometry(s,chip,sexcat)
+    zp_psf,psf_fwhm = astrometry(s,chip,sexcat,phot_type = 'PSF')
+    qual = open(os.path.join(s.ana_dir,'%s_ana.qual'%s.cutstring),'w')
+    print ('# Quality parameters for %s %s %s %s' %(s.my,s.field,s.band,chip),file =qual)
+    print ('# Parameters:',file=qual)
+    print ('# Zeropoint from sextractor',file=qual)
+    print ('# Zeropoint from PSF matches', file = qual)
+    print ('# FWHM from PSFex',file = qual)
+    print ('# FWHM from SExtractor using PSF model',file = qual)
+    print ('%s %s %s %s'%(zp,zp_psf,model_fwhm,sex_fwhm),file=qual)
+    qual.close()
+    logger.info("Written quality factors to %s_ana.qual" %s.cutstring)
+    qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
+    qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
+    logger.info("Quality of stack:\n %s" %qual_df)
+    logger.info("********** Done measuring quality of stack! **********")
+    logger.info("******************************************************")
+    return sexcat
+def multitask(s,y,field,band,cuts,final,w='stack'):
     n_chips = len(s.chips)
 
     args = [s,y,field,band,cuts,final]
@@ -112,8 +150,8 @@ def multitask(s,y,field,band,cuts,final):
     s.logger.info("Starting %s processes"%pool_size)
     act = multiprocessing.active_children()
     s.logger.info("There are currently %s active workers"%len(act))
-    
-        
+
+
     pool = pp.ProcessPool(processes=pool_size,
                                 maxtasksperchild=2,
                                 )
@@ -130,7 +168,11 @@ def multitask(s,y,field,band,cuts,final):
         #p = Process(target=worker,args=(args,c))
         #p.start()
         #p.join()
-    results = pool.map(worker,all_args)
+    if w =='stack':
+        results = pool.map(stack_worker,all_args)
+    elif w=='sex':
+        results = pool.map(sex_worker,all_args)
+
     pool.close()
     pool.join()
-    return 'Done'
+    return results

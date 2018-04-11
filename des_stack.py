@@ -229,7 +229,7 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
             copyfile(os.path.join(self.config_dir,'default.nnw'),os.path.join(ana_dir,'default.nnw'))
 
-        self.sexcats = multi_stack.multitask(sex_for_cat(self,y,field,band,cuts,final,w='sex'))
+        self.sexcats = multi_stack.multitask(self,self.my,self.field,self.band,self.cuts,self.final,w='sex')
 
             # Compare new catalog to old one, get the ZP and FWHM out
 

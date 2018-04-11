@@ -4,12 +4,15 @@ from multiprocessing import Process
 import os
 import subprocess
 from des_stacks.utils.stack_tools import make_swarp_cmd
+from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import time
 import numpy as np
 import os
 from itertools import repeat
 from functools import partial
 import logging
+from des_stacks.analysis.astro import astrometry,init_phot
+import pandas as pd
 def stack_worker(arg_pair):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -104,27 +107,22 @@ def stack_worker(arg_pair):
     return t_tot
 
 def sex_worker(arg_pair):
-    logger = logging.getLogger(__name__)
-    logger.handlers =[]
-    ch = logging.StreamHandler()
-    '''if zp_cut>0:
-        logger.setLevel(logging.DEBUG)
-        ch.setLevel(logging.DEBUG)
-    else:'''
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
-    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+    print ('Attempting to run a sex worker')
     chip,args =arg_pair[1],arg_pair[0]
     s,y,field,band,cuts,final,logger2= [args[i]for i in range(len(args))]
     started = float(time.time())
-    sex_for_psfex()
+
+    sex_for_psfex(s,chip,cuts)
+    
     model_fwhm = psfex(s,chip,retval='FWHM',cuts=cuts)
     os.chdir(s.ana_dir)
+
     sexcat = sex_for_cat(s,chip,cuts)
+
     zp,sex_fwhm = astrometry(s,chip,sexcat)
+
     zp_psf,psf_fwhm = astrometry(s,chip,sexcat,phot_type = 'PSF')
+
     qual = open(os.path.join(s.ana_dir,'%s_ana.qual'%s.cutstring),'w')
     print ('# Quality parameters for %s %s %s %s' %(s.my,s.field,s.band,chip),file =qual)
     print ('# Parameters:',file=qual)
@@ -134,12 +132,12 @@ def sex_worker(arg_pair):
     print ('# FWHM from SExtractor using PSF model',file = qual)
     print ('%s %s %s %s'%(zp,zp_psf,model_fwhm,sex_fwhm),file=qual)
     qual.close()
-    logger.info("Written quality factors to %s_ana.qual" %s.cutstring)
+    print("Written quality factors to %s_ana.qual" %s.cutstring)
     qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
-    qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
-    logger.info("Quality of stack:\n %s" %qual_df)
-    logger.info("********** Done measuring quality of stack! **********")
-    logger.info("******************************************************")
+    qual_df = pd.DataFrame([qual_dict],index = [chip])
+    print("Quality of stack:\n %s" %qual_df)
+    print("********** Done measuring quality of stack! **********")
+    print("******************************************************")
     return sexcat
 def multitask(s,y,field,band,cuts,final,w='stack'):
     n_chips = len(s.chips)
@@ -147,11 +145,8 @@ def multitask(s,y,field,band,cuts,final,w='stack'):
     args = [s,y,field,band,cuts,final]
 
     pool_size = multiprocessing.cpu_count()*2
-    s.logger.info("Starting %s processes"%pool_size)
+    #s.logger.info("Starting %s processes"%pool_size)
     act = multiprocessing.active_children()
-    s.logger.info("There are currently %s active workers"%len(act))
-
-
     pool = pp.ProcessPool(processes=pool_size,
                                 maxtasksperchild=2,
                                 )
@@ -172,7 +167,6 @@ def multitask(s,y,field,band,cuts,final,w='stack'):
         results = pool.map(stack_worker,all_args)
     elif w=='sex':
         results = pool.map(sex_worker,all_args)
-
     pool.close()
     pool.join()
     return results

@@ -36,7 +36,7 @@ def stack_worker(arg_pair):
     for key,value in cmd_list.items():
 
         cmd,outname = value
-        if outname != False:
+        if outname:
 
             staged_imgs.append(outname)
         if cmd == False:

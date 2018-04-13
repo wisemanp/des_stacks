@@ -428,7 +428,7 @@ def get_y3a1():
 def make_weightmap(s,lst,y,chip,cuts,j,logger):
 
     img_list = np.loadtxt(lst,dtype='str')
-    if len(a_list)==0:
+    if len(img_list)==0:
         logger.info('Empty list: %s \n %s'%(lst,img_list))
         return False
 

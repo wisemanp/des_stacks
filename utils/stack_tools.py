@@ -255,7 +255,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
             except:
                 cmd_list[j]=(False,fn_out)
 
-    logger.info(cmd_list)
+    #logger.info(cmd_list)
     return cmd_list
 #############################################
 

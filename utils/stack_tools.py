@@ -238,15 +238,22 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         weightout_name = fn_out[:-4]+'wgt.fits'
         if not os.path.isfile(resamplist_name):
             logger.info("%s, %s band, chip %s: Going to do resampling!"%(field,band,chip))
-            weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
+            try:
+                weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
+            except TypeError:
+                logger.info("No files in list: %s" %fn_list)
+
         else:
             logger.info("Resamplist exists: %s"%resamplist_name)
         if os.path.isfile(fn_out):
             cmd_list[j] = (False,fn_out)
         else:
-            cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
-         '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
-         'CLIPPED','-RESAMPLE','N','-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
+            try:
+                cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
+                '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
+                'CLIPPED','-RESAMPLE','N','-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
+            except:
+                cmd_list[j]=(False,fn_out)
 
     logger.info(cmd_list)
     return cmd_list

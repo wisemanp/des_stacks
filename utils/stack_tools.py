@@ -253,7 +253,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
                 '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
                 'CLIPPED','-RESAMPLE','N','-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
             except:
-                cmd_list[j]=(False,fn_out)
+                cmd_list[j]=(False,False)
 
     #logger.info(cmd_list)
     return cmd_list

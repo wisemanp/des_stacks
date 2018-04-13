@@ -36,7 +36,9 @@ def stack_worker(arg_pair):
     for key,value in cmd_list.items():
 
         cmd,outname = value
-        staged_imgs.append(outname)
+        if outname != False:
+
+            staged_imgs.append(outname)
         if cmd == False:
             print ('Already stacked this chip with these cuts, going straight to the next chip')
             #logger.info("Already stacked this chip with these cuts, going straight to astrometry")

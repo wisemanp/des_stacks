@@ -142,9 +142,9 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         logger.info('Doing the cut based on T_eff > %s'%cuts['teff'])
         good_frame = pd.DataFrame()
         good_exps = []
-       
+
         for counter,exp in enumerate(info.EXPNUM.unique()):
-            
+
             this_exp = info[info['EXPNUM']==exp]
             exp_idx = this_exp.index
             try:
@@ -162,7 +162,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
     except ValueError:
-        
+
         good_table = Table.from_pandas(good_frame)
     logger.debug('Here is the good_table, to write to fits format')
     logger.debug(good_table)
@@ -185,7 +185,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     """function to make swarp command to stack Nminus1_year, field chip, band"""
-    logger.info('Preparing the frames to be stacked')
+    logger.info('Preparing the frames for %s, %s band, chip %s'%(field,band, chip))
     #band = band + '    '
     ## Get the list of exposures for MY, field, chip, band.
     good = s.good_frame
@@ -198,7 +198,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
     good_my_exps = good_band_my['EXPNUM'].unique()
     #for each good exposure, find it's file
     stack_fns = {}
-    logger.info('Adding files to the stack')
+    logger.info('Adding files to the %s, %s band, chip %s stack'%(field, band,chip)
     good_band_my.sort_values('CHIP_ZERO_POINT',ascending=False,inplace=True)
     n,l=0,0
     stack_fns[0]=[]
@@ -217,7 +217,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
                 if n%100.0 == 0:
                     l+=1
                     stack_fns[l]=[]
-    logger.info('Added {} files'.format(counter))
+    logger.info('Added %s files to the %s, %s band, chip %s stack'%(counter,field,band,chip))
     cmd_list = {}
     for j in range(0,l+1):
         fns = np.array(stack_fns[j])
@@ -237,7 +237,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
         weightout_name = fn_out[:-4]+'wgt.fits'
         if not os.path.isfile(resamplist_name):
-            logger.info("Going to do resampling!")
+            logger.info("%s, %s band, chip %s: Going to do resampling!"%(field,band,chip))
             weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
         else:
             logger.info("Resamplist exists: %s"%resamplist_name)
@@ -428,8 +428,12 @@ def get_y3a1():
 def make_weightmap(s,lst,y,chip,cuts,j,logger):
 
     img_list = np.loadtxt(lst,dtype='str')
+    if len(a_list)==0:
+        logger.info('Empty list: %s \n %s'%(lst,img_list))
+        return False
+
     starttime=float(time.time())
-    logger.info('Creating weightmaps for individual input exposures')
+    logger.info('Creating weightmaps for individual input exposures in %s, %s band, chip %s'%(s.field,s.band,chip))
     weightlist = []
     resamplist = []
     os.chdir(s.temp_dir)
@@ -460,7 +464,7 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())
-    logger.info('Finished creating weightmaps, took %.3f seconds'%(endtime-starttime))
+    logger.info('Finished creating weightmaps for %s, %s band, chip %s; took %.3f seconds'%(s.field,s.band,chip,endtime-starttime))
     weightlist = np.array(weightlist)
     weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(y,s.field,s.band,chip,s.cutstring,j))
     np.savetxt(weightlist_name,weightlist,fmt='%s')

@@ -33,7 +33,7 @@ def astrometry(s,chip,sexcat,phot_type='AUTO'):
     logger.addHandler(ch)
 
     logger.info("Reading in catalog in order to do photometry")
-    cmap = {'PSF':'red','AUTO':'green','cat':'blue'}
+    cmap = {'PSF':'red','AUTO':'green','cat':'blue','APER':'purple'}
     old_cat = os.path.join(s.cat_dir,'%s_All_filters_3.csv'%(s.field[3]))
     old = pd.DataFrame.from_csv(old_cat)
     sexdat = fits.getdata(sexcat,ext=1)
@@ -72,10 +72,7 @@ def astrometry(s,chip,sexcat,phot_type='AUTO'):
 def init_phot(s,chip,cat,pl='n'):
     s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
 
-    try:
-         ana_dir = s.ana_dir
-    except:
-        ana_dir = os.path.join(s.band_dir,chip,'ana')
+    ana_dir = os.path.join(s.band_dir,chip,'ana')
     try:
         final = s.final
     except AttributeError:

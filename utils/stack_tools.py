@@ -198,7 +198,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
     good_my_exps = good_band_my['EXPNUM'].unique()
     #for each good exposure, find it's file
     stack_fns = {}
-    logger.info('Adding files to the %s, %s band, chip %s stack'%(field, band,chip)
+    logger.info('Adding files to the %s, %s band, chip %s stack'%(field, band,chip))
     good_band_my.sort_values('CHIP_ZERO_POINT',ascending=False,inplace=True)
     n,l=0,0
     stack_fns[0]=[]

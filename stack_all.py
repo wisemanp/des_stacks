@@ -148,15 +148,15 @@ def simple_stack(logger,parsed):
                 s.do_my_stack(cuts=cuts,final=True)
                 s.run_stack_sex(cuts=cuts,final=True)
                 s.init_phot()
-                if parsed['tidy']in [1,True]:
-                    for temp_fn in glob.glob(os.path.join(s.temp_dir,'*resamp*')):
-                        if not os.path.isdir(temp_fn):
-                            os.remove(temp_fn)
+                #if parsed['tidy']in [1,True]:
+                    #for temp_fn in glob.glob(os.path.join(s.temp_dir,'*resamp*')):
+                        #if not os.path.isdir(temp_fn):
+                            #os.remove(temp_fn)
                     
-                    for temp_fn in glob.glob(s.band_dir):
-                        if temp_fn not in glob.glob(os.path.join(s.band_dir,'*sci*'))+glob.glob(os.path.join(s.band_dir,'*wgt*')):
-                            if not os.path.isdir(temp_fn):
-                                os.remove(temp_fn)
+                    #for temp_fn in glob.glob(s.band_dir):
+                        #if temp_fn not in glob.glob(os.path.join(s.band_dir,'*sci*'))+glob.glob(os.path.join(s.band_dir,'*wgt*')):
+                           # if not os.path.isdir(temp_fn):
+                                #os.remove(temp_fn)
 def looped_stack(logger,parsed):
     fields = parsed['fields']
     bands = parsed['bands']

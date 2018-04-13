@@ -19,13 +19,26 @@ from scipy.interpolate import UnivariateSpline as spln
 
 def astrometry(s,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
-    s.logger.info("Reading in catalog in order to do photometry")
-    cmap = {'PSF':'red','AUTO':'green','cat':'blue'}
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    '''if zp_cut>0:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:'''
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    logger.info("Reading in catalog in order to do photometry")
+    cmap = {'PSF':'red','AUTO':'green','cat':'blue','APER':'purple'}
     old_cat = os.path.join(s.cat_dir,'%s_All_filters_3.csv'%(s.field[3]))
     old = pd.DataFrame.from_csv(old_cat)
     sexdat = fits.getdata(sexcat,ext=1)
-    s.logger.info("Successfully read in catalog: %s" %old_cat)
-    s.logger.info("Matching objects...")
+    logger.info("Successfully read in catalog: %s" %old_cat)
+    logger.info("Matching objects...")
     new =pd.DataFrame(sexdat)
     new_obj = SkyCoord(ra=new['X_WORLD']*u.degree,dec =new['Y_WORLD']*u.degree)
     old_obj = SkyCoord(ra=old['RA_%s'%s.band]*u.degree,dec =old['DEC_%s'%s.band]*u.degree)
@@ -33,7 +46,7 @@ def astrometry(s,chip,sexcat,phot_type='AUTO'):
     idx, d2d, d3d = new_obj.match_to_catalog_sky(old_obj)
     match_ids = idx
     match_dists = d2d.arcsec
-    s.logger.info("Successfully matched %s objects!" %len(match_ids))
+    logger.info("Successfully matched %s objects!" %len(match_ids))
     # get old cat mags of the matched objects
     init_match_cat_mag =old['CLIPPED_MEAN_%s'%s.band].iloc[match_ids]
     init_match_cat_magerr =old['CLIPPED_SIGMA_%s'%s.band].iloc[match_ids]
@@ -43,7 +56,7 @@ def astrometry(s,chip,sexcat,phot_type='AUTO'):
 
     good_new_ra = new['X_WORLD'].iloc[good_inds]
     good_new_dec = new['Y_WORLD'].iloc[good_inds]
-    s.logger.info("Using catalog magnitudes to calibrate photometry and get zeropoint")
+    logger.info("Using catalog magnitudes to calibrate photometry and get zeropoint")
     # find the new mags that correspond to that
     good_new_mag = new['MAG_%s'%phot_type].iloc[good_inds]
     good_new_magerr = new['MAGERR_%s'%phot_type].iloc[good_inds]
@@ -53,16 +66,13 @@ def astrometry(s,chip,sexcat,phot_type='AUTO'):
     # subtract to get the frame ZP
     zp = np.median(good_cat_mag.values - good_new_mag.values)
     psf = np.median(new['FWHM_WORLD']*3600)
-    s.logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(s.field,s.my,s.band,chip))
+    logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(s.field,s.my,s.band,chip))
     return zp,psf
 
 def init_phot(s,chip,cat,pl='n'):
     s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
 
-    try:
-         ana_dir = s.ana_dir
-    except:
-        ana_dir = os.path.join(s.band_dir,chip,'ana')
+    ana_dir = os.path.join(s.band_dir,chip,'ana')
     try:
         final = s.final
     except AttributeError:

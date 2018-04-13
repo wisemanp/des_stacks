@@ -11,11 +11,13 @@ import datetime
 import configparser
 import os
 import subprocess
+import multiprocessing
 import logging
 from shutil import copyfile
 import time
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year,make_weightmap
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
+import des_stacks.utils.multi_stack as multi_stack
 from des_stacks.analysis.astro import astrometry,init_phot
 
 class Stack():
@@ -133,6 +135,7 @@ class Stack():
         returns:
         none
         '''
+
         self.final=final
         self.logger.info("Cuts: %s"%cuts)
         self.zp_cut,self.psf_cut,self.t_cut = cuts['zp'], cuts['psf'],cuts['teff']
@@ -161,7 +164,10 @@ class Stack():
         # how many chips are we stacking?
         chips = self.chips
         if chips == 'All':
-            self.chips = self.info_df.CCDNUM.sort_values().unique()
+            self.chips =[]
+            chips = self.info_df.CCDNUM.sort_values().unique()
+            for c in chips:
+                self.chips.append(str(c))
         # get swarp commands
         log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s.log' %(field, band, my)),'a')
         log.flush()
@@ -170,67 +176,7 @@ class Stack():
             if y in 'none':
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
-            for chip in self.chips:
-
-                self.logger.info('Stacking CCD {0}; starting by creating mini-stacks to save time'.format(chip))
-                cmd_list = make_swarp_cmd(self,y,field,chip,band,self.logger,cuts,final)
-                staged_imgs = []
-                for key,value in cmd_list.items():
-
-                    cmd,outname = value
-                    staged_imgs.append(outname)
-                    if cmd == False:
-                        self.logger.info("Already stacked this chip with these cuts, going straight to astrometry")
-                    else:
-                        self.logger.info('Stacking... please be patient.'.format(cmd))
-                        os.chdir(self.temp_dir)
-                        try:
-                            starttime=float(time.time())
-                            p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                            outs,errs = p.communicate()
-                            endtime=float(time.time())
-
-                        except (OSError, IOError):
-                            self.logger.warn("Swarp failed.", exc_info=1)
-                        self.logger.info('Finish stacking chip {0}'.format(chip))
-                        self.logger.info('Took %.3f seconds' % (endtime-starttime))
-                    self.logger.info('Added %s to list of images to make final stack' %outname)
-                self.logger.info('Now combining mini-stacks into final science frame')
-                staged_list = np.array(staged_imgs)
-                self.logger.info('Combining these frames:')
-                self.logger.info(staged_list)
-                staged_listname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_staged.lst'%(y,self.field,self.band,chip,self.cutstring))
-                np.savetxt(staged_listname,staged_list,fmt='%s')
-                resamp_cmd =['swarp','@%s'%staged_listname,'-COMBINE','N','-RESAMPLE','Y','-c','default.swarp']
-                os.chdir(self.band_dir)
-                self.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
-                res_start = float(time.time())
-                rf = subprocess.Popen(resamp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                r_out,r_errs = rf.communicate()
-                res_end = float(time.time())
-                self.logger.info('Done resampling intermediate stacks, took %.3f seconds'%(res_end-res_start))
-                resamplist = []
-                weightlist = []
-                for img in staged_list:
-                    imgname = os.path.split(img)[-1]
-                    imgnameroot = imgname[:-5]
-                    resamplist.append(os.path.join(self.band_dir,imgnameroot+'.resamp.fits'))
-                    weightlist.append(os.path.join(self.band_dir,imgnameroot+'.resamp.weight.fits'))
-                final_resampname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.lst'%(y,self.field,self.band,chip,self.cutstring))
-                final_weightname = os.path.join(self.temp_dir,'%s_%s_%s_%s_%s_final.wgt.lst'%(y,self.field,self.band,chip,self.cutstring))
-                np.savetxt(final_resampname,resamplist,fmt='%s')
-                np.savetxt(final_weightname,weightlist,fmt='%s')
-                imgout_name = staged_list[0][:-7]+'_sci.fits'
-                weightout_name = staged_list[0][:-7]+'_wgt.fits'
-                final_cmd = ['swarp','@%s'%final_resampname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name,'-COMBINE_TYPE','WEIGHTED','-WEIGHT_IMAGE','@%s'%final_weightname]
-                self.logger.info('Doing this command to do the final stack:\n %s'%final_cmd)
-                final_start = float(time.time())
-                pf = subprocess.Popen(final_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                f_out,f_errs = pf.communicate()
-                final_end = float(time.time())
-                self.logger.info("Done combining mini-stacks, took %.3f seconds"%(final_end -final_start))
-                self.logger.info("Saved final science frame at %s"%imgout_name)
-                self.logger.info("And final weightmap at %s"%weightout_name)
+            multi_stack.multitask(self,y,field,band,cuts,final)
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break
@@ -263,7 +209,7 @@ class Stack():
         self.sexcats=[]
         for chip in self.chips:
             # create file structure and copy defaults accross
-            chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,chip)
+            chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,str(chip))
             if not os.path.isdir(chip_dir):
                 os.mkdir(chip_dir)
             psf_dir = os.path.join(chip_dir,'psf')
@@ -272,9 +218,6 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'psf','default.sex'),os.path.join(psf_dir,'default.sex'))
             copyfile(os.path.join(self.config_dir,'psf','default.param'),os.path.join(psf_dir,'default.param'))
             copyfile(os.path.join(self.config_dir,'psf','default.conv'),os.path.join(psf_dir,'default.conv'))
-
-            # do sex for psfex
-            sex_for_psfex(self,chip,cuts)
 
             ana_dir = os.path.join(chip_dir,'ana')
             if not os.path.isdir(ana_dir):
@@ -285,32 +228,12 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'default.param'),os.path.join(ana_dir,'default.param'))
             copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
             copyfile(os.path.join(self.config_dir,'default.nnw'),os.path.join(ana_dir,'default.nnw'))
-            # do psfex on sex, and get the fwhm from there
-            model_fwhm = psfex(self,chip,retval='FWHM',cuts=cuts)
-            # do sex on psf
-            os.chdir(ana_dir)
-            # Do SExtractor on the complete stacks
-            sexcat = sex_for_cat(self,chip,cuts)
-            self.sexcats.append(sexcat)
+
+        self.sexcats = multi_stack.multitask(self,self.my,self.field,self.band,self.cuts,self.final,w='sex')
+
             # Compare new catalog to old one, get the ZP and FWHM out
-            zp,sex_fwhm = astrometry(self,chip,sexcat)
-            zp_psf,psf_fwhm = astrometry(self,chip,sexcat,phot_type = 'PSF')
-            qual = open(os.path.join(ana_dir,'%s_ana.qual'%self.cutstring),'w')
-            print ('# Quality parameters for %s %s %s %s' %(self.my,self.field,self.band,chip),file =qual)
-            print ('# Parameters:',file=qual)
-            print ('# Zeropoint from sextractor',file=qual)
-            print ('# Zeropoint from PSF matches', file = qual)
-            print ('# FWHM from PSFex',file = qual)
-            print ('# FWHM from SExtractor using PSF model',file = qual)
-            print ('%s %s %s %s'%(zp,zp_psf,model_fwhm,sex_fwhm),file=qual)
-            qual.close()
-            self.logger.info("Written quality factors to %s_ana.qual" %self.cutstring)
-            qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
-            qual_df = qual_df.append(pd.DataFrame([qual_dict],index = [chip]))
-            self.logger.info("Quality of stack:\n %s" %qual_df)
-        self.logger.info("********** Done measuring quality of stack! **********")
-        self.logger.info("******************************************************")
-        return qual_df
+
+        
 
     def init_phot(self,pl='n'):
         limmags = {}

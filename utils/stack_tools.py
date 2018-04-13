@@ -54,8 +54,8 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     qual = s.qual_tab
     import math
     info = info[info['FIELD']==field]
-    logger.debug('These are the bands available for field {0}'.format(field))
-    logger.debug(info.BAND.unique())
+    logger.info('These are the bands available for field {0}'.format(field))
+    logger.info(info.BAND.unique())
     info = info[info['BAND']==band]
     if cuts['zp']:
         info['ZP_EXPRES']=''
@@ -65,8 +65,8 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
             med_zp = this_exp['CHIP_ZERO_POINT'].median()
             info.loc[exp_idx,'ZP_EXPRES'] = this_exp['CHIP_ZERO_POINT']-med_zp
 
-        logger.debug('Here is the column of initial residuals for each exposure')
-        logger.debug(info['ZP_EXPRES'])
+        logger.info('Here is the column of initial residuals for each exposure')
+        logger.info(info['ZP_EXPRES'])
         ######################################################
         ## 2
         ## Calculate the average residual from part 1 over all exposures for that chip (field,band)
@@ -139,9 +139,12 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
     ## Save results
     elif cuts['teff']:
+        logger.info('Doing the cut based on T_eff > %s'%cuts['teff'])
         good_frame = pd.DataFrame()
         good_exps = []
+
         for counter,exp in enumerate(info.EXPNUM.unique()):
+
             this_exp = info[info['EXPNUM']==exp]
             exp_idx = this_exp.index
             try:
@@ -159,6 +162,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
     except ValueError:
+
         good_table = Table.from_pandas(good_frame)
     logger.debug('Here is the good_table, to write to fits format')
     logger.debug(good_table)
@@ -181,7 +185,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     """function to make swarp command to stack Nminus1_year, field chip, band"""
-    logger.info('Preparing the frames to be stacked')
+    logger.info('Preparing the frames for %s, %s band, chip %s'%(field,band, chip))
     #band = band + '    '
     ## Get the list of exposures for MY, field, chip, band.
     good = s.good_frame
@@ -194,7 +198,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
     good_my_exps = good_band_my['EXPNUM'].unique()
     #for each good exposure, find it's file
     stack_fns = {}
-    logger.info('Adding files to the stack')
+    logger.info('Adding files to the %s, %s band, chip %s stack'%(field, band,chip))
     good_band_my.sort_values('CHIP_ZERO_POINT',ascending=False,inplace=True)
     n,l=0,0
     stack_fns[0]=[]
@@ -213,7 +217,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
                 if n%100.0 == 0:
                     l+=1
                     stack_fns[l]=[]
-    logger.info('Added {} files'.format(counter))
+    logger.info('Added %s files to the %s, %s band, chip %s stack'%(counter,field,band,chip))
     cmd_list = {}
     for j in range(0,l+1):
         fns = np.array(stack_fns[j])
@@ -233,20 +237,28 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
         weightout_name = fn_out[:-4]+'wgt.fits'
         if not os.path.isfile(resamplist_name):
-            logger.info("Going to do resampling!")
-            weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
+            logger.info("%s, %s band, chip %s: Going to do resampling!"%(field,band,chip))
+            try:
+                weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
+            except TypeError:
+                logger.info("No files in list: %s" %fn_list)
+
         else:
             logger.info("Resamplist exists: %s"%resamplist_name)
         if os.path.isfile(fn_out):
             cmd_list[j] = (False,fn_out)
         else:
-            cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
-         '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
-         'CLIPPED','-RESAMPLE','N','-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
+            try:
+                cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
+                '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
+                'CLIPPED','-RESAMPLE','N','-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
+            except:
+                cmd_list[j]=(False,fn_out)
 
-    logger.info(cmd_list)
+    #logger.info(cmd_list)
     return cmd_list
 #############################################
+
 def get_des_obs_year(night,logger=None):
     if not logger:
         logger = logging.getLogger(__name__)
@@ -260,7 +272,7 @@ def get_des_obs_year(night,logger=None):
     night = int(night)
     cp=configparser.ConfigParser()
     # read the .ini file
-    cp.read('/media/data1/wiseman/des/coadding/config/snobs_params.ini')
+    cp.read('/media/data3/wiseman/des/coadding/config/snobs_params.ini')
     # Make a list of years
     years= ['Y1','Y2','Y3','Y4']
     year_night_lims = {}
@@ -423,14 +435,18 @@ def get_y3a1():
 def make_weightmap(s,lst,y,chip,cuts,j,logger):
 
     img_list = np.loadtxt(lst,dtype='str')
+    if len(img_list)==0:
+        logger.info('Empty list: %s \n %s'%(lst,img_list))
+        return False
+
     starttime=float(time.time())
-    logger.info('Creating weightmaps for individual input exposures')
+    logger.info('Creating weightmaps for individual input exposures in %s, %s band, chip %s'%(s.field,s.band,chip))
     weightlist = []
     resamplist = []
     os.chdir(s.temp_dir)
     try:
         if len(img_list)>1:
-       
+
             for img in img_list:
                 imgname = os.path.split(img)[-1]
                 imgroot = imgname[:-5]
@@ -438,9 +454,9 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
                     imgroot = imgroot[:-3]
                 weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
- 
+
             swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
-    
+
     except TypeError:
         img = str(img_list)
         swarp_cmd = ['swarp','%s'%img,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
@@ -450,12 +466,12 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
             imgroot = imgroot[:-3]
         weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
         resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
-         
-    
+
+
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())
-    logger.info('Finished creating weightmaps, took %.3f seconds'%(endtime-starttime))
+    logger.info('Finished creating weightmaps for %s, %s band, chip %s; took %.3f seconds'%(s.field,s.band,chip,endtime-starttime))
     weightlist = np.array(weightlist)
     weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(y,s.field,s.band,chip,s.cutstring,j))
     np.savetxt(weightlist_name,weightlist,fmt='%s')

@@ -114,7 +114,7 @@ def sex_worker(arg_pair):
     sex_for_psfex(s,chip,cuts)
 
     model_fwhm = psfex(s,chip,retval='FWHM',cuts=cuts)
-    os.chdir(s.ana_dir)
+    os.chdir(os.path.join(s.band_dir,str(chip))
 
     sexcat = sex_for_cat(s,chip,cuts)
 
@@ -122,7 +122,7 @@ def sex_worker(arg_pair):
 
     zp_psf,psf_fwhm = astrometry(s,chip,sexcat,phot_type = 'PSF')
 
-    qual = open(os.path.join(s.ana_dir,'%s_ana.qual'%s.cutstring),'w')
+    qual = open(os.path.join(s.band_dir,str(chip),'%s_ana.qual'%s.cutstring),'w')
     print ('# Quality parameters for %s %s %s %s' %(s.my,s.field,s.band,chip),file =qual)
     print ('# Parameters:',file=qual)
     print ('# Zeropoint from sextractor',file=qual)

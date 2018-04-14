@@ -114,7 +114,7 @@ def sex_worker(arg_pair):
     sex_for_psfex(s,chip,cuts)
 
     model_fwhm = psfex(s,chip,retval='FWHM',cuts=cuts)
-    os.chdir(os.path.join(s.band_dir,str(chip))
+    os.chdir(os.path.join(s.band_dir,str(chip)))
 
     sexcat = sex_for_cat(s,chip,cuts)
 

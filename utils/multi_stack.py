@@ -122,15 +122,9 @@ def sex_worker(arg_pair):
 
     zp_psf,psf_fwhm = astrometry(s,chip,sexcat,phot_type = 'PSF')
 
-    qual = open(os.path.join(s.band_dir,str(chip),'%s_ana.qual'%s.cutstring),'w')
-    print ('# Quality parameters for %s %s %s %s' %(s.my,s.field,s.band,chip),file =qual)
-    print ('# Parameters:',file=qual)
-    print ('# Zeropoint from sextractor',file=qual)
-    print ('# Zeropoint from PSF matches', file = qual)
-    print ('# FWHM from PSFex',file = qual)
-    print ('# FWHM from SExtractor using PSF model',file = qual)
-    print ('%s %s %s %s'%(zp,zp_psf,model_fwhm,sex_fwhm),file=qual)
-    qual.close()
+    qual = np.array([zp,zp_psf,model_fwhm,sex_fwhm])
+    np.savetxt(os.path.join(s.band_dir,str(chip),'%s_ana.qual'%s.cutstring),qual)
+
     print("Written quality factors to %s_ana.qual" %s.cutstring)
     qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
     qual_df = pd.DataFrame([qual_dict],index = [chip])

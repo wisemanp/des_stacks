@@ -93,10 +93,8 @@ def init_phot(s,chip,cat,pl='n'):
         else:
             imgname = s.band_dir+'/ccd_%s_%s_%s_temp.fits'%(chip,s.band,s.cutstring)
     cuts = imgname.split('_')
-    q= open(os.path.join(ana_dir,'%s_ana.qual'%s.cutstring),'r')
-    q = q.read()
-    quals = q.split('\n')[-2]
-    quals = quals.split(' ')
+    q= np.loadtxt(os.path.join(ana_dir,'%s_ana.qual'%s.cutstring))
+    
     av_fwhm = float(quals[2])
     zp_kr = float(quals[0])
     zp_psf = float(quals[1])

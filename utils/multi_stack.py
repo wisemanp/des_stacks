@@ -120,9 +120,7 @@ def sex_worker(arg_pair):
 
     zp,sex_fwhm = astrometry(s,chip,sexcat)
 
-    zp_psf,psf_fwhm = astrometry(s,chip,sexcat,phot_type = 'PSF')
-
-    qual = np.array([zp,zp_psf,model_fwhm,sex_fwhm])
+    qual = np.array([zp,model_fwhm,sex_fwhm])
     qualsave = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
     np.savetxt(qualsave,qual)
 

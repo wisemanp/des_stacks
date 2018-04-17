@@ -104,9 +104,9 @@ def init_phot(s,chip,cat,pl='n'):
     av_fwhm = float(quals[1])
     cat = cat.sort_values(by='X_WORLD')
     cat['MAG_AUTO']=cat['MAG_AUTO']+zp
-    if cat['MAG_APER']:
+    try:
         cat['MAG_APER']=cat['MAG_APER']+zp
-    else:
+    except:
         s.logger.info('Aperture photometry appears not to have been done yet; consider doing it')
     # get rid of clearly wrong values
     truth =cat['MAG_AUTO']<35
@@ -188,9 +188,9 @@ def init_phot(s,chip,cat,pl='n'):
     for i in range(len(cat['FWHM_WORLD'].values)):
         cat['FWHM_WORLD'].values[i] = float(cat['FWHM_WORLD'].values[i])
     radec=cat[['X_WORLD','Y_WORLD']].applymap("{0:7.5f}".format)
-    if cat['MAG_APER']:
+    try:
         rest = cat[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','MAG_APER','MAGERR_APER','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
-    else:
+    except:
         rest = cat[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
 
     rest[['X_WORLD','Y_WORLD']]=radec[['X_WORLD','Y_WORLD']]

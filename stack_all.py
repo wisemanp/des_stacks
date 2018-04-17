@@ -18,6 +18,11 @@ from time import gmtime, strftime
 from des_stacks import des_stack as stack
 from des_stacks.utils.loop_stack import iterate_sex_loop, init_sex_loop
 
+
+all_years = ['none','1','2','3','4']
+all_fields = ['SN-X1','SN-X2','SN-X3','SN-C1','SN-C2','SN-C3','SN-E1','SN-E2','SN-S1','SN-S2']
+all_chips = np.arange(1,62)
+
 def parser():
     parser = argparse.ArgumentParser(description='Stack some DES SN images')
     parser.add_argument('-f','--field', help = 'Field(s) to stack. Separate with space or comma (e.g. X2 X3)',nargs='?',required=False,default='X2')
@@ -223,6 +228,40 @@ def looped_stack(logger,parsed):
                         except:
                             pass
     logger.info("Done! stack_all.py finished. Enjoy your stacked data!")
+
+
+
+
+def check_done(proc,wd):
+    sd = os.path.join(wd,'stacks')
+    ld = os.path.join(wd,'log')
+    for y in all_years:
+        done_df = pd.DataFrame(index = all_bands,columns = fields)
+        for f in all_fields:
+            for b in all_bands:
+                bd = os.path.join(sd,'MY%s'%y,f,b)
+                if b in ['g','r']:
+                    tc = 0.15
+                elif b in ['i','z']:
+                    tc = 0.25
+                cn = 0
+                for c in all_chips:
+                    if proc =='stack':
+                        sci_fn = os.path.join(bd,'ccd_%s_%s_%s_sci.fits'%(str(c),b,tc))
+                    elif proc =='sex':
+                        sci_fn = os.path.join(bd,str(c),'ana','MY%s_%s_%s_%s_%s_sci.sexcat'%(y,f,b,str(c),tc))
+                    elif proc =='phot':
+                        sci_fn = os.path.join(bd,str(c),'ana','%s_%s_%s_%s_init.result'%(y,f,b,str(c)))
+                    if os.path.isfile(sci_fn):
+                        cn +=1
+                done_df.loc[b,[f]]=cn
+        now = datetime.datetime.now()
+        today = '%s_%s_%s'%(now.year,now.month,now.day)
+        done_df.to_csv(os.path.join(ld,'%s_%s_progress_%s.csv'%(y,proc,today)))
+        print ('For MY ',y,', the following %s has been done:' %proc)
+        print (done_df)
+        print ('*********************')
+
 if __name__=="__main__":
     logger = logging.getLogger('stack_all.py')
     logger.setLevel(logging.DEBUG)
@@ -243,3 +282,6 @@ if __name__=="__main__":
             simple_stack(logger,parsed)
     else:
         simple_stack(logger,parsed)
+    check_done('stack',parsed['workdir'])
+    check_done('sex',parsed['workdir'])
+    check_done('phot',parsed['workdir'])

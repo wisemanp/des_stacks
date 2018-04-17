@@ -51,7 +51,7 @@ def parser():
             field = 'SN-'+field
             fields[i]=field
         except:
-            field = 'SN-'+fields[0]
+            fields = 'SN-'+fields[0]
     parsed['fields']=fields
 
     try:
@@ -152,7 +152,7 @@ def simple_stack(logger,parsed):
                     #for temp_fn in glob.glob(os.path.join(s.temp_dir,'*resamp*')):
                         #if not os.path.isdir(temp_fn):
                             #os.remove(temp_fn)
-                    
+
                     #for temp_fn in glob.glob(s.band_dir):
                         #if temp_fn not in glob.glob(os.path.join(s.band_dir,'*sci*'))+glob.glob(os.path.join(s.band_dir,'*wgt*')):
                            # if not os.path.isdir(temp_fn):

@@ -103,7 +103,7 @@ def init_phot(s,chip,cat,pl='n'):
     zp = float(quals[0])
     av_fwhm = float(quals[1])
     cat = cat.sort_values(by='X_WORLD')
-    cat['MAG_AUTO']=cat['MAG_AUTO']+zp_kr
+    cat['MAG_AUTO']=cat['MAG_AUTO']+zp
     # get rid of clearly wrong values
     truth =cat['MAG_AUTO']<35
     cat = cat.iloc[truth.values]
@@ -174,8 +174,7 @@ def init_phot(s,chip,cat,pl='n'):
     thresh = 5
     skyflux = skynoise*np.sqrt(np.pi*(av_fwhm/pixscale)**2)
     skymag = 2.5*np.log10(thresh*skyflux)
-    zmag = zp_kr
-    skylim = zmag -skymag
+    skylim = zp -skymag
     s.logger.info("Limiting Kron magnitude based on matched objects: %.3f\n"% kr_lim)
     s.logger.info("%s sigma limiting magnitude based on matched objects: %.3f\n"%(limsig,kr_lim2))
     s.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zmag,skylim))
@@ -201,7 +200,7 @@ def init_phot(s,chip,cat,pl='n'):
     reshead +='# Band: %s\n' % s.band
     reshead +='# CCD Number: %s\n' % chip
     reshead +='# Total exposure time: %s s\n' %exptime
-    reshead +='# Zeropoint based on AUTO photometry: %s \n'%zp_kr
+    reshead +='# Zeropoint based on AUTO photometry: %s \n'%zp
     reshead +='# Limiting Kron magnitude based on matched objects: %.3f\n'% kr_lim
     reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,kr_lim2)
     reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zmag,skylim)

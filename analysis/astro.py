@@ -177,7 +177,7 @@ def init_phot(s,chip,cat,pl='n'):
     skylim = zp -skymag
     s.logger.info("Limiting Kron magnitude based on matched objects: %.3f\n"% kr_lim)
     s.logger.info("%s sigma limiting magnitude based on matched objects: %.3f\n"%(limsig,kr_lim2))
-    s.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zmag,skylim))
+    s.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zp,skylim))
 
     resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip)),'w')
     cat['FWHM_WORLD'] = cat['FWHM_WORLD']*3600
@@ -203,7 +203,7 @@ def init_phot(s,chip,cat,pl='n'):
     reshead +='# Zeropoint based on AUTO photometry: %s \n'%zp
     reshead +='# Limiting Kron magnitude based on matched objects: %.3f\n'% kr_lim
     reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,kr_lim2)
-    reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zmag,skylim)
+    reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zp,skylim)
     reshead +='# Columns:\n'
     reshead +='# Dec (J2000)\n'
     reshead +='# Kron Magnitude\n'

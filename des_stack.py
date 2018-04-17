@@ -23,9 +23,6 @@ from des_stacks.analysis.astro import calib,init_phot
 class Stack():
     def __init__(self, field, band, my, chips ,working_dir):
         self.field = field
-        #catch field naming #bug
-        if self.field[0:3]!='SN-':
-            self.field='SN-'+self.field
         self.band = band
         self.my =my
         self.chips=chips

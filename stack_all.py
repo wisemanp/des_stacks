@@ -50,7 +50,7 @@ def parser():
         except:
             fields =args.field
 
-    for i in range(len(fields[0])):
+    for i in range(len(fields)):
         try:
             field = fields[i]
             field = 'SN-'+field

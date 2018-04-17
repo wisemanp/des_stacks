@@ -11,7 +11,7 @@ import os
 from itertools import repeat
 from functools import partial
 import logging
-from des_stacks.analysis.astro import astrometry,init_phot
+from des_stacks.analysis.astro import calib,init_phot
 import pandas as pd
 def stack_worker(arg_pair):
     logger = logging.getLogger(__name__)
@@ -118,7 +118,7 @@ def sex_worker(arg_pair):
 
     sexcat = sex_for_cat(s,chip,cuts)
 
-    zp,sex_fwhm = astrometry(s,chip,sexcat)
+    zp,sex_fwhm = calib(s,chip,sexcat)
 
     qual = np.array([zp,model_fwhm,sex_fwhm])
     qualsave = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)

@@ -18,7 +18,7 @@ import time
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year,make_weightmap
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import des_stacks.utils.multi_stack as multi_stack
-from des_stacks.analysis.astro import astrometry,init_phot
+from des_stacks.analysis.astro import calib,init_phot
 
 class Stack():
     def __init__(self, field, band, my, chips ,working_dir):
@@ -233,7 +233,7 @@ class Stack():
 
             # Compare new catalog to old one, get the ZP and FWHM out
 
-        
+
 
     def init_phot(self,pl='n'):
         limmags = {}

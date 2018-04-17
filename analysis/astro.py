@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import copy
 from scipy.interpolate import UnivariateSpline as spln
 
-def astrometry(s,chip,sexcat,phot_type='AUTO'):
+def calib(s,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -104,6 +104,10 @@ def init_phot(s,chip,cat,pl='n'):
     av_fwhm = float(quals[1])
     cat = cat.sort_values(by='X_WORLD')
     cat['MAG_AUTO']=cat['MAG_AUTO']+zp
+    if cat['MAG_APER']:
+        cat['MAG_APER']=cat['MAG_APER']+zp
+    else:
+        s.logger.info('Aperture photometry appears not to have been done yet; consider doing it')
     # get rid of clearly wrong values
     truth =cat['MAG_AUTO']<35
     cat = cat.iloc[truth.values]
@@ -184,7 +188,11 @@ def init_phot(s,chip,cat,pl='n'):
     for i in range(len(cat['FWHM_WORLD'].values)):
         cat['FWHM_WORLD'].values[i] = float(cat['FWHM_WORLD'].values[i])
     radec=cat[['X_WORLD','Y_WORLD']].applymap("{0:7.5f}".format)
-    rest = cat[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
+    if cat['MAG_APER']:
+        rest = cat[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','MAG_APER','MAGERR_APER','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
+    else:
+        rest = cat[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
+
     rest[['X_WORLD','Y_WORLD']]=radec[['X_WORLD','Y_WORLD']]
     rest['CLASS_STAR']=cat['CLASS_STAR']
     cols = rest.columns.tolist()
@@ -218,8 +226,9 @@ def init_phot(s,chip,cat,pl='n'):
     s.logger.info("Saved result file to: %s"%savestring)
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
+#####################################################################################################
     def full_phot(s,chip,cat,pl='n'):
-        s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
+        s.logger.info("Entered 'full_phot.py' to get precision photometry and provide limiting magnitudes")
 
         ana_dir = os.path.join(s.band_dir,chip,'ana')
         try:

@@ -22,7 +22,7 @@ from des_stacks.utils.loop_stack import iterate_sex_loop, init_sex_loop
 all_years = ['none','1','2','3','4']
 all_fields = ['SN-X1','SN-X2','SN-X3','SN-C1','SN-C2','SN-C3','SN-E1','SN-E2','SN-S1','SN-S2']
 all_chips = np.arange(1,62)
-
+all_bands = ['g','r','i','z']
 def parser():
     parser = argparse.ArgumentParser(description='Stack some DES SN images')
     parser.add_argument('-f','--field', help = 'Field(s) to stack. Separate with space or comma (e.g. X2 X3)',nargs='?',required=False,default='X2')

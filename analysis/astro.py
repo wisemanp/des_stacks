@@ -19,7 +19,7 @@ import copy
 from scipy.interpolate import UnivariateSpline as spln
 
 from des_stacks import des_stack as stack
-from des_stacks.utils.stack_tooks import make_white
+from des_stacks.utils.stack_tools import make_white
 from des_stacks.utils.sex_tools import cap_sex
 
 sns.set_palette('Dark2')

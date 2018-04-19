@@ -234,6 +234,8 @@ def looped_stack(logger,parsed):
 
 
 def check_done(proc,wd):
+    if wd == 'coadding':
+        wd = '/media/data3/wiseman/des/coadding'
     sd = os.path.join(wd,'stacks')
     ld = os.path.join(wd,'log')
     for y in all_years:

@@ -150,7 +150,7 @@ def simple_stack(logger,parsed):
     for f in fields:
         for b in bands:
             for my in mys:
-                s = stack.Stack(f,b,my,chips,workdir)
+                s = stack.Stack(f,b,my,chips,workdir,cuts=cuts)
                 s.do_my_stack(cuts=cuts,final=True)
                 s.run_stack_sex(cuts=cuts,final=True)
                 s.init_phot()

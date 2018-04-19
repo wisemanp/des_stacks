@@ -28,7 +28,7 @@ class Stack():
         self.chips=chips
         self.coadding_dir =working_dir
 
-        if cuts['none']:
+        if cuts=={'none':None}:
             if self.band in ['g','r']:
                 cuts ={'teff':0.15, 'zp':None,'psf':None}
 
@@ -37,7 +37,7 @@ class Stack():
 
         if cuts['teff']:
             self.cutstring = '%s'%cuts['teff']
-            
+
         elif cuts['zp'] and cuts['psf'] and not cuts['teff']:
             self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
         self._define_paths()

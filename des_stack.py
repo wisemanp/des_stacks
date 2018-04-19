@@ -21,12 +21,24 @@ import des_stacks.utils.multi_stack as multi_stack
 from des_stacks.analysis.astro import calib,init_phot
 
 class Stack():
-    def __init__(self, field, band, my, chips ,working_dir):
+    def __init__(self, field, band, my, chips ,working_dir,cuts={'none':None}):
         self.field = field
         self.band = band
         self.my =my
         self.chips=chips
         self.coadding_dir =working_dir
+        if cuts['zp'] and cuts['psf'] and not cuts['teff']:
+            self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
+        elif cuts['none']:
+            if self.band in ['g','r']:
+                cuts ={'teff':0.15, 'zp':None,'psf':None}
+
+            elif self.band in ['i','z']:
+                cuts ={'teff':0.25, 'zp':None,'psf':None}
+
+        if cuts['teff']:
+            self.cutstring = '%s'%cuts['teff']
+
         self._define_paths()
         self._init_log()
         self._get_info()

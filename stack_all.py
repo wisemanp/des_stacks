@@ -23,6 +23,7 @@ all_years = ['none','1','2','3','4']
 all_fields = ['SN-X1','SN-X2','SN-X3','SN-C1','SN-C2','SN-C3','SN-E1','SN-E2','SN-S1','SN-S2']
 all_chips = np.arange(1,62)
 all_bands = ['g','r','i','z']
+
 def parser():
     parser = argparse.ArgumentParser(description='Stack some DES SN images')
     parser.add_argument('-f','--field', help = 'Field(s) to stack. Separate with space or comma (e.g. X2 X3)',nargs='?',required=False,default='X2')
@@ -236,7 +237,7 @@ def check_done(proc,wd):
     sd = os.path.join(wd,'stacks')
     ld = os.path.join(wd,'log')
     for y in all_years:
-        done_df = pd.DataFrame(index = all_bands,columns = fields)
+        done_df = pd.DataFrame(index = all_bands,columns = all_fields)
         for f in all_fields:
             for b in all_bands:
                 bd = os.path.join(sd,'MY%s'%y,f,b)

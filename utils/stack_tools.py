@@ -480,3 +480,57 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
     resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(y,s.field,s.band,chip,s.cutstring,j))
     np.savetxt(resamplist_name,resamplist,fmt='%s')
     return (weightlist_name,resamplist_name)
+
+def make_white(sg,sr,si,sz,y,f,chip):
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    logger.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    # resample to the same grid using SWarp
+    # start by getting the science frames for each band
+
+    sci_frames = []
+    for s in [sg,sr,si,sz]:
+        bd = s.band_dir
+        # assume we don't have multiple versions of the science frame
+        glob_string = os.path.join(bd,'ccd_%s_%s_*_sci.fits'%(str(chip),s.band))
+        glob_list = glob.glob(glob_string)
+        sci_frames.append(glob_list[0])
+
+    sci_frame_str = sci_frames[0]+' '+sci_frames[1]+' '+sci_frames[2]+' '+sci_frames[3]
+    # set up the directory if it doesn't already exist
+    cap_dir = os.path.join(sg.out_dir,'MY%s'%y,f,'cap')
+    if not os.path.isdir(cap_dir):
+        os.mkdir(cap_dir)
+    cap_chip_dir = os.path.join(cap_dir,str(chip))
+    if not os.path.isdir(cap_chip_dir):
+        os.mkdir(cap_chip_dir)
+    os.chdir(cap_chip_dir)
+    #swarp them first for resampling to the same grid
+    logger.info('Resampling the bands for MY%s, %s, chip %s to the same grid'%(y,f,chip))
+    resamp_cmd = ['swarp','-COMBINE','N','-RESAMPLE','Y',sci_frame_str]
+    starttime=float(time.time())
+    p = subprocess.Popen(resamp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    outs,errs = p.communicate()
+    endtime=float(time.time())
+    logger.info('Done resampling, took %.3f seconds'%(endtime-starttime))
+    # Now make a white image
+    resamp_frames = []
+    for s in [sg,sr,si,sz]:
+        glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
+        glob_list = glob.glob(glob_string)
+        resamp_frames.append(glob_list[0])
+    resamp_frame_str = resamp_frames[0]+' '+resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
+    logger.info('Stacking the bands for MY%s, %s, chip %s together to make a white detection image'%(y,f,chip))
+    white_name = os.path.join(cap_chip_dir,'MY%s_%s_ccd_%s_white_sci.fits'%(y,f,chip))
+    stack_cmd = ['swarp','-COMBINE','Y','-RESAMPLE','N','-IMAGEOUT_NAME',white_name,resamp_frame_str]
+    starttime=float(time.time())
+    p = subprocess.Popen(stack_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    outs,errs = p.communicate()
+    endtime=float(time.time())
+    logger.info('Done making white image, took %.3f seconds'%(endtime-starttime))
+    return white_name

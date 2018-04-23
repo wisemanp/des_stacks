@@ -19,8 +19,8 @@ import copy
 from scipy.interpolate import UnivariateSpline as spln
 
 from des_stacks import des_stack as stack
-from des_stacks.utils.stack_tools import make_white
-from des_stacks.utils.sex_tools import cap_sex
+from des_stacks.utils.stack_tools import make_cap_stamps
+from des_stacks.utils.sex_tools import cap_sex, get_sn_dat
 
 sns.set_palette('Dark2')
 sns.set_color_codes(palette='colorblind')
@@ -235,21 +235,41 @@ def init_phot(s,chip,cat,pl='n'):
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
 #####################################################################################################
-def cap_phot(y,f,chip,wd = 'coadding'):
+def cap_phot(sn_name,wd = 'coadding'):
     '''get aperture photometry'''
-    s.logger.info("Entered 'cap_phot.py' to do common aperture photometry on MY%s, %s, %s"%(y,f,chip))
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    '''if zp_cut>0:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:'''
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    logger.info("Entered 'cap_phot.py' to do common aperture photometry for the host of "%sn_name)
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
+
+    ra,dec,f,y,chip = get_sn_datp(sn_name)
+    logger.info("Found transient in the database SNCAND")
+    # Make a Stack instance for each band
     sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
 
     # if there is no white image, make ones
-    white_name = os.path.join(sg.out_dir,'MY%s'%y,f,'cap',str(chip),'MY%s_%s_ccd_%s_white_sci.fits'%(y,f,chip))
-    if not os.path.isfile(white_name):
-        white_name = make_white(sg,sr,si,sz,y,f,chip)
-
-    sexcats =cap_sex(sg,sr,si,sz,y,f,chip,white_name)
+    det_name = os.path.join(sg.out_dir,'CAP','%s_white_stamp.fits'%(sn_name))
+    if not os.path.isfile(det_name):
+        det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec)
+    # do common aperture photometry
+    sexcats =cap_sex(sg,sr,si,sz,chip,sn_name)
+    # set up an empty results dataframe
+    res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
+     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
     for s in [sg,sr,si,sz]:
-
+        # load in the photometry from sextractor
         capcat = pd.DataFrame(fits.getdata(sexcats[s.band],ext=1))
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         zp = float(quals[0])
@@ -261,54 +281,30 @@ def cap_phot(y,f,chip,wd = 'coadding'):
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
+        # find the host galaxy
+        snloc = SkyCoord(ra=ra*u.degree,dec = dec*u.degree)
+        catobjs = SkyCoord(ra = gcat['X_WORLD']*u.degree,dec = gcat['Y_WORLD']*u.degree)
+        idx,d2d,d3d = snloc.match_to_catalog_sky(catobjs)
+        if d2d.arcsec <2:
+            sn_phot = gcat.iloc[int(idx)]
+            sn_phot['BAND'] = s.band
+            sn_phot['SN_NAME'] = sn_name
+            res_df = res_df.append(sn_phot)
 
-    pixscale=0.27
+        else:
+            logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit in %s band"%s.band)
+            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
+                header = [next(res) for x in range(8)]
+            limmag = header[-1].split(' ')[-1].strip('\n')
+            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1]
+    res_df.index = res_df['BAND']
+    all_sn_fn = os.path.join(sg.res_dir,'all_sn_phot.csv')
+    if os.path.isfile(all_sn_fn):
+        all_sn = pd.read_csv(all_sn_fn)
+    else:
+        all_sn = pd.DataFrame(columns = ['SN_NAME','BAND','X_WORLD', 'Y_WORLD', 'MAG_AUTO', 'MAGERR_AUTO',
+         'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
 
-    qual = os.path.join(ana_dir,'%s_ana.qual'%s.cutstring)
-    thresh = 5
-    skyflux = skynoise*np.sqrt(np.pi*(av_fwhm/pixscale)**2)
-    skymag = 2.5*np.log10(thresh*skyflux)
-    zmag = zp_psf
-    skylim = zmag -skymag
-    #####################################
-    'THIS IS WHERE YOU GOT TO'
 
-    resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip)),'w')
-    psf['FWHM_WORLD'] = psf['FWHM_WORLD']*3600
-    for i in range(len(psf['FWHM_WORLD'].values)):
-        psf['FWHM_WORLD'].values[i] = float(psf['FWHM_WORLD'].values[i])
-    radec=psf[['X_WORLD','Y_WORLD']].applymap("{0:7.5f}".format)
-    rest = psf[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
-    rest[['X_WORLD','Y_WORLD']]=radec[['X_WORLD','Y_WORLD']]
-    rest['CLASS_STAR']=psf['CLASS_STAR']
-    cols = rest.columns.tolist()
-    rearranged = cols[-2:]+cols[:-2]
-    re = rest[rearranged]
-    re.to_csv(os.path.join(s.temp_dir,'temp_cat.csv'),index=False,sep=' ')
-    stringthing = open(os.path.join(s.temp_dir,'temp_cat.csv'),'r')
-    psfstring = stringthing.read()
-    stringthing.close()
-    reshead = '# Result file for a stack of Dark Energy Survey data taken by DECam\n'
-    reshead +='# Field: %s\n'% s.field
-    reshead +='# Minus year: %s\n'% s.my
-    reshead +='# Band: %s\n' % s.band
-    reshead +='# CCD Number: %s\n' % chip
-    reshead +='# Total exposure time: %s s\n' %exptime
-    reshead +='# Zeropoint based on PSF photometry: %s \n'%zp_psf
-    reshead +='# Limiting Kron magnitude based on matched objects: %.3f\n'% kr_lim
-    reshead +='# Limiting magnitude based on PSF photometry: %.3f\n'% psf_lim
-    reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,psf_lim2)
-    reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zmag,skylim)
-    reshead +='# Columns:\n'
-    reshead +='# Dec (J2000)\n'
-    reshead +='# Kron Magnitude\n'
-    reshead +='# Kron Magnitude error\n'
-    reshead +='# PSF Magnitude\n'
-    reshead +='# PSF Magnitude error\n'
-    reshead +='# FWHM of the source (arcsec)\n'
-    reshead +='# Elongation of source\n'
-    resfile.write(reshead)
-    resfile.write(psfstring)
-    savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip))
-    s.logger.info("Saved result file to: %s"%savestring)
-    return (kr_lim,psf_lim,psf_lim2,skylim,np.mean([kr_lim,psf_lim,psf_lim2,skylim]))
+    logger.info("Done doing CAP for %s"%sn_name)
+    return None

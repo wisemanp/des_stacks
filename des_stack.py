@@ -62,6 +62,9 @@ class Stack():
         self.cat_dir = os.path.join(self.coadding_dir,'catalogs')
         if not os.path.isdir(self.cat_dir):
             os.mkdir(self.cat_dir)
+        self.res_dir = os.path.join(self.coadding_dir,'results')
+        if not os.path.isdir(self.res_dir):
+            os.mkdir(self.res_dir)
         self.out_dir = os.path.join(self.coadding_dir,'stacks')
         if not os.path.isdir(self.out_dir):
             os.mkdir(self.out_dir)

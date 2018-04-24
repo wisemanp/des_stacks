@@ -299,6 +299,14 @@ def cap_phot(sn_name,wd = 'coadding'):
             limmag = header[-1].split(' ')[-1].strip('\n')
             res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1]
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
+
+        # make region files for ds9
+        reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
+
+        for i in range(len(capcat['X_WORLD'].values)):
+            print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(cat['X_WORLD'].iloc[i],cat['Y_WORLD'].iloc[i],cat['MAG_AUTO'].iloc[i],cat['MAGERR_AUTO'].iloc[i]),file=reg)
+        print ('fk5; circle(%s,%s,1") # text={%s} color=red'%(ra,dec,sn_name),file=reg)
+        reg.close()
     res_df.index = res_df['BAND']
     all_sn_fn = os.path.join(sg.res_dir,'all_sn_phot.csv')
     if os.path.isfile(all_sn_fn):

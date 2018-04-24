@@ -498,9 +498,10 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_size=300):
         bd = s.band_dir
         # assume we don't have multiple versions of the science frame
         glob_string = os.path.join(bd,'ccd_%s_%s_*_sci.fits'%(str(chip),s.band))
+        logger.info("Looking for things that look like: '%s'"%glob_string)
         glob_list = glob.glob(glob_string)
         sci_frames.append(glob_list[0])
-
+        logger.info("Found the correct coadd, exists at: '%s'"%glob_list[0])
     pixel_scale = 3600.0*abs(fits.getheader(sci_frames[0])['CD1_1'])
     sci_frame_str = sci_frames[0]+' '+sci_frames[1]+' '+sci_frames[2]+' '+sci_frames[3]
 
@@ -516,7 +517,7 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_size=300):
     logger.info('Resampling all bands in a stamp around %s'%sn_name)
     resamp_cmd = ['swarp',
     '-COMBINE','N',
-    '-RESAMPLE','Y'
+    '-RESAMPLE','Y',
     '-IMAGE_SIZE','%s,%s'%(stamp_size,stamp_size),
     '-CENTER_TYPE','MANUAL',
     '-CENTER','%f,%f'%(ra,dec),
@@ -524,6 +525,7 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_size=300):
     '-PIXEL_SCALE','%.03f'%pixel_scale,
     '-BACK_SIZE','512',
     sci_frame_str]
+    logger.info("Swarping with the command:\n '%s'"%resamp_cmd)
     starttime=float(time.time())
     p = subprocess.Popen(resamp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
@@ -552,4 +554,4 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_size=300):
     outs,errs = p.communicate()
     endtime=float(time.time())
     logger.info('Done making white stamp for %s, took %.3f seconds'%(sn_name,endtime-starttime))
-    return white_name
+    return '%s_white_stamp.fits'%sn_name

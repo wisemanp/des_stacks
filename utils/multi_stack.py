@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pathos.pools as pp
 import multiprocessing
 from multiprocessing import Process
@@ -8,10 +10,8 @@ from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import time
 import numpy as np
 import os
-from itertools import repeat
-from functools import partial
 import logging
-from des_stacks.analysis.astro import calib,init_phot
+from des_stacks.analysis.astro import init_phot, init_calib
 import pandas as pd
 def stack_worker(arg_pair):
     logger = logging.getLogger(__name__)
@@ -118,7 +118,7 @@ def sex_worker(arg_pair):
 
     sexcat = sex_for_cat(s,chip,cuts)
 
-    zp,sex_fwhm = calib(s,chip,sexcat)
+    zp,sex_fwhm = init_calib(s,chip,sexcat)
 
     qual = np.array([zp,model_fwhm,sex_fwhm])
     qualsave = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)

@@ -9,6 +9,9 @@ import logging
 from shutil import copyfile
 import time
 import subprocess
+import _pickle as cpickle
+import easyaccess as ea
+import glob
 
 def sex_for_psfex(s,chip,cuts=None):
     '''Runs SExtractor on a certain stacked frame, to send to PSFex'''
@@ -163,7 +166,7 @@ def get_sn_dat(sn):
     for ccd in the_field.keys():
         if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
             if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
-                return (ra,dec,obj_field,y,ccd)
+                return (ra,dec,'SN-%s'%obj_field,y,ccd)
 
 
 def cap_sex(sg,sr,si,sz,chip,sn_name):
@@ -185,13 +188,16 @@ def cap_sex(sg,sr,si,sz,chip,sn_name):
         copyfile(os.path.join(sg.config_dir,'cap','default.%s'%ext),os.path.join(sn_dir,'default.%s'%ext))
     sexcats ={}
     for s in [sg,sr,si,sz]:
-        sexcat = os.path.join(sn_dir,'%s_%s_cap_sci.sexcat'%(sn_name,s.band)
+        sexcat = os.path.join(sn_dir,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))
+        if os.path.isfile(sexcat):
+            logger.info("Already done the photometry in the %s band!"%s.band)
+        else:
+            glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
+            resamp_name = glob.glob(glob_string)[0]
+            sex_cmd = ['sex','-CATALOG_NAME',sexcat,'%s,%s'%(white_name,resamp_name)]
+            logger.info('Running SExtractor in dual image mode in order to get common aperture photometry in the %s band'%s.band)
+            sex_process = subprocess.Popen(sex_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            out,errs = sex_process.communicate()
+            logger.info('Dual image SExtractor complete in the %s band: you now have common aperture photometry on chip %s!'%(s.band,chip))
         sexcats[s.band]=sexcat
-        glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
-        resamp_name = glob.glob(glob_string)[0]
-        sex_cmd = ['sex','-CATALOG_NAME',sexcat,'%s,%s'%(white_name,resamp_name)]
-        logger.info('Running SExtractor in dual image mode in order to get common aperture photometry in the %s band'%s.band)
-        sex_process = subprocess.Popen(sex_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        out,errs = sex_process.communicate()
-        logger.info('Dual image SExtractor complete in the %s band: you now have common aperture photometry on chip %s!'%(s.band,chip))
     return sexcats

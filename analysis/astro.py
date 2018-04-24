@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import numpy as np
 import pandas as pd
@@ -25,7 +26,7 @@ from des_stacks.utils.sex_tools import cap_sex, get_sn_dat
 sns.set_palette('Dark2')
 sns.set_color_codes(palette='colorblind')
 
-def calib(s,chip,sexcat,phot_type='AUTO'):
+def init_calib(s,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -47,8 +48,7 @@ def calib(s,chip,sexcat,phot_type='AUTO'):
     sexdat = fits.getdata(sexcat,ext=1)
     logger.info("Successfully read in catalog: %s" %y3a1_fn)
     Band = s.band.capitalize()
-    star_inds = ((y3a1['MAG_AUTO_%s'%Band]<18) & (y3a1['CLASS_STAR_%s'%Band]>0.3) | ((y3a1['SPREAD_MODEL_%s'%Band]\
-     + 3*y3a1['SPREADERR_MODEL_%s'%Band])<0.003)) & (y3a1['MAG_AUTO_%s'%Band]<22)
+    star_inds = ((y3a1['MAG_AUTO_%s'%Band]<18) & (y3a1['CLASS_STAR_%s'%Band]>0.3) |((y3a1['SPREAD_MODEL_%s'%Band] + 3*y3a1['SPREADERR_MODEL_%s'%Band])<0.003)) & (y3a1['MAG_AUTO_%s'%Band]<22)
 
     y3a1_stars = y3a1[star_inds]
 
@@ -250,53 +250,55 @@ def cap_phot(sn_name,wd = 'coadding'):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-    logger.info("Entered 'cap_phot.py' to do common aperture photometry for the host of "%sn_name)
+    logger.info("Entered 'cap_phot.py' to do common aperture photometry for the host of %s"%sn_name)
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
 
-    ra,dec,f,y,chip = get_sn_datp(sn_name)
+    ra,dec,f,y,chip = get_sn_dat(sn_name)
     logger.info("Found transient in the database SNCAND")
+    logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band
+    logger.info("Setting up Stack instances for each band")
     sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
 
     # if there is no white image, make ones
-    det_name = os.path.join(sg.out_dir,'CAP','%s_white_stamp.fits'%(sn_name))
+    det_name = os.path.join(sg.out_dir,'CAP',sn_name,'%s_white_stamp.fits'%(sn_name))
     if not os.path.isfile(det_name):
+        logger.info("Couldn't find a detection image, so going to make 300x300 pix stamps of each band plus white")
         det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec)
     # do common aperture photometry
+    logger.info("Going to cap_sex to do CAP on each band")
     sexcats =cap_sex(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
      'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
-        capcat = pd.DataFrame(fits.getdata(sexcats[s.band],ext=1))
+        capcat = Table.read(sexcats[s.band]).to_pandas()
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         zp = float(quals[0])
         av_fwhm = float(quals[2])
-
-
-        capcat = cat.sort_values(by='X_WORLD')
-        capcat['MAG_APER']=cat['MAG_APER']+zp
+        capcat = capcat.sort_values(by='X_WORLD')
+        capcat['MAG_APER']=capcat['MAG_APER']+zp
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
         # find the host galaxy
         snloc = SkyCoord(ra=ra*u.degree,dec = dec*u.degree)
-        catobjs = SkyCoord(ra = gcat['X_WORLD']*u.degree,dec = gcat['Y_WORLD']*u.degree)
+        catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
         idx,d2d,d3d = snloc.match_to_catalog_sky(catobjs)
         if d2d.arcsec <2:
-            sn_phot = gcat.iloc[int(idx)]
+            sn_phot = capcat.iloc[int(idx)]
             sn_phot['BAND'] = s.band
             sn_phot['SN_NAME'] = sn_name
             res_df = res_df.append(sn_phot)
 
         else:
-            logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit in %s band"%s.band)
             with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(8)]
             limmag = header[-1].split(' ')[-1].strip('\n')
             res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1]
+            logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
     res_df.index = res_df['BAND']
     all_sn_fn = os.path.join(sg.res_dir,'all_sn_phot.csv')
     if os.path.isfile(all_sn_fn):

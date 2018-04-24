@@ -5,6 +5,8 @@ import numpy as np
 import logging
 import argparse
 from time import gmtime, strftime
+#Note: import this first else it crashes importing sub-modules
+from des_stacks import des_stack as stack
 from des_stacks.analysis.astro import cap_phot
 
 def parser():

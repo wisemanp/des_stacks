@@ -352,10 +352,10 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
      'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
-    this_chip_lims = get_chip_vals(s.field,chip,vals = 'lims')
+    this_chip_lims = get_chip_vals(sg.field,chip,vals = 'lims')
 
     # find the galaxies that OzDES has redshifts for
-    grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits')).to_pandas()
+    grc = Table.read(os.path.join(sg.cat_dir,'ozdes_grc.fits')).to_pandas()
     ozdes_good_inds = ((grc['source']=='DES_AAOmega') & ((grc['flag'] == '3') | (grc['flag'] == '4')))
     ozdes_good = grc[ozdes_good_inds]
     ozdes_in_chip_inds = (ozdes_good['RA']< this_chip_lims[0][0])&(ozdes_good['RA']> this_chip_lims[2][0]) & (ozdes_good['DEC']> this_chip_lims[0][1]) & (ozdes_good['DEC']< this_chip_lims[1][1])
@@ -379,7 +379,7 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         # match the cap catalog with the ozdes one
         idx,d2d,d3d = catobjs.match_to_catalog_sky(z_gals)
         init_good_zgals = gals_with_z.iloc[idx]
-        good_match_inds = np.nonzero(d2d.arcsec < 3.0)[0]
+        good_match_inds = np.nonzero(d2d.arcsec < 2.0)[0]
         logger.info("In %s band, I found %s galaxies which match to within 3 arcseconds"%(s.band,len(good_match_inds)))
         good_phot_gals = capcat.iloc[good_match_inds]
         good_spec_gals = init_good_zgals.iloc[good_match_inds]
@@ -397,6 +397,7 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         #write the phot and spec properties to a file
         if phot_plus_spec.empty:
             phot_plus_spec =good_spec_gals
-
-        phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'],good_phot_gals['MAGERR_AUTO']
+        logger.info(good_phot_gals)
+        phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
+    phot_plus_spec.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.csv'%(sg.my,sg.field,chip)))
     return phot_plus_spec

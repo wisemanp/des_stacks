@@ -279,7 +279,9 @@ def cap_phot(sn_name,wd = 'coadding'):
         zp = float(quals[0])
         av_fwhm = float(quals[2])
         capcat = capcat.sort_values(by='X_WORLD')
+        logger.info("Calibrating in %s band using zeropoint from result file: %s"%(s.band,zp))
         capcat['MAG_APER']=capcat['MAG_APER']+zp
+        capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
@@ -287,25 +289,28 @@ def cap_phot(sn_name,wd = 'coadding'):
         snloc = SkyCoord(ra=ra*u.degree,dec = dec*u.degree)
         catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
         idx,d2d,d3d = snloc.match_to_catalog_sky(catobjs)
-        if d2d.arcsec <2:
-            sn_phot = capcat.iloc[int(idx)]
-            sn_phot['BAND'] = s.band
-            sn_phot['SN_NAME'] = sn_name
-            res_df = res_df.append(sn_phot)
+        match = capcat.iloc[int(idx)]
+        r_kr,elong = match['KRON_RADIUS'],match['ELONGATION']
+        if d2d.arcsec < (2.5*r_kr*np.sqrt(elong)):
+            logger.info("The SN lies within the Kron radius of a galaxy")
+            logger.info("The magnitude in %s is %s"%(s.band,match['MAG_AUTO']))
+            match['BAND'] = s.band
+            match['SN_NAME'] = sn_name
+            res_df = res_df.append(match)
 
         else:
             with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(8)]
             limmag = header[-1].split(' ')[-1].strip('\n')
-            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1]
+            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1]
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
 
         # make region files for ds9
         reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
 
         for i in range(len(capcat['X_WORLD'].values)):
-            print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(cat['X_WORLD'].iloc[i],cat['Y_WORLD'].iloc[i],cat['MAG_AUTO'].iloc[i],cat['MAGERR_AUTO'].iloc[i]),file=reg)
-        print ('fk5; circle(%s,%s,1") # text={%s} color=red'%(ra,dec,sn_name),file=reg)
+            print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=reg)
+        print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
         reg.close()
     res_df.index = res_df['BAND']
     all_sn_fn = os.path.join(sg.res_dir,'all_sn_phot.csv')

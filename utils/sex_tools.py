@@ -214,7 +214,9 @@ def cap_sex_chip(sg,sr,si,sz,chip):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     # get to the right directory
-    cap_chip_dir = os.path.join(sg.out_dir,'MY%s'sg.my,sg.field,'CAP',chip)
+    cap_chip_dir = os.path.join(sg.out_dir,'MY%s'%sg.my,sg.field,'CAP',str(chip))
+    if not os.path.isdir(cap_chip_dir):
+        os.mkdir(cap_chip_dir)
     os.chdir(cap_chip_dir)
     # get the right config files in the directory
     for ext in ['sex','param','conv','nnw']:
@@ -226,7 +228,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
         if os.path.isfile(sexcat):
             logger.info("Already done the photometry in the %s band!"%s.band)
         else:
-            glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
+            glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
             resamp_name = glob.glob(glob_string)[0]
             check_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_check_aper.fits'%(s.my,s.field,chip,s.band))
             sex_cmd = [

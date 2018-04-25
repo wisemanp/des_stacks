@@ -342,13 +342,13 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
 
     # if there is no white image, make ones
-    det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',chip,'%s_%s_%s_white.fits'%(y,f,chip))
+    det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_white.fits'%(y,f,chip))
     if not os.path.isfile(det_name):
         logger.info("Couldn't find a detection image, so going to resample each band plus white to the same pixels")
         det_name = resample_chip_for_cap(sg,sr,si,sz,chip)
     # do common aperture photometry
     logger.info("Going to cap_sex to do CAP on each band")
-    sexcats =cap_sex(sg,sr,si,sz,chip)
+    sexcats =cap_sex_chip(sg,sr,si,sz,chip)
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
      'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
@@ -359,37 +359,36 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         zp = float(quals[0])
         av_fwhm = float(quals[2])
         capcat = capcat.sort_values(by='X_WORLD')
-        logger.info("Calibrating in %s band using zeropoint from result file: %s"%(s.band,zp))
+        logger.info("Calibrating in %s band using zeropoint from result file: %.3f"%(s.band,zp))
         capcat['MAG_APER']=capcat['MAG_APER']+zp
         capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
         # find the galaxies that OzDES has redshifts for
-        chip_lims = get_chip_vals(s.field,chip,vals = 'lims')
+        this_chip_lims = get_chip_vals(s.field,chip,vals = 'lims')
         grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits')).to_pandas()
         ozdes_good_inds = ((grc['source']=='DES_AAOmega') & ((grc['flag'] == '3') | (grc['flag'] == '4')))
         ozdes_good = grc[ozdes_good_inds]
-        ozdes_in_chip_inds = (ozdes_good['RA']< this_chip_lims[0][0])&(ozdes_good['RA']> this_chip_lims[2][0])
-         & (ozdes_good['DEC']> this_chip_lims[0][1]) & (ozdes_good['DEC']> this_chip_lims[1][1])
+        ozdes_in_chip_inds = (ozdes_good['RA']< this_chip_lims[0][0])&(ozdes_good['RA']> this_chip_lims[2][0]) & (ozdes_good['DEC']> this_chip_lims[0][1]) & (ozdes_good['DEC']< this_chip_lims[1][1])
         gals_with_z = ozdes_good[ozdes_in_chip_inds]
         catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
         z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
         idx,d2d,d3d = catobjs.match_to_catalog_sky(z_gals)
         init_good_zgals = gals_with_z.iloc[idx]
-        good_match_inds = np.nonzero(d2d.arcsec < 3.0)[0]:
-        logger.info("Found %s galaxies which match to within 3 arcseconds"%len(good_match_inds))
+        good_match_inds = np.nonzero(d2d.arcsec < 3.0)[0]
+        logger.info("In %s band, I found %s galaxies which match to within 3 arcseconds"%(s.band,len(good_match_inds)))
         good_phot_gals = capcat.iloc[good_match_inds]
         good_spec_gals = init_good_zgals.iloc[good_match_inds]
         # make region files for ds9
-        photreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',chip,'%s_%s_%s_%s_phot.reg'%(y,f,chip,s.band)),'w')
-        specreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',chip,'%s_%s_%s_%s_spec.reg'%(y,f,chip,s.band)),'w')
+        photreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot.reg'%(y,f,chip,s.band)),'w')
+        specreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_spec.reg'%(y,f,chip,s.band)),'w')
         for i in range(len(capcat['X_WORLD'].values)):
             print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=photreg)
-        print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
+        
         photreg.close()
-        print ('global color=red')
+        print ('global color=red',file=specreg)
         for i in range(len(gals_with_z['RA'].values)):
             print ('fk5; circle(%s,%s,1") # text={z = %.3f}'%(gals_with_z['RA'].iloc[i],gals_with_z['DEC'].iloc[i],gals_with_z['z'].iloc[i]),file=specreg)
-    
+        specreg.close()
     return None

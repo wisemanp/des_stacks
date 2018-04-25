@@ -595,10 +595,10 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
     sci_frame_str = sci_frames[0]+' '+sci_frames[1]+' '+sci_frames[2]+' '+sci_frames[3]
 
     # set up the directory if it doesn't already exist
-    cap_dir = os.path.join(sg.out_dir,'MY%s'%sg.my,f,'CAP')
+    cap_dir = os.path.join(sg.out_dir,'MY%s'%sg.my,sg.field,'CAP')
     if not os.path.isdir(cap_dir):
         os.mkdir(cap_dir)
-    cap_chip_dir = os.path.join(cap_dir,chip)
+    cap_chip_dir = os.path.join(cap_dir,str(chip))
     if not os.path.isdir(cap_chip_dir):
         os.mkdir(cap_chip_dir)
     os.chdir(cap_chip_dir)
@@ -607,7 +607,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
 
 
     # make a white stamp as a det image
-    logger.info('Resampling all bands in a stamp around %s'%sn_name)
+    logger.info('Resampling all bands in MY%s, %s, chip %s'%(sg.my,sg.field,chip))
     resamp_cmd = ['swarp',
     '-COMBINE','N',
     '-RESAMPLE','Y',
@@ -623,19 +623,19 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
     p = subprocess.Popen(resamp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())
-    logger.info('Done resampling a stamp around %s, took %.3f seconds'%(sn_name,endtime-starttime))
+    logger.info('Done resampling MY%s, %s, chip %s, took %.3f seconds'%(sg.my,sg.field,chip,endtime-starttime))
     # Now resample the  image
     resamp_frames = []
     for s in [sg,sr,si,sz]:
-        glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
+        glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
         glob_list = glob.glob(glob_string)
         resamp_frames.append(glob_list[0])
     resamp_frame_str = resamp_frames[0]+' '+resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
 
     white_cmd = ['swarp',
-    '-IMAGE_SIZE','%s,%s'%(stamp_size,stamp_size),
+    '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
     '-CENTER_TYPE','MANUAL',
-    '-CENTER','%f,%f'%(ra,dec),
+    '-CENTER','%f,%f'%(ra_cent,dec_cent),
     '-PIXELSCALE_TYPE','MANUAL',
     '-PIXEL_SCALE','%.03f'%pixel_scale,
     '-BACK_SIZE','512',

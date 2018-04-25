@@ -352,6 +352,16 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
      'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
+    this_chip_lims = get_chip_vals(s.field,chip,vals = 'lims')
+
+    # find the galaxies that OzDES has redshifts for
+    grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits')).to_pandas()
+    ozdes_good_inds = ((grc['source']=='DES_AAOmega') & ((grc['flag'] == '3') | (grc['flag'] == '4')))
+    ozdes_good = grc[ozdes_good_inds]
+    ozdes_in_chip_inds = (ozdes_good['RA']< this_chip_lims[0][0])&(ozdes_good['RA']> this_chip_lims[2][0]) & (ozdes_good['DEC']> this_chip_lims[0][1]) & (ozdes_good['DEC']< this_chip_lims[1][1])
+    gals_with_z = ozdes_good[ozdes_in_chip_inds]
+    z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
+    phot_plus_spec = pd.DataFrame()
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
         capcat = Table.read(sexcats[s.band]).to_pandas()
@@ -365,15 +375,8 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
-        # find the galaxies that OzDES has redshifts for
-        this_chip_lims = get_chip_vals(s.field,chip,vals = 'lims')
-        grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits')).to_pandas()
-        ozdes_good_inds = ((grc['source']=='DES_AAOmega') & ((grc['flag'] == '3') | (grc['flag'] == '4')))
-        ozdes_good = grc[ozdes_good_inds]
-        ozdes_in_chip_inds = (ozdes_good['RA']< this_chip_lims[0][0])&(ozdes_good['RA']> this_chip_lims[2][0]) & (ozdes_good['DEC']> this_chip_lims[0][1]) & (ozdes_good['DEC']< this_chip_lims[1][1])
-        gals_with_z = ozdes_good[ozdes_in_chip_inds]
         catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
-        z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
+        # match the cap catalog with the ozdes one
         idx,d2d,d3d = catobjs.match_to_catalog_sky(z_gals)
         init_good_zgals = gals_with_z.iloc[idx]
         good_match_inds = np.nonzero(d2d.arcsec < 3.0)[0]
@@ -385,10 +388,15 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         specreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_spec.reg'%(y,f,chip,s.band)),'w')
         for i in range(len(capcat['X_WORLD'].values)):
             print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=photreg)
-        
+
         photreg.close()
         print ('global color=red',file=specreg)
         for i in range(len(gals_with_z['RA'].values)):
             print ('fk5; circle(%s,%s,1") # text={z = %.3f}'%(gals_with_z['RA'].iloc[i],gals_with_z['DEC'].iloc[i],gals_with_z['z'].iloc[i]),file=specreg)
         specreg.close()
-    return None
+        #write the phot and spec properties to a file
+        if phot_plus_spec.empty:
+            phot_plus_spec =good_spec_gals
+
+        phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'],good_phot_gals['MAGERR_AUTO']
+    return phot_plus_spec

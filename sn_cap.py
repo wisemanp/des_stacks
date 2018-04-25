@@ -7,7 +7,7 @@ import argparse
 from time import gmtime, strftime
 #Note: import this first else it crashes importing sub-modules
 from des_stacks import des_stack as stack
-from des_stacks.analysis.astro import cap_phot
+from des_stacks.analysis.astro import cap_phot_sn
 
 def parser():
     parser = argparse.ArgumentParser()
@@ -19,12 +19,12 @@ def parser():
 def cap(args,logger):
     if args.sn_name:
         logger.info("Doing common aperture photometry on %s"%args.sn_name)
-        cap_phot(args.sn_name,args.workdir)
+        cap_phot_sn(args.sn_name,args.workdir)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
         for sn_name in np.loadtxt(args.namelist):
             logger.info("Doing common aperture photometry on %s"%sn_name)
-            cap_phot(sn_name,args.workdir)
+            cap_phot_sn(sn_name,args.workdir)
 
 if __name__ == "__main__":
     logger = logging.getLogger('sn_cap.py')

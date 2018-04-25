@@ -169,7 +169,7 @@ def get_sn_dat(sn):
                 return (ra,dec,'SN-%s'%obj_field,y,ccd)
 
 
-def cap_sex(sg,sr,si,sz,chip,sn_name):
+def cap_sex_sn(sg,sr,si,sz,chip,sn_name):
     '''Runs SExtractor in dual image mode to get common aperture photometry'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -195,6 +195,47 @@ def cap_sex(sg,sr,si,sz,chip,sn_name):
             glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
             resamp_name = glob.glob(glob_string)[0]
             sex_cmd = ['sex','-CATALOG_NAME',sexcat,'%s,%s'%(white_name,resamp_name)]
+            logger.info('Running SExtractor in dual image mode in order to get common aperture photometry in the %s band'%s.band)
+            sex_process = subprocess.Popen(sex_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            out,errs = sex_process.communicate()
+            logger.info('Dual image SExtractor complete in the %s band: you now have common aperture photometry on chip %s!'%(s.band,chip))
+        sexcats[s.band]=sexcat
+    return sexcats
+
+def cap_sex_chip(sg,sr,si,sz,chip):
+    '''Runs SExtractor in dual image mode to get common aperture
+    photometry on a chip that has already had all bands resampled to the same pixels'''
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    # get to the right directory
+    cap_chip_dir = os.path.join(sg.out_dir,'MY%s'sg.my,sg.field,'CAP',chip)
+    os.chdir(cap_chip_dir)
+    # get the right config files in the directory
+    for ext in ['sex','param','conv','nnw']:
+        copyfile(os.path.join(sg.config_dir,'cap','default.%s'%ext),os.path.join(cap_chip_dir,'default.%s'%ext))
+    sexcats ={}
+    for s in [sg,sr,si,sz]:
+        white_name = '%s_%s_%s_white.fits'%(s.my,s.field,chip)
+        sexcat = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sexcat'%(s.my,s.field,chip,s.band))
+        if os.path.isfile(sexcat):
+            logger.info("Already done the photometry in the %s band!"%s.band)
+        else:
+            glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
+            resamp_name = glob.glob(glob_string)[0]
+            check_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_check_aper.fits'%(s.my,s.field,chip,s.band))
+            sex_cmd = [
+            'sex',
+            '-CATALOG_NAME',sexcat,
+            '-CHECKIMAGE_TYPE','APERTURES',
+            '-CHECKIMAGE_NAME',check_name,
+            '%s,%s'%(white_name,resamp_name)
+            ]
             logger.info('Running SExtractor in dual image mode in order to get common aperture photometry in the %s band'%s.band)
             sex_process = subprocess.Popen(sex_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             out,errs = sex_process.communicate()

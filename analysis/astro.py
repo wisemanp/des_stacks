@@ -20,8 +20,8 @@ import copy
 from scipy.interpolate import UnivariateSpline as spln
 
 from des_stacks import des_stack as stack
-from des_stacks.utils.stack_tools import make_cap_stamps
-from des_stacks.utils.sex_tools import cap_sex, get_sn_dat
+from des_stacks.utils.stack_tools import make_cap_stamps, resample_chip_for_cap, get_chip_vals
+from des_stacks.utils.sex_tools import cap_sex_sn, cap_sex_chip, get_sn_dat
 
 sns.set_palette('Dark2')
 sns.set_color_codes(palette='colorblind')
@@ -235,8 +235,8 @@ def init_phot(s,chip,cat,pl='n'):
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
 #####################################################################################################
-def cap_phot(sn_name,wd = 'coadding'):
-    '''get aperture photometry'''
+def cap_phot_sn(sn_name,wd = 'coadding'):
+    '''get aperture photometry for a single sn host'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
@@ -265,7 +265,7 @@ def cap_phot(sn_name,wd = 'coadding'):
     det_name = os.path.join(sg.out_dir,'CAP',sn_name,'%s_white_stamp.fits'%(sn_name))
     if not os.path.isfile(det_name):
         logger.info("Couldn't find a detection image, so going to make 300x300 pix stamps of each band plus white")
-        det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec)
+        det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,300,300)
     # do common aperture photometry
     logger.info("Going to cap_sex to do CAP on each band")
     sexcats =cap_sex(sg,sr,si,sz,chip,sn_name)
@@ -322,4 +322,74 @@ def cap_phot(sn_name,wd = 'coadding'):
 
 
     logger.info("Done doing CAP for %s"%sn_name)
+    return None
+
+def cap_phot_all(y,f,chip,wd='coadding'):
+    '''get aperture photometry for an entire chip'''
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    logger.info("Entered 'cap_phot_all' to do common aperture photometry for MY%s, %s, chip %s"%(y,f,chip))
+    # first let's get to the right directory and set up a stack class object for each band_dir
+    bands = ['g','r','i','z']
+
+    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
+
+    # if there is no white image, make ones
+    det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',chip,'%s_%s_%s_white.fits'%(y,f,chip))
+    if not os.path.isfile(det_name):
+        logger.info("Couldn't find a detection image, so going to resample each band plus white to the same pixels")
+        det_name = resample_chip_for_cap(sg,sr,si,sz,chip)
+    # do common aperture photometry
+    logger.info("Going to cap_sex to do CAP on each band")
+    sexcats =cap_sex(sg,sr,si,sz,chip)
+    # set up an empty results dataframe
+    res_df = pd.DataFrame(columns=['X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
+     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
+    for s in [sg,sr,si,sz]:
+        # load in the photometry from sextractor
+        capcat = Table.read(sexcats[s.band]).to_pandas()
+        quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        zp = float(quals[0])
+        av_fwhm = float(quals[2])
+        capcat = capcat.sort_values(by='X_WORLD')
+        logger.info("Calibrating in %s band using zeropoint from result file: %s"%(s.band,zp))
+        capcat['MAG_APER']=capcat['MAG_APER']+zp
+        capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
+        # get rid of clearly wrong values
+        truth =capcat['MAG_AUTO']<35
+        capcat = capcat.iloc[truth.values]
+        # find the galaxies that OzDES has redshifts for
+        chip_lims = get_chip_vals(s.field,chip,vals = 'lims')
+        grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits')).to_pandas()
+        ozdes_good_inds = ((grc['source']=='DES_AAOmega') & ((grc['flag'] == '3') | (grc['flag'] == '4')))
+        ozdes_good = grc[ozdes_good_inds]
+        ozdes_in_chip_inds = (ozdes_good['RA']< this_chip_lims[0][0])&(ozdes_good['RA']> this_chip_lims[2][0])
+         & (ozdes_good['DEC']> this_chip_lims[0][1]) & (ozdes_good['DEC']> this_chip_lims[1][1])
+        gals_with_z = ozdes_good[ozdes_in_chip_inds]
+        catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
+        z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
+        idx,d2d,d3d = catobjs.match_to_catalog_sky(z_gals)
+        init_good_zgals = gals_with_z.iloc[idx]
+        good_match_inds = np.nonzero(d2d.arcsec < 3.0)[0]:
+        logger.info("Found %s galaxies which match to within 3 arcseconds"%len(good_match_inds))
+        good_phot_gals = capcat.iloc[good_match_inds]
+        good_spec_gals = init_good_zgals.iloc[good_match_inds]
+        # make region files for ds9
+        photreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',chip,'%s_%s_%s_%s_phot.reg'%(y,f,chip,s.band)),'w')
+        specreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',chip,'%s_%s_%s_%s_spec.reg'%(y,f,chip,s.band)),'w')
+        for i in range(len(capcat['X_WORLD'].values)):
+            print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=photreg)
+        print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
+        photreg.close()
+        print ('global color=red')
+        for i in range(len(gals_with_z['RA'].values)):
+            print ('fk5; circle(%s,%s,1") # text={z = %.3f}'%(gals_with_z['RA'].iloc[i],gals_with_z['DEC'].iloc[i],gals_with_z['z'].iloc[i]),file=specreg)
+    
     return None

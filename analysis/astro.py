@@ -338,7 +338,38 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     logger.info("Entered 'cap_phot_all' to do common aperture photometry for MY%s, %s, chip %s"%(y,f,chip))
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
-
+    survey_flags = {
+    'DES_AAOmega':['3','4','6']
+    'ZFIRE_UDS':['3'],
+    'NOAO_0522':['4','6'],
+    'NOAO_0334':['4','6'],
+    'N17B331':['4','6'],
+    'MOSDEF':['Any'],
+    'SpARCS':['1','2'],
+    'PanSTARRS_AAOmega   ':['3','4','6'],
+    'PanSTARRS_MMT': ['3','4','6'],
+    'PRIMUS': ['3','4'],
+    'NED': ['Any'],
+    'UDS_FORS2':['A','B'],
+    'UDS_VIMOS':['3','4'],
+    'ACES': ['3','4'],
+    'SDSS': ['0'],
+    '6dF': ['4'],
+    'ATLAS':['Any'],
+    '2dFGRS':['3','4'],
+    'GAMA':['4'],
+    'SNLS_FORS           ':['1','2'],
+    'CDB':['Any'],
+    'VVDS_DEEP':['3','4','13','14','23','24','213','214'],
+    'VVDS_CDFS':['3','4','13','14','23','24'],
+    'MUSE':['3','2'],
+    'SAGA':['4'],
+    'SNLS_AAOmega':['3','4','6'],
+    'VIPERS':['2','3','4','9','22','23','24','29','12','13','14','19','212','213','214','219'],
+    'DEEP2_DR4':['-1','3','4'],
+    'VUDS_COSMOS':['3','4','13','14','23','24','43','44'],
+    'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
+    }
     sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
 
     # if there is no white image, make ones
@@ -356,10 +387,15 @@ def cap_phot_all(y,f,chip,wd='coadding'):
 
     # find the galaxies that OzDES has redshifts for
     grc = Table.read(os.path.join(sg.cat_dir,'ozdes_grc.fits')).to_pandas()
-    ozdes_good_inds = ((grc['source']=='DES_AAOmega') & ((grc['flag'] == '3') | (grc['flag'] == '4')))
-    ozdes_good = grc[ozdes_good_inds]
-    ozdes_in_chip_inds = (ozdes_good['RA']< this_chip_lims[0][0])&(ozdes_good['RA']> this_chip_lims[2][0]) & (ozdes_good['DEC']> this_chip_lims[0][1]) & (ozdes_good['DEC']< this_chip_lims[1][1])
-    gals_with_z = ozdes_good[ozdes_in_chip_inds]
+    good_redshifts = pd.DataFrame()
+    for survey,flags in survey_flags.items():
+        if flags !=['Any']:
+            for flag in flags:
+                good_redshifts = good_redshifts.append(grc[(grc['source']==survey)&(grc['flag']==flag)])
+        else:
+            good_redshifts = good_redshifts.append(grc[grc['source']==survey])
+    good_in_chip_inds = (good_redshifts['RA']< this_chip_lims[0][0])&(good_redshifts['RA']> this_chip_lims[2][0]) & (good_redshifts['DEC']> this_chip_lims[0][1]) & (good_redshifts['DEC']< this_chip_lims[1][1])
+    gals_with_z = good_redshifts[good_in_chip_inds]
     z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
     phot_plus_spec = pd.DataFrame()
     for s in [sg,sr,si,sz]:

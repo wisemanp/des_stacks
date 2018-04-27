@@ -397,7 +397,20 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         #write the phot and spec properties to a file
         if phot_plus_spec.empty:
             phot_plus_spec =good_spec_gals
-        logger.info(good_phot_gals)
+        if len(phot_plus_spec) < len(good_phot_gals):
+            previous_phot_plus_spec = phot_plus_spec
+            phot_plus_spec = good_spec_gals
+            #find the already done columns
+            done_cols =previous_phot_plus_spec.columns
+            done_bands = []
+            for col in done_cols:
+                if 'MAG' in col:
+                    done_bands.append(col)
+            for col in done_bands:
+                logger.debug(col)
+                phot_plus_spec[col]=''
+                phot_plus_spec.loc[previous_phot_plus_spec.index,col]=previous_phot_plus_spec[col]
         phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
+
     phot_plus_spec.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.csv'%(sg.my,sg.field,chip)))
     return phot_plus_spec

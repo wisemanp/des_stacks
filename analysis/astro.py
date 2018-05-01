@@ -411,6 +411,7 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
+        capcat.to_csv(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,s.band)),'w')
         catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
         # match the cap catalog with the ozdes one
         idx,d2d,d3d = catobjs.match_to_catalog_sky(z_gals)
@@ -435,9 +436,9 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         #write the phot and spec properties to a file
         if s.band == 'g' and chip == 1:
             phot_plus_spec =good_spec_gals
-        
+
         '''elif len(phot_plus_spec) < len(good_phot_gals):
-            
+
             logger.debug('New good_phot_gals is longer than old phot_plus_spec')
             duplicated = good_phot_gals[good_phot_gals.index.duplicated()]
             logger.debug(duplicated)
@@ -446,23 +447,23 @@ def cap_phot_all(y,f,chip,wd='coadding'):
             logger.debug(len(phot_plus_spec))
             logger.debug(len(good_phot_gals))'''
         if len(phot_plus_spec) < len(good_phot_gals):
-            
+
             previous_phot_plus_spec = phot_plus_spec
             phot_plus_spec = good_spec_gals
-            
+
             #find the already done columns
             done_cols =previous_phot_plus_spec.columns
             done_bands = []
             for col in done_cols:
                 if 'MAG' in col:
                     done_bands.append(col)
-           
+
             with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(8)]
             limmag = header[-1].split(' ')[-1].strip('\n')
-            for col in done_bands:     
-                
-                
+            for col in done_bands:
+
+
                 phot_plus_spec[col]=limmag
                 try:
                     phot_plus_spec.loc[previous_phot_plus_spec.index,col]=previous_phot_plus_spec[col]
@@ -478,7 +479,7 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         else:
 
             phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
-        
-        
-    phot_plus_spec.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.csv'%(sg.my,sg.field,chip)))
+
+
+    phot_plus_spec.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.result'%(sg.my,sg.field,chip)))
     return phot_plus_spec

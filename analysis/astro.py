@@ -329,8 +329,8 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -339,7 +339,7 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
     survey_flags = {
-    'DES_AAOmega':['3','4','6']
+    'DES_AAOmega':['3','4','6'],
     'ZFIRE_UDS':['3'],
     'NOAO_0522':['4','6'],
     'NOAO_0334':['4','6'],
@@ -418,7 +418,9 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         good_match_inds = np.nonzero(d2d.arcsec < 2.0)[0]
         logger.info("In %s band, I found %s galaxies which match to within 3 arcseconds"%(s.band,len(good_match_inds)))
         good_phot_gals = capcat.iloc[good_match_inds]
-        good_spec_gals = init_good_zgals.iloc[good_match_inds]
+        init_good_spec_gals = init_good_zgals.iloc[good_match_inds]
+        good_spec_gals = init_good_spec_gals[~init_good_spec_gals.index.duplicated(keep='first')]
+        good_phot_gals = good_phot_gals[~init_good_spec_gals.index.duplicated(keep='first')]
         # make region files for ds9
         photreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot.reg'%(y,f,chip,s.band)),'w')
         specreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_spec.reg'%(y,f,chip,s.band)),'w')
@@ -431,22 +433,52 @@ def cap_phot_all(y,f,chip,wd='coadding'):
             print ('fk5; circle(%s,%s,1") # text={z = %.3f}'%(gals_with_z['RA'].iloc[i],gals_with_z['DEC'].iloc[i],gals_with_z['z'].iloc[i]),file=specreg)
         specreg.close()
         #write the phot and spec properties to a file
-        if phot_plus_spec.empty:
+        if s.band == 'g' and chip == 1:
             phot_plus_spec =good_spec_gals
+        
+        '''elif len(phot_plus_spec) < len(good_phot_gals):
+            
+            logger.debug('New good_phot_gals is longer than old phot_plus_spec')
+            duplicated = good_phot_gals[good_phot_gals.index.duplicated()]
+            logger.debug(duplicated)
+            good_phot_gals = good_phot_gals[~good_phot_gals.index.duplicated(keep='first')]
+            logger.debug('It was duplicated, now it is the right length?')
+            logger.debug(len(phot_plus_spec))
+            logger.debug(len(good_phot_gals))'''
         if len(phot_plus_spec) < len(good_phot_gals):
+            
             previous_phot_plus_spec = phot_plus_spec
             phot_plus_spec = good_spec_gals
+            
             #find the already done columns
             done_cols =previous_phot_plus_spec.columns
             done_bands = []
             for col in done_cols:
                 if 'MAG' in col:
                     done_bands.append(col)
-            for col in done_bands:
-                logger.debug(col)
-                phot_plus_spec[col]=''
-                phot_plus_spec.loc[previous_phot_plus_spec.index,col]=previous_phot_plus_spec[col]
-        phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
+           
+            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
+                header = [next(res) for x in range(8)]
+            limmag = header[-1].split(' ')[-1].strip('\n')
+            for col in done_bands:     
+                
+                
+                phot_plus_spec[col]=limmag
+                try:
+                    phot_plus_spec.loc[previous_phot_plus_spec.index,col]=previous_phot_plus_spec[col]
+                except KeyError:
+                    overlap_inds = []
+                    for ind in previous_phot_plus_spec.index:
+                        if ind in phot_plus_spec.index:
+                            overlap_inds.append(ind)
+                    phot_plus_spec.loc[overlap_inds,col]=previous_phot_plus_spec.loc[overlap_inds,col]
+        if len(phot_plus_spec) > len(good_phot_gals):
+            phot_plus_spec.loc[good_spec_gals.index,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[good_spec_gals.index,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
 
+        else:
+
+            phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
+        
+        
     phot_plus_spec.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.csv'%(sg.my,sg.field,chip)))
     return phot_plus_spec

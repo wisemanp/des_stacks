@@ -411,7 +411,7 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
-        capcat.to_csv(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,s.band)),'w')
+        capcat.to_csv(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,s.band)))
         catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
         # match the cap catalog with the ozdes one
         idx,d2d,d3d = catobjs.match_to_catalog_sky(z_gals)

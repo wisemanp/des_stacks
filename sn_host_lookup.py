@@ -14,6 +14,7 @@ import os
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import _pickle as cpickle
 
 #Note: import this first else it crashes importing sub-modules
 plot_locs={
@@ -60,9 +61,18 @@ def main(args,logger):
         l = args.namelist
     for sn in l:
         logger.info("Locating result file for %s ..."%sn)
+        logger.info("First querying the DES database to get the RA,Dec of %s."%sn)
         sn_ra,sn_dec,f,y,chip = get_sn_dat(sn)
-        cap_chip_dir  os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip))
+        logger.info("%s has the following info:"%sn)
+        logger.info("RA:     %s"%sn_ra)
+        logger.info("Dec:    %s"%sn_dec)
+        logger.info("Season: %s"%y)
+        logger.info("Field:  %s"%f)
+        logger.info("CCD:    %s"%chip)
+        cap_chip_dir = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip))
+        
         chip_res_fn = os.path.join(cap_chip_dir,'spec_phot_galcat_%s_%s_%s.result'%(y,f,chip))
+        logger.info("Filename should look like %s."%chip_res_fn)
         bands = ['g','r','i','z']
         if os.path.isfile(chip_res_fn):
             logger.info("Found the result file for MY%s, %s, chip %s! Now trying to find the SN host"%(y,f,chip))
@@ -74,7 +84,7 @@ def main(args,logger):
                 sg,sr,si,sz = [stack.Stack(f, b, y, chip ,'coadding')for b in bands]
                 cap_phot_all(sg,sr,si,sz,chip)
             except:
-                if y='none'
+                if y=='none':
                     raise Exception("Unable to import the des_stacks module to do the photometry - Talk to Phil!")
                 else:
                     logger.info("I'll try to do it in MYnone just to give you a look")
@@ -92,7 +102,7 @@ def main(args,logger):
         idx,d2d,d3d = snloc.match_to_catalog_sky(res_objs)
 
         match = chip_res.iloc[int(idx)]
-
+        logger.info(match)
         sn_dir = os.path.join(args.workdir,'stacks','CAP',sn)
         if not os.path.isdir(sn_dir):
             os.path.mkdir(sn_dir)
@@ -105,7 +115,7 @@ def main(args,logger):
                 logger.info(match)
             else:
                 logger.info("The SN lies within %s arcsec of a galaxy with a redshift, here are details, including magnitudes from the deep DES SN stack"%d2d.arcsec)
-                logger.info(match)
+                
             for b in bands:
                 reg = open(os.path.join(sn_dir,'%s_%s.reg'%(sn,b)),'w')
                 for i in range(len(chip_res)):
@@ -118,7 +128,7 @@ def main(args,logger):
         else:
             restype='phot'
             logger.info("No spectroscopically redshifted galaxies nearby; going to check the photometric catalog")
-            for b in bands::
+            for b in bands:
                 phot_fn = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,b))
                 phot_res = pd.read_csv(phot_fn)
                 res_objs = SkyCoord(ra=phot_res['X_WORLD']*u.degree,dec=phot_res['Y_WORLD']*u.degree)
@@ -152,7 +162,7 @@ def main(args,logger):
                 img_fn = os.path.join(cap_chip_dir,'ccd_%s_%s_0.15_sci.resamp.fits'%(chip,band))
 
                 if os.path.isfile(img) != 'Failed to load image':
-                    if restype=='spec'
+                    if restype=='spec':
                         res = pd.read_csv(chip_res_fn)
                         res = res[res['RA']<sn_ra+(w/2)]
                         res = res[res['RA']>sn_ra-(w/2)]

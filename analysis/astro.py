@@ -268,7 +268,7 @@ def cap_phot_sn(sn_name,wd = 'coadding'):
         det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,300,300)
     # do common aperture photometry
     logger.info("Going to cap_sex to do CAP on each band")
-    sexcats =cap_sex(sg,sr,si,sz,chip,sn_name)
+    sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
      'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
@@ -315,11 +315,12 @@ def cap_phot_sn(sn_name,wd = 'coadding'):
     res_df.index = res_df['BAND']
     all_sn_fn = os.path.join(sg.res_dir,'all_sn_phot.csv')
     if os.path.isfile(all_sn_fn):
-        all_sn = pd.read_csv(all_sn_fn)
+        all_sn = pd.read_csv(all_sn_fn,index_col=0)
     else:
         all_sn = pd.DataFrame(columns = ['SN_NAME','BAND','X_WORLD', 'Y_WORLD', 'MAG_AUTO', 'MAGERR_AUTO',
          'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
-
+    all_sn = all_sn.append(res_df)
+    all_sn.to_csv(all_sn_fn)
 
     logger.info("Done doing CAP for %s"%sn_name)
     return None

@@ -541,7 +541,7 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4000,stamp_sizey
     resamp_frame_str = resamp_frames[0]+' '+resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
 
     white_cmd = ['swarp',
-    '-IMAGE_SIZE','%s,%s'%(stamp_size,stamp_size),
+    '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizex),
     '-CENTER_TYPE','MANUAL',
     '-CENTER','%f,%f'%(ra,dec),
     '-PIXELSCALE_TYPE','MANUAL',

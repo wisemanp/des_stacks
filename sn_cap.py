@@ -22,7 +22,7 @@ def cap(args,logger):
         cap_phot_sn(args.sn_name,args.workdir)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
-        for sn_name in np.loadtxt(args.namelist):
+        for sn_name in np.loadtxt(args.namelist,dtype='str'):
             logger.info("Doing common aperture photometry on %s"%sn_name)
             cap_phot_sn(sn_name,args.workdir)
 

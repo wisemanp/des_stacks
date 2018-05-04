@@ -15,13 +15,14 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import _pickle as cpickle
+import math
 
 #Note: import this first else it crashes importing sub-modules
 plot_locs={
-'g':[0.2,0.53,0.39,0.42],
-'r':[0.6,0.53,0.39,0.42],
-'i':[0.2,0.1,0.39,0.42],
-'z':[0.6,0.1,0.39,0.42]
+'g':[0.18,0.53,0.40,0.43],
+'r':[0.59,0.53,0.40,0.43],
+'i':[0.18,0.09,0.40,0.43],
+'z':[0.59,0.09,0.40,0.43]
 }
 
 def parser():
@@ -33,7 +34,7 @@ def parser():
     parser.add_argument('-s','--stamp',help='Produce a stamp',action ='store_true')
     parser.add_argument('-ss','--size',help='Stamp size (arcsec)',default=30,type=float)
     parser.add_argument('-sh','--show',help='Show image now', action ='store_true')
-    parser.add_argument('-p','-path',help='Full path to output image if you are making a stamp',default = 'sn_dir')
+    parser.add_argument('-p','--path',help='Full path to output image if you are making a stamp',default = 'sn_dir')
     return parser.parse_args()
 
 def get_sn_dat(sn):
@@ -117,13 +118,18 @@ def main(args,logger):
                 logger.info("The SN lies within %s arcsec of a galaxy with a redshift, here are details, including magnitudes from the deep DES SN stack"%d2d.arcsec)
                 
             for b in bands:
-                reg = open(os.path.join(sn_dir,'%s_%s.reg'%(sn,b)),'w')
+                myreg = open(os.path.join(sn_dir,'%s_%s.reg'%(sn,b)),'w')
                 for i in range(len(chip_res)):
-                    print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f} color=green'%(chip_res['RA'].loc[ind],chip_res['DEC'].iloc[ind],chip_res['MAG_AUTO_%s'%b].iloc[ind],chip_res['MAGERR_AUTO_%s'%b].iloc[ind]),file=reg)
+                    logger.debug('Got into loop')
+                    mag,magerr= chip_res['MAG_AUTO_%s'%b].iloc[i], chip_res['MAGERR_AUTO_%s'%b].iloc[i]
+                    print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f} color=green'%(chip_res.RA.iloc[i],chip_res.DEC.iloc[i],mag,magerr),file = myreg)
+                   
+                logger.debug('Done non-matched galaxies')
                 for ind in match.index:
-                    print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['RA'].loc[ind],match['DEC'].iloc[ind],match['MAG_AUTO_%s'%b].iloc[ind],match['MAGERR_AUTO_%s'%b].iloc[ind]),file=reg)
-                print ('fk5; point %s %s # point=cross text={%s} color=red width=2'%(sn_ra,sn_dec,sn),file=reg)
-                reg.close()
+                    mag,magerr = match['MAG_AUTO_%s'%b].iloc[ind],match['MAGERR_AUTO_%s'%b].iloc[ind]
+                    print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['RA'].loc[ind],match['DEC'].iloc[ind],mag,magerr),file = myreg)
+                print ('fk5; point %s %s # point=cross text={%s} color=red width=2'%(sn_ra,sn_dec,sn),file = myreg)
+                myreg.close()
                 logger.info("Saved region file to %s "%os.path.join(sn_dir,'%s_%s.reg'%(sn,b)))
         else:
             restype='phot'
@@ -134,14 +140,14 @@ def main(args,logger):
                 res_objs = SkyCoord(ra=phot_res['X_WORLD']*u.degree,dec=phot_res['Y_WORLD']*u.degree)
                 idx,d2d,d3d = snloc.match_to_catalog_sky(res_objs)
                 logger.info("In %s band, I found the following source(s):"%b)
-                match = phot_res.iloc[idx]
+                match = phot_res.iloc[int(idx)]
                 logger.info(match)
 
                 reg = open(os.path.join(sn_dir,'%s_%s.reg'%(sn,b)),'w')
                 for i in range(len(phot_res)):
-                    print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f} color=green'%(phot_res['X_WORLD'].loc[ind],phot_res['Y_WORLD'].iloc[ind],phot_res['MAG_AUTO'].iloc[ind],phot_res['MAGERR_AUTO'].iloc[ind]),file=reg)
+                    print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f} color=green'%(phot_res['X_WORLD'].loc[i],phot_res['Y_WORLD'].iloc[i],phot_res['MAG_AUTO'].iloc[i],phot_res['MAGERR_AUTO'].iloc[i]),file=reg)
                 for ind in match.index:
-                    print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['X_WORLD'].loc[ind],match['X_WORLD'].iloc[ind],match['MAG_AUTO'].iloc[ind],match['MAGERR_AUTO'].iloc[ind]),file=reg)
+                    print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['X_WORLD'],match['X_WORLD'],match['MAG_AUTO'],match['MAGERR_AUTO']),file=reg)
                 print ('fk5; point %s %s # point=cross text={%s} color=red width=2'%(sn_ra,sn_dec,sn),file=reg)
                 reg.close()
                 logger.info("Saved region file to %s "%os.path.join(sn_dir,'%s_%s.reg'%(sn,b)))
@@ -149,7 +155,7 @@ def main(args,logger):
             logger.info("You want a stamp of %s too. So I'm making one."%sn)
             logger.warning("You might need AplPy installed...")
             import aplpy
-            fig,ax = plt.subplots()
+            fig,ax = plt.subplots() #figsize=(16,9)
             w = args.size/3600
             ax.set_xticks([])
             ax.set_yticks([])
@@ -159,9 +165,13 @@ def main(args,logger):
             hor_line = np.array([[sn_ra-0.00027,sn_ra+0.00027],[sn_dec,sn_dec]])
             ver_line = np.array([[sn_ra,sn_ra],[sn_dec-0.00027,sn_dec+0.00027]])
             for counter,band in enumerate(bands):
-                img_fn = os.path.join(cap_chip_dir,'ccd_%s_%s_0.15_sci.resamp.fits'%(chip,band))
+                if band in ['g','r']:
+                    tc =0.15
+                else:
+                    tc =0.25
+                img_fn = os.path.join(cap_chip_dir,'ccd_%s_%s_%s_sci.resamp.fits'%(chip,band,tc))
 
-                if os.path.isfile(img) != 'Failed to load image':
+                if os.path.isfile(img_fn) != 'Failed to load image':
                     if restype=='spec':
                         res = pd.read_csv(chip_res_fn)
                         res = res[res['RA']<sn_ra+(w/2)]
@@ -171,7 +181,7 @@ def main(args,logger):
                         ras,decs,mags,errs = res.RA.values,res.DEC.values,res['MAG_AUTO_%s'%band].values,res['MAGERR_AUTO_%s'%band].values
 
                     else:
-                        print ("Loading the %s band region!" %band)
+                        print ("Loading the %s band result file" %band)
                         phot_fn = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,b))
                         res = pd.read_csv(phot_fn)
 
@@ -193,19 +203,28 @@ def main(args,logger):
                     if restype=='spec':
                          fg.show_circles(res.RA.values,res.DEC.values,radius=0.00027,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
                     else:
-                         fg.show_circles(res.X_WORLD.values,res.Y_WORLD.values,radius=0.00027,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
+                         fg.show_circles(res.X_WORLD.values,res.Y_WORLD.values,0.00027,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
                     for i in range(len(ras)):
                         fg.add_label(ras[i],decs[i]+0.0003,'%.2f +/- %.2f'%(mags[i],errs[i]),size=6,color='g')
                     print ("Finished loading the %s band region!" %band)
 
-                    for index,row in match.iterrows():
+                    try:
+                        for index,row in match.iterrows():
 
-                        if restype=='spec':
-                            fg.show_circles(row['RA'],row['DEC'],radius = 0.00015,edgecolor='r',facecolor='none',linewidth=.8)
-                            fg.add_label(row['RA']+0.00015,row['DEC']+0.00015,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),size=6,color='r')
-                        else:
-                            fg.show_circles(row['X_WORLD'],row['Y_WORLD'],radius = 0.00015,edgecolor='b',facecolor='none',linewidth=.8)
-                            fg.add_label(row['X_WORLD']+0.00015,row['Y_WORLD']+0.00015,'%.2f +/- %.2f'%(row['MAG_AUTO'],row['MAGERR_AUTO']),size=6,color='b')
+                            if restype=='spec':
+                                fg.show_circles(row['RA'],row['DEC'],radius = 0.00015,edgecolor='r',facecolor='none',linewidth=.8)
+                                fg.add_label(row['RA'],row['DEC'],'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),size=6,color='r')
+                            else:
+                                fg.show_circles(row['X_WORLD'],row['Y_WORLD'],radius = 0.00015,edgecolor='b',facecolor='none',linewidth=.8)
+                                fg.add_label(row['X_WORLD'],row['Y_WORLD'],'%.2f +/- %.2f'%(row['MAG_AUTO'],row['MAGERR_AUTO']),size=6,color='b')
+                    except:
+
+                            if restype=='spec':
+                                fg.show_circles(match['RA'],match['DEC'],radius = 0.00015,edgecolor='r',facecolor='none',linewidth=.8)
+                                fg.add_label(match['RA'],match['DEC'],'%.2f +/- %.2f'%(match['MAG_AUTO_%s'%b],match['MAGERR_AUTO_%s'%b]),size=6,color='r')
+                            else:
+                                fg.show_circles(match['X_WORLD'],match['Y_WORLD'],radius = 0.00027,edgecolor='b',facecolor='none',linewidth=1.2)
+                                fg.add_label(match['X_WORLD'],match['Y_WORLD'],'%.2f +/- %.2f'%(match['MAG_AUTO'],match['MAGERR_AUTO']),size=6,color='b')
 
                     if counter in [0,2]:
                         fg.tick_labels.show_y()
@@ -226,7 +245,9 @@ def main(args,logger):
                 savepath =os.path.join(args.path,'%s_stamp.pdf'%sn)
 
             plt.savefig(savepath)
-            fig.close()
+            plt.close(fig)
+            logger.info("Figure saved to %s"%savepath)
+            logger.info("************* Finished looking up %s! *************"%sn)
 if __name__ == "__main__":
     logger = logging.getLogger('sn_host_lookup.py')
     logger.setLevel(logging.DEBUG)
@@ -240,3 +261,5 @@ if __name__ == "__main__":
     logger.info("***********************************")
     args = parser()
     main(args,logger)
+    logger.info("************* Finished all SN you gave me! *************")
+   

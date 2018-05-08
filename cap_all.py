@@ -1,4 +1,4 @@
-'Tiny wrapper to do photometry on everything'
+'Tiny wrapper to do common aperture photometry on everything'
 #Note: import this first else it crashes importing sub-modules
 from des_stacks import des_stack as stack
 from des_stacks.analysis.astro import cap_phot_all

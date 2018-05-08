@@ -9,12 +9,23 @@ good_des_chips = []
 for c in range(1,63):
     if c not in [2,31,61]:
         good_des_chips.append(c)
-def main():
+
+def parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a','--avoid',default=None)
+    return parser.parse_args()
+def main(args):
     for my in mys:
         for f in fields:
             f = 'SN-'+f
             for ch in good_des_chips:
-                cap_phot_all(my,f,ch)
+                for category in [my,f,ch]:
+                    if category in [i for i in args.avoid.split(',')]:
+                        print 'Not doing %s'category
+                    else:
+
+                        cap_phot_all(my,f,ch)
 
 if __name__=="__main__":
-    main()
+    args=parser()
+    main(args)

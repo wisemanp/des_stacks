@@ -18,15 +18,28 @@ import time
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmd, get_dessn_obs, get_des_obs_year,make_weightmap
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import des_stacks.utils.multi_stack as multi_stack
-from des_stacks.analysis.astro import astrometry,init_phot
+from des_stacks.analysis.astro import init_phot, init_calib
 
 class Stack():
-    def __init__(self, field, band, my, chips ,working_dir):
+    def __init__(self, field, band, my, chips ,working_dir,cuts={'none':None}):
         self.field = field
         self.band = band
         self.my =my
         self.chips=chips
         self.coadding_dir =working_dir
+
+        if cuts=={'none':None}:
+            if self.band in ['g','r']:
+                cuts ={'teff':0.15, 'zp':None,'psf':None}
+
+            elif self.band in ['i','z']:
+                cuts ={'teff':0.25, 'zp':None,'psf':None}
+
+        if cuts['teff']:
+            self.cutstring = '%s'%cuts['teff']
+
+        elif cuts['zp'] and cuts['psf'] and not cuts['teff']:
+            self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
         self._define_paths()
         self._init_log()
         self._get_info()
@@ -49,6 +62,9 @@ class Stack():
         self.cat_dir = os.path.join(self.coadding_dir,'catalogs')
         if not os.path.isdir(self.cat_dir):
             os.mkdir(self.cat_dir)
+        self.res_dir = os.path.join(self.coadding_dir,'results')
+        if not os.path.isdir(self.res_dir):
+            os.mkdir(self.res_dir)
         self.out_dir = os.path.join(self.coadding_dir,'stacks')
         if not os.path.isdir(self.out_dir):
             os.mkdir(self.out_dir)
@@ -233,7 +249,7 @@ class Stack():
 
             # Compare new catalog to old one, get the ZP and FWHM out
 
-        
+
 
     def init_phot(self,pl='n'):
         limmags = {}

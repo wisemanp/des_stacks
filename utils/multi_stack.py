@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pathos.pools as pp
 import multiprocessing
 from multiprocessing import Process
@@ -8,10 +10,8 @@ from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import time
 import numpy as np
 import os
-from itertools import repeat
-from functools import partial
 import logging
-from des_stacks.analysis.astro import astrometry,init_phot
+from des_stacks.analysis.astro import init_phot, init_calib
 import pandas as pd
 def stack_worker(arg_pair):
     logger = logging.getLogger(__name__)
@@ -36,7 +36,9 @@ def stack_worker(arg_pair):
     for key,value in cmd_list.items():
 
         cmd,outname = value
-        staged_imgs.append(outname)
+        if outname:
+
+            staged_imgs.append(outname)
         if cmd == False:
             print ('Already stacked this chip with these cuts, going straight to the next chip')
             #logger.info("Already stacked this chip with these cuts, going straight to astrometry")
@@ -112,24 +114,17 @@ def sex_worker(arg_pair):
     sex_for_psfex(s,chip,cuts)
 
     model_fwhm = psfex(s,chip,retval='FWHM',cuts=cuts)
-    os.chdir(s.ana_dir)
+    os.chdir(os.path.join(s.band_dir,str(chip)))
 
     sexcat = sex_for_cat(s,chip,cuts)
 
-    zp,sex_fwhm = astrometry(s,chip,sexcat)
+    zp,sex_fwhm = init_calib(s,chip,sexcat)
 
-    zp_psf,psf_fwhm = astrometry(s,chip,sexcat,phot_type = 'PSF')
+    qual = np.array([zp,model_fwhm,sex_fwhm])
+    qualsave = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
+    np.savetxt(qualsave,qual)
 
-    qual = open(os.path.join(s.ana_dir,'%s_ana.qual'%s.cutstring),'w')
-    print ('# Quality parameters for %s %s %s %s' %(s.my,s.field,s.band,chip),file =qual)
-    print ('# Parameters:',file=qual)
-    print ('# Zeropoint from sextractor',file=qual)
-    print ('# Zeropoint from PSF matches', file = qual)
-    print ('# FWHM from PSFex',file = qual)
-    print ('# FWHM from SExtractor using PSF model',file = qual)
-    print ('%s %s %s %s'%(zp,zp_psf,model_fwhm,sex_fwhm),file=qual)
-    qual.close()
-    print("Written quality factors to %s_ana.qual" %s.cutstring)
+    print("Written quality factors to %s" %qualsave)
     qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
     qual_df = pd.DataFrame([qual_dict],index = [chip])
     print("Quality of stack:\n %s" %qual_df)

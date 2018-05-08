@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import numpy as np
 import pandas as pd
@@ -12,12 +13,20 @@ import logging
 import time
 import seaborn as sns
 import matplotlib
+import glob
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import copy
 from scipy.interpolate import UnivariateSpline as spln
 
-def astrometry(s,chip,sexcat,phot_type='AUTO'):
+from des_stacks import des_stack as stack
+from des_stacks.utils.stack_tools import make_cap_stamps, resample_chip_for_cap, get_chip_vals
+from des_stacks.utils.sex_tools import cap_sex_sn, cap_sex_chip, get_sn_dat
+
+sns.set_palette('Dark2')
+sns.set_color_codes(palette='colorblind')
+
+def init_calib(s,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -34,22 +43,27 @@ def astrometry(s,chip,sexcat,phot_type='AUTO'):
 
     logger.info("Reading in catalog in order to do photometry")
     cmap = {'PSF':'red','AUTO':'green','cat':'blue','APER':'purple'}
-    old_cat = os.path.join(s.cat_dir,'%s_All_filters_3.csv'%(s.field[3]))
-    old = pd.DataFrame.from_csv(old_cat)
+    y3a1_fn = os.path.join(s.cat_dir,'y3a1_%s_%s.csv'%(s.field[3],s.band))
+    y3a1 = pd.DataFrame.from_csv(y3a1_fn)
     sexdat = fits.getdata(sexcat,ext=1)
-    logger.info("Successfully read in catalog: %s" %old_cat)
+    logger.info("Successfully read in catalog: %s" %y3a1_fn)
+    Band = s.band.capitalize()
+    star_inds = ((y3a1['MAG_AUTO_%s'%Band]<18) & (y3a1['CLASS_STAR_%s'%Band]>0.3) |((y3a1['SPREAD_MODEL_%s'%Band] + 3*y3a1['SPREADERR_MODEL_%s'%Band])<0.003)) & (y3a1['MAG_AUTO_%s'%Band]<22)
+
+    y3a1_stars = y3a1[star_inds]
+
     logger.info("Matching objects...")
     new =pd.DataFrame(sexdat)
     new_obj = SkyCoord(ra=new['X_WORLD']*u.degree,dec =new['Y_WORLD']*u.degree)
-    old_obj = SkyCoord(ra=old['RA_%s'%s.band]*u.degree,dec =old['DEC_%s'%s.band]*u.degree)
+    old_obj = SkyCoord(ra=y3a1_stars['RA']*u.degree,dec =y3a1_stars['DEC']*u.degree)
     # match the catalogs
     idx, d2d, d3d = new_obj.match_to_catalog_sky(old_obj)
     match_ids = idx
     match_dists = d2d.arcsec
     logger.info("Successfully matched %s objects!" %len(match_ids))
     # get old cat mags of the matched objects
-    init_match_cat_mag =old['CLIPPED_MEAN_%s'%s.band].iloc[match_ids]
-    init_match_cat_magerr =old['CLIPPED_SIGMA_%s'%s.band].iloc[match_ids]
+    init_match_cat_mag =y3a1_stars['MAG_AUTO_%s'%Band].iloc[match_ids]
+    init_match_cat_magerr =y3a1_stars['MAGERR_AUTO_%s'%Band].iloc[match_ids]
     # get indices of the objects that are within a specified distance of their matches
     dist_cut =2.0
     good_inds = np.nonzero(match_dists < dist_cut)[0]
@@ -58,8 +72,8 @@ def astrometry(s,chip,sexcat,phot_type='AUTO'):
     good_new_dec = new['Y_WORLD'].iloc[good_inds]
     logger.info("Using catalog magnitudes to calibrate photometry and get zeropoint")
     # find the new mags that correspond to that
-    good_new_mag = new['MAG_%s'%phot_type].iloc[good_inds]
-    good_new_magerr = new['MAGERR_%s'%phot_type].iloc[good_inds]
+    good_new_mag = new['MAG_AUTO'].iloc[good_inds]
+    good_new_magerr = new['MAGERR_AUTO'].iloc[good_inds]
     # and the old ones
     good_cat_mag = init_match_cat_mag.iloc[good_inds]
     good_cat_magerr = init_match_cat_magerr.iloc[good_inds]
@@ -93,31 +107,25 @@ def init_phot(s,chip,cat,pl='n'):
         else:
             imgname = s.band_dir+'/ccd_%s_%s_%s_temp.fits'%(chip,s.band,s.cutstring)
     cuts = imgname.split('_')
-    q= open(os.path.join(ana_dir,'%s_ana.qual'%s.cutstring),'r')
-    q = q.read()
-    quals = q.split('\n')[-2]
-    quals = quals.split(' ')
-    av_fwhm = float(quals[2])
-    zp_kr = float(quals[0])
-    zp_psf = float(quals[1])
+    quals= np.loadtxt(os.path.join(ana_dir,'%s_ana.qual'%s.cutstring))
+    zp = float(quals[0])
+    av_fwhm = float(quals[1])
     cat = cat.sort_values(by='X_WORLD')
-    cat['MAG_AUTO']=cat['MAG_AUTO']+zp_kr
+    cat['MAG_AUTO']=cat['MAG_AUTO']+zp
+    try:
+        cat['MAG_APER']=cat['MAG_APER']+zp
+    except:
+        s.logger.info('Aperture photometry appears not to have been done yet; consider doing it')
     # get rid of clearly wrong values
     truth =cat['MAG_AUTO']<35
     cat = cat.iloc[truth.values]
-    psftruth = cat['MAG_PSF']<98
-    psf = copy.deepcopy(cat.iloc[psftruth.values])
-    psf['MAG_PSF']=psf['MAG_PSF']+zp_psf
+
     # make region files for ds9
     krreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_auto.reg'%(s.my,s.field,s.band,chip)),'w')
-    psfreg = open(os.path.join(ana_dir,'%s_%s_%s_%s_psf.reg'%(s.my,s.field,s.band,chip)),'w')
-    print ('global color=red',file=psfreg)
+
     for i in range(len(cat['X_WORLD'].values)):
         print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(cat['X_WORLD'].iloc[i],cat['Y_WORLD'].iloc[i],cat['MAG_AUTO'].iloc[i],cat['MAGERR_AUTO'].iloc[i]),file=krreg)
-    for i in range(len(psf['X_WORLD'].values)):
-        print ('fk5; circle(%s,%s,0.5") # text={%.2f +/- %.2f}'%(psf['X_WORLD'].iloc[i],psf['Y_WORLD'].iloc[i],psf['MAG_PSF'].iloc[i],psf['MAGERR_PSF'].iloc[i]),file=psfreg)
     krreg.close()
-    psfreg.close()
     s.logger.info("Saved ds9 region files in /ana directory")
     sns.set_palette('Dark2')
     sns.set_color_codes(palette='colorblind')
@@ -125,39 +133,32 @@ def init_phot(s,chip,cat,pl='n'):
         f,ax=plt.subplots()
         alp= 0.75
         cat.hist(column='MAG_AUTO',bins=150,normed=True,ax=ax,alpha=alp+0.25,label='Kron Magnitudes',color='r')
-        psf.hist(column='MAG_PSF',bins=150,normed=True,ax=ax,alpha=alp,label='PSF Magnitudes',color='g')
+
         ax.set_xlabel('Mag')
         ax.set_ylabel('Frequency Density')
         ax.set_title('Magnitude Distribution in MY %s, %s, CCD %s, %s' %(s.my,s.field,chip,s.band))
     #ax.set_yscale('log')
     hst,bin_edges = np.histogram(cat['MAG_AUTO'],bins=150,density=True)
-    hstpsf,binspsf = np.histogram(psf['MAG_PSF'],bins=150,density=True)
+
     splkron = spln(bin_edges[1:],hst,s=0.02)
-    splpsf = spln(binspsf[1:],hstpsf,s=0.02)
+
     x2 = np.linspace(bin_edges[0],bin_edges[-1],200)
     y2= splkron(x2)
-    x3 = np.linspace(binspsf[0],binspsf[-1],200)
-    y3 = splpsf(x3)
+
     kr_lim = x2[np.argmax(y2)]
-    psf_lim = x3[np.argmax(y3)]
+
     limsig = 10
     errthresh = 2.5*np.log10(1+(1/limsig))
     if pl == 'y':
         ax.plot(x2,y2,c='r')
-        ax.plot(x3,y3,c='g')
         ax.set_xlim(17,30)
-
         ax.vlines(kr_lim,0,1.1*np.max(y2),linestyle='--',label='Limiting Kron magnitude',color='r')
-        ax.vlines(psf_lim,0,1.1*np.max(y3),linestyle='-.',label='Limiting PSF magnitude',color='g')
         ax.legend()
         f.savefig(os.path.join(ana_dir,'%s_%s_%s_%s_hist.jpg'%(s.my,s.field,s.band,chip)))
-
         f2,ax2 = plt.subplots()
         cat.plot.scatter('MAG_AUTO','MAGERR_AUTO',s=5,ax=ax2,label='Kron Magnitudes',color='r')
-        psf.plot.scatter('MAG_PSF','MAGERR_PSF',s=5,ax=ax2,label='PSF Magnitudes',color='g')
         ax2.set_xlabel('Magnitude')
         ax2.set_ylabel('Magnitude Error')
-
         ax2.hlines(errthresh,15,30,linestyle='--',color='#7570b3')
         ax2.set_xlim(17,30)
         ax2.set_ylim(-0.03,0.35)
@@ -166,15 +167,9 @@ def init_phot(s,chip,cat,pl='n'):
         plt.close('all')
     b_hi = errthresh +(errthresh/500)
     b_lo = errthresh -(errthresh/500)
-
     c2 = cat[cat['MAGERR_AUTO']<b_hi]
     c2 = c2[c2['MAGERR_AUTO']>b_lo]
     kr_lim2 = c2['MAG_AUTO'].median()
-
-
-    psf2 = psf[psf['MAGERR_PSF']<b_hi]
-    psf2 = psf2[psf2['MAGERR_PSF']>b_lo]
-    psf_lim2 = psf2['MAG_AUTO'].median()
 
     nclip=50
     s.logger.info("Running iraf.imstat on %s in order to get sky noise" %imgname)
@@ -188,25 +183,26 @@ def init_phot(s,chip,cat,pl='n'):
     exptime= h['EXPTIME']
     pixscale=0.27
 
-    qual = os.path.join(ana_dir,'%s_ana.qual'%s.cutstring)
     thresh = 5
     skyflux = skynoise*np.sqrt(np.pi*(av_fwhm/pixscale)**2)
     skymag = 2.5*np.log10(thresh*skyflux)
-    zmag = zp_psf
-    skylim = zmag -skymag
+    skylim = zp -skymag
     s.logger.info("Limiting Kron magnitude based on matched objects: %.3f\n"% kr_lim)
-    s.logger.info("Limiting magnitude based on PSF photometry: %.3f\n"% psf_lim)
-    s.logger.info("%s sigma limiting magnitude based on matched objects: %.3f\n"%(limsig,psf_lim2))
-    s.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zmag,skylim))
+    s.logger.info("%s sigma limiting magnitude based on matched objects: %.3f\n"%(limsig,kr_lim2))
+    s.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zp,skylim))
 
     resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip)),'w')
-    psf['FWHM_WORLD'] = psf['FWHM_WORLD']*3600
-    for i in range(len(psf['FWHM_WORLD'].values)):
-        psf['FWHM_WORLD'].values[i] = float(psf['FWHM_WORLD'].values[i])
-    radec=psf[['X_WORLD','Y_WORLD']].applymap("{0:7.5f}".format)
-    rest = psf[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
+    cat['FWHM_WORLD'] = cat['FWHM_WORLD']*3600
+    for i in range(len(cat['FWHM_WORLD'].values)):
+        cat['FWHM_WORLD'].values[i] = float(cat['FWHM_WORLD'].values[i])
+    radec=cat[['X_WORLD','Y_WORLD']].applymap("{0:7.5f}".format)
+    try:
+        rest = cat[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','MAG_APER','MAGERR_APER','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
+    except:
+        rest = cat[['MAG_AUTO','MAGERR_AUTO','MAG_PSF','MAGERR_PSF','FWHM_WORLD','ELONGATION']].applymap("{0:4.3f}".format)
+
     rest[['X_WORLD','Y_WORLD']]=radec[['X_WORLD','Y_WORLD']]
-    rest['CLASS_STAR']=psf['CLASS_STAR']
+    rest['CLASS_STAR']=cat['CLASS_STAR']
     cols = rest.columns.tolist()
     rearranged = cols[-2:]+cols[:-2]
     re = rest[rearranged]
@@ -220,11 +216,10 @@ def init_phot(s,chip,cat,pl='n'):
     reshead +='# Band: %s\n' % s.band
     reshead +='# CCD Number: %s\n' % chip
     reshead +='# Total exposure time: %s s\n' %exptime
-    reshead +='# Zeropoint based on PSF photometry: %s \n'%zp_psf
+    reshead +='# Zeropoint based on AUTO photometry: %s \n'%zp
     reshead +='# Limiting Kron magnitude based on matched objects: %.3f\n'% kr_lim
-    reshead +='# Limiting magnitude based on PSF photometry: %.3f\n'% psf_lim
-    reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,psf_lim2)
-    reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zmag,skylim)
+    reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,kr_lim2)
+    reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zp,skylim)
     reshead +='# Columns:\n'
     reshead +='# Dec (J2000)\n'
     reshead +='# Kron Magnitude\n'
@@ -237,4 +232,255 @@ def init_phot(s,chip,cat,pl='n'):
     resfile.write(psfstring)
     savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip))
     s.logger.info("Saved result file to: %s"%savestring)
-    return (kr_lim,psf_lim,psf_lim2,skylim,np.mean([kr_lim,psf_lim,psf_lim2,skylim]))
+    return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
+
+#####################################################################################################
+def cap_phot_sn(sn_name,wd = 'coadding'):
+    '''get aperture photometry for a single sn host'''
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    '''if zp_cut>0:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:'''
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    logger.info("Entered 'cap_phot.py' to do common aperture photometry for the host of %s"%sn_name)
+    # first let's get to the right directory and set up a stack class object for each band_dir
+    bands = ['g','r','i','z']
+
+    ra,dec,f,y,chip = get_sn_dat(sn_name)
+    logger.info("Found transient in the database SNCAND")
+    logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
+    # Make a Stack instance for each band
+    logger.info("Setting up Stack instances for each band")
+    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
+
+    # if there is no white image, make ones
+    det_name = os.path.join(sg.out_dir,'CAP',sn_name,'%s_white_stamp.fits'%(sn_name))
+    if not os.path.isfile(det_name):
+        logger.info("Couldn't find a detection image, so going to make 300x300 pix stamps of each band plus white")
+        det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,300,300)
+    # do common aperture photometry
+    logger.info("Going to cap_sex to do CAP on each band")
+    sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
+    # set up an empty results dataframe
+    res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
+     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
+    for s in [sg,sr,si,sz]:
+        # load in the photometry from sextractor
+        capcat = Table.read(sexcats[s.band]).to_pandas()
+        quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        zp = float(quals[0])
+        av_fwhm = float(quals[2])
+        capcat = capcat.sort_values(by='X_WORLD')
+        logger.info("Calibrating in %s band using zeropoint from result file: %s"%(s.band,zp))
+        capcat['MAG_APER']=capcat['MAG_APER']+zp
+        capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
+        # get rid of clearly wrong values
+        truth =capcat['MAG_AUTO']<35
+        capcat = capcat.iloc[truth.values]
+        # find the host galaxy
+        snloc = SkyCoord(ra=ra*u.degree,dec = dec*u.degree)
+        catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
+        idx,d2d,d3d = snloc.match_to_catalog_sky(catobjs)
+        match = capcat.iloc[int(idx)]
+        r_kr,elong = match['KRON_RADIUS'],match['ELONGATION']
+        if d2d.arcsec < (2.5*r_kr*np.sqrt(elong)):
+            logger.info("The SN lies within the Kron radius of a galaxy")
+            logger.info("The magnitude in %s is %s"%(s.band,match['MAG_AUTO']))
+            match['BAND'] = s.band
+            match['SN_NAME'] = sn_name
+            res_df = res_df.append(match)
+
+        else:
+            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
+                header = [next(res) for x in range(8)]
+            limmag = header[-1].split(' ')[-1].strip('\n')
+            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1]
+            logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
+
+        # make region files for ds9
+        reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
+
+        for i in range(len(capcat['X_WORLD'].values)):
+            print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=reg)
+        print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
+        reg.close()
+    res_df.index = res_df['BAND']
+    all_sn_fn = os.path.join(sg.res_dir,'all_sn_phot.csv')
+    if os.path.isfile(all_sn_fn):
+        all_sn = pd.read_csv(all_sn_fn,index_col=0)
+    else:
+        all_sn = pd.DataFrame(columns = ['SN_NAME','BAND','X_WORLD', 'Y_WORLD', 'MAG_AUTO', 'MAGERR_AUTO',
+         'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
+    all_sn = all_sn.append(res_df)
+    all_sn.to_csv(all_sn_fn)
+
+    logger.info("Done doing CAP for %s"%sn_name)
+    return None
+
+def cap_phot_all(y,f,chip,wd='coadding'):
+    '''get aperture photometry for an entire chip'''
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    logger.info("Entered 'cap_phot_all' to do common aperture photometry for MY%s, %s, chip %s"%(y,f,chip))
+    # first let's get to the right directory and set up a stack class object for each band_dir
+    bands = ['g','r','i','z']
+    survey_flags = {
+    'DES_AAOmega':['3','4','6'],
+    'ZFIRE_UDS':['3'],
+    'NOAO_0522':['4','6'],
+    'NOAO_0334':['4','6'],
+    'N17B331':['4','6'],
+    'MOSDEF':['Any'],
+    'SpARCS':['1','2'],
+    'PanSTARRS_AAOmega   ':['3','4','6'],
+    'PanSTARRS_MMT': ['3','4','6'],
+    'PRIMUS': ['3','4'],
+    'NED': ['Any'],
+    'UDS_FORS2':['A','B'],
+    'UDS_VIMOS':['3','4'],
+    'ACES': ['3','4'],
+    'SDSS': ['0'],
+    '6dF': ['4'],
+    'ATLAS':['Any'],
+    '2dFGRS':['3','4'],
+    'GAMA':['4'],
+    'SNLS_FORS           ':['1','2'],
+    'CDB':['Any'],
+    'VVDS_DEEP':['3','4','13','14','23','24','213','214'],
+    'VVDS_CDFS':['3','4','13','14','23','24'],
+    'MUSE':['3','2'],
+    'SAGA':['4'],
+    'SNLS_AAOmega':['3','4','6'],
+    'VIPERS':['2','3','4','9','22','23','24','29','12','13','14','19','212','213','214','219'],
+    'DEEP2_DR4':['-1','3','4'],
+    'VUDS_COSMOS':['3','4','13','14','23','24','43','44'],
+    'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
+    }
+    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
+
+    # if there is no white image, make ones
+    det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_white.fits'%(y,f,chip))
+    if not os.path.isfile(det_name):
+        logger.info("Couldn't find a detection image, so going to resample each band plus white to the same pixels")
+        det_name = resample_chip_for_cap(sg,sr,si,sz,chip)
+    # do common aperture photometry
+    logger.info("Going to cap_sex to do CAP on each band")
+    sexcats =cap_sex_chip(sg,sr,si,sz,chip)
+    # set up an empty results dataframe
+    res_df = pd.DataFrame(columns=['X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
+     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
+    this_chip_lims = get_chip_vals(sg.field,chip,vals = 'lims')
+
+    # find the galaxies that OzDES has redshifts for
+    grc = Table.read(os.path.join(sg.cat_dir,'ozdes_grc.fits')).to_pandas()
+    good_redshifts = pd.DataFrame()
+    for survey,flags in survey_flags.items():
+        if flags !=['Any']:
+            for flag in flags:
+                good_redshifts = good_redshifts.append(grc[(grc['source']==survey)&(grc['flag']==flag)])
+        else:
+            good_redshifts = good_redshifts.append(grc[grc['source']==survey])
+    good_in_chip_inds = (good_redshifts['RA']< this_chip_lims[0][0])&(good_redshifts['RA']> this_chip_lims[2][0]) & (good_redshifts['DEC']> this_chip_lims[0][1]) & (good_redshifts['DEC']< this_chip_lims[1][1])
+    gals_with_z = good_redshifts[good_in_chip_inds]
+    z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
+    phot_plus_spec = pd.DataFrame()
+    for s in [sg,sr,si,sz]:
+        # load in the photometry from sextractor
+        capcat = Table.read(sexcats[s.band]).to_pandas()
+        quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        zp = float(quals[0])
+        av_fwhm = float(quals[2])
+        capcat = capcat.sort_values(by='X_WORLD')
+        logger.info("Calibrating in %s band using zeropoint from result file: %.3f"%(s.band,zp))
+        capcat['MAG_APER']=capcat['MAG_APER']+zp
+        capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
+        # get rid of clearly wrong values
+        truth =capcat['MAG_AUTO']<35
+        capcat = capcat.iloc[truth.values]
+        capcat.to_csv(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,s.band)))
+        catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
+        # match the cap catalog with the ozdes one
+        idx,d2d,d3d = catobjs.match_to_catalog_sky(z_gals)
+        init_good_zgals = gals_with_z.iloc[idx]
+        good_match_inds = np.nonzero(d2d.arcsec < 2.0)[0]
+        logger.info("In %s band, I found %s galaxies which match to within 3 arcseconds"%(s.band,len(good_match_inds)))
+        good_phot_gals = capcat.iloc[good_match_inds]
+        init_good_spec_gals = init_good_zgals.iloc[good_match_inds]
+        good_spec_gals = init_good_spec_gals[~init_good_spec_gals.index.duplicated(keep='first')]
+        good_phot_gals = good_phot_gals[~init_good_spec_gals.index.duplicated(keep='first')]
+        # make region files for ds9
+        photreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot.reg'%(y,f,chip,s.band)),'w')
+        specreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_spec.reg'%(y,f,chip,s.band)),'w')
+        for i in range(len(capcat['X_WORLD'].values)):
+            print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=photreg)
+
+        photreg.close()
+        print ('global color=red',file=specreg)
+        for i in range(len(gals_with_z['RA'].values)):
+            print ('fk5; circle(%s,%s,1") # text={z = %.3f}'%(gals_with_z['RA'].iloc[i],gals_with_z['DEC'].iloc[i],gals_with_z['z'].iloc[i]),file=specreg)
+        specreg.close()
+        #write the phot and spec properties to a file
+        if s.band == 'g' and chip == 1:
+            phot_plus_spec =good_spec_gals
+
+        '''elif len(phot_plus_spec) < len(good_phot_gals):
+
+            logger.debug('New good_phot_gals is longer than old phot_plus_spec')
+            duplicated = good_phot_gals[good_phot_gals.index.duplicated()]
+            logger.debug(duplicated)
+            good_phot_gals = good_phot_gals[~good_phot_gals.index.duplicated(keep='first')]
+            logger.debug('It was duplicated, now it is the right length?')
+            logger.debug(len(phot_plus_spec))
+            logger.debug(len(good_phot_gals))'''
+        if len(phot_plus_spec) < len(good_phot_gals):
+
+            previous_phot_plus_spec = phot_plus_spec
+            phot_plus_spec = good_spec_gals
+
+            #find the already done columns
+            done_cols =previous_phot_plus_spec.columns
+            done_bands = []
+            for col in done_cols:
+                if 'MAG' in col:
+                    done_bands.append(col)
+
+            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
+                header = [next(res) for x in range(8)]
+            limmag = header[-1].split(' ')[-1].strip('\n')
+            for col in done_bands:
+
+
+                phot_plus_spec[col]=limmag
+                try:
+                    phot_plus_spec.loc[previous_phot_plus_spec.index,col]=previous_phot_plus_spec[col]
+                except KeyError:
+                    overlap_inds = []
+                    for ind in previous_phot_plus_spec.index:
+                        if ind in phot_plus_spec.index:
+                            overlap_inds.append(ind)
+                    phot_plus_spec.loc[overlap_inds,col]=previous_phot_plus_spec.loc[overlap_inds,col]
+        if len(phot_plus_spec) > len(good_phot_gals):
+            phot_plus_spec.loc[good_spec_gals.index,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[good_spec_gals.index,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
+
+        else:
+
+            phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
+
+
+    phot_plus_spec.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.result'%(sg.my,sg.field,chip)))
+    return phot_plus_spec

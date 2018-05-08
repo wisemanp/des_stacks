@@ -302,7 +302,7 @@ def cap_phot_sn(sn_name,wd = 'coadding'):
             with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(8)]
             limmag = header[-1].split(' ')[-1].strip('\n')
-            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1]
+            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1]
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
 
         # make region files for ds9

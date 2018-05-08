@@ -546,8 +546,10 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4000,stamp_sizey
         '-PIXELSCALE_TYPE','MANUAL',
         '-PIXEL_SCALE','%.03f'%pixel_scale,
         '-BACK_SIZE','512',
-        '-IMAGEOUT_NAME',glob_list[0]
+        '-IMAGEOUT_NAME',glob_list[0],
         glob_list[0]]
+        pr = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        out,errs = pr.communicate()
     resamp_frame_str = resamp_frames[0]+' '+resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
 
     white_cmd = ['swarp',

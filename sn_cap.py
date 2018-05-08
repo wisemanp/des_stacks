@@ -14,24 +14,36 @@ def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n','--sn_name',help='Full DES supernova ID, e.g. DES16C2nm (case sensitive)',default=None)
     parser.add_argument('-l','--namelist',help='List of SN names as a .txt or .csv file',default = None)
+    parser.add_argument('-av','--avoid',help='Avoid these SN, if it is in the list given by l. e.g. [DES16C2nm]',default=None)
     parser.add_argument('-wd','--workdir',help='Path to directory to work in',default = '/media/data3/wiseman/des/coadding')
     parser.add_argument('-ow','--overwrite',help='Overwrite existing results?',action = 'store_true')
     return parser.parse_args()
 
 def cap(args,logger):
+    avoid_list = []
+    if args.avoid:
+        avoid_list = [i for i in args.avoid.split(',')]
+    else:
+       avoid_list = [None]
     if args.sn_name:
         logger.info("Doing common aperture photometry on %s"%args.sn_name)
         cap_phot_sn(args.sn_name,args.workdir)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
+        sn_list = np.loadtxt(args.namelist,dtype='str')
+        logger.info("Doing CAP on following input list")
+        logger.info(sn_list)
         done_sn = pd.read_csv('/media/data3/wiseman/des/coadding/results/all_sn_phot.csv',index_col=0)
         
-        for sn_name in np.loadtxt(args.namelist,dtype='str'):
+        for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
-            if not args.overwrite or sn_name not in done_sn.SN_NAME.unique():
-                cap_phot_sn(sn_name,args.workdir)
+            
+            if sn_name not in done_sn.SN_NAME.unique():
+                if sn_name not in avoid_list:
+                    cap_phot_sn(sn_name,args.workdir)
             elif args.overwrite == True:
-                cap_phot_sn(sn_name,args.workdir)
+                if sn_name not in avoid_list:
+                    cap_phot_sn(sn_name,args.workdir)
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
 if __name__ == "__main__":

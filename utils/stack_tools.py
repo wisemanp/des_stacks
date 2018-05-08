@@ -532,12 +532,22 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4000,stamp_sizey
     outs,errs = p.communicate()
     endtime=float(time.time())
     logger.info('Done resampling a stamp around %s, took %.3f seconds'%(sn_name,endtime-starttime))
+
     # Now resample the  image
     resamp_frames = []
     for s in [sg,sr,si,sz]:
         glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
         glob_list = glob.glob(glob_string)
         resamp_frames.append(glob_list[0])
+        cmd = ['swarp',
+        '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
+        '-CENTER_TYPE','MANUAL',
+        '-CENTER','%f,%f'%(ra,dec),
+        '-PIXELSCALE_TYPE','MANUAL',
+        '-PIXEL_SCALE','%.03f'%pixel_scale,
+        '-BACK_SIZE','512',
+        '-IMAGEOUT_NAME',glob_list[0]
+        glob_list[0]]
     resamp_frame_str = resamp_frames[0]+' '+resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
 
     white_cmd = ['swarp',

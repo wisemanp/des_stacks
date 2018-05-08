@@ -71,7 +71,7 @@ def main(args,logger):
         logger.info("Field:  %s"%f)
         logger.info("CCD:    %s"%chip)
         cap_chip_dir = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip))
-        
+
         chip_res_fn = os.path.join(cap_chip_dir,'spec_phot_galcat_%s_%s_%s.result'%(y,f,chip))
         logger.info("Filename should look like %s."%chip_res_fn)
         bands = ['g','r','i','z']
@@ -116,14 +116,14 @@ def main(args,logger):
                 logger.info(match)
             else:
                 logger.info("The SN lies within %s arcsec of a galaxy with a redshift, here are details, including magnitudes from the deep DES SN stack"%d2d.arcsec)
-                
+
             for b in bands:
                 myreg = open(os.path.join(sn_dir,'%s_%s.reg'%(sn,b)),'w')
                 for i in range(len(chip_res)):
                     logger.debug('Got into loop')
                     mag,magerr= chip_res['MAG_AUTO_%s'%b].iloc[i], chip_res['MAGERR_AUTO_%s'%b].iloc[i]
                     print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f} color=green'%(chip_res.RA.iloc[i],chip_res.DEC.iloc[i],mag,magerr),file = myreg)
-                   
+
                 logger.debug('Done non-matched galaxies')
                 for ind in match.index:
                     mag,magerr = match['MAG_AUTO_%s'%b].iloc[ind],match['MAGERR_AUTO_%s'%b].iloc[ind]
@@ -262,4 +262,3 @@ if __name__ == "__main__":
     args = parser()
     main(args,logger)
     logger.info("************* Finished all SN you gave me! *************")
-   

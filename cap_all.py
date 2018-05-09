@@ -1,6 +1,7 @@
 'Tiny wrapper to do common aperture photometry on everything'
 #Note: import this first else it crashes importing sub-modules
 import argparse
+import os
 from des_stacks import des_stack as stack
 from des_stacks.analysis.astro import cap_phot_all
 
@@ -14,6 +15,7 @@ for c in range(1,63):
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-a','--avoid',default=None)
+    parser.add_argument('-s','--skipdone',action='store_true')
     return parser.parse_args()
 def main(args):
     for my in mys:
@@ -25,7 +27,12 @@ def main(args):
                     if category in [i for i in args.avoid.split(',')]:
                         n_bad+=1
                 if n_bad<2:
-                    cap_phot_all(my,f,ch)
+                    capdir = '/media/data3/wiseman/des/coadding/stacks/MY%s/%s/CAP/%s'%(my,f,ch)
+                    done_phot = os.path.isfile(os.path.join(capdir,'spec_phot_galcat_%s_%s_%s.result'%(my,f,ch)))
+                    if not args.skipdone:
+                        cap_phot_all(my,f,ch)
+                    elif not done_phot:
+                        cap_phot_all(my,f,ch)
 
 if __name__=="__main__":
     args=parser()

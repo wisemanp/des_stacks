@@ -1,5 +1,6 @@
 'Tiny wrapper to do common aperture photometry on everything'
 #Note: import this first else it crashes importing sub-modules
+import argparse
 from des_stacks import des_stack as stack
 from des_stacks.analysis.astro import cap_phot_all
 
@@ -19,12 +20,12 @@ def main(args):
         for f in fields:
             f = 'SN-'+f
             for ch in good_des_chips:
+                n_bad = 0
                 for category in [my,f,ch]:
                     if category in [i for i in args.avoid.split(',')]:
-                        print 'Not doing %s'category
-                    else:
-
-                        cap_phot_all(my,f,ch)
+                        n_bad+=1
+                if n_bad<2:
+                    cap_phot_all(my,f,ch)
 
 if __name__=="__main__":
     args=parser()

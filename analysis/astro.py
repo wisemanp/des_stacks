@@ -244,8 +244,8 @@ def cap_phot_sn(sn_name,wd = 'coadding'):
         logger.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
     else:'''
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -271,7 +271,7 @@ def cap_phot_sn(sn_name,wd = 'coadding'):
     sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
-     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
+     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'KRON_RADIUS','CLASS_STAR'])
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
         capcat = Table.read(sexcats[s.band]).to_pandas()

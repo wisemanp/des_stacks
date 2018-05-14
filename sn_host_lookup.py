@@ -106,7 +106,7 @@ def main(args,logger):
         logger.info(match)
         sn_dir = os.path.join(args.workdir,'stacks','CAP',sn)
         if not os.path.isdir(sn_dir):
-            os.path.mkdir(sn_dir)
+            os.mkdir(sn_dir)
 
         if d2d.arcsec < (2*float(match_dist)):
             restype='spec'

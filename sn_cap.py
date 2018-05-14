@@ -33,8 +33,10 @@ def cap(args,logger):
         sn_list = np.loadtxt(args.namelist,dtype='str')
         logger.info("Doing CAP on following input list")
         logger.info(sn_list)
-        done_sn = pd.read_csv('/media/data3/wiseman/des/coadding/results/all_sn_phot.csv',index_col=0)
-        
+        try:
+            done_sn = pd.read_csv('/media/data3/wiseman/des/coadding/results/all_sn_phot.csv',index_col=0)
+        except:
+            done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD'])
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
             

@@ -24,8 +24,9 @@ def main(args):
             for ch in good_des_chips:
                 n_bad = 0
                 for category in [my,f,ch]:
-                    if category in [i for i in args.avoid.split(',')]:
-                        n_bad+=1
+                    if args.avoid:
+                        if category in [i for i in args.avoid.split(',')]:
+                            n_bad+=1
                 if n_bad<2:
                     capdir = '/media/data3/wiseman/des/coadding/stacks/MY%s/%s/CAP/%s'%(my,f,ch)
                     done_phot = os.path.isfile(os.path.join(capdir,'spec_phot_galcat_%s_%s_%s.result'%(my,f,ch)))

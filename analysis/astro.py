@@ -478,8 +478,17 @@ def cap_phot_all(y,f,chip,wd='coadding'):
                             overlap_inds.append(ind)
                     phot_plus_spec.loc[overlap_inds,col]=previous_phot_plus_spec.loc[overlap_inds,col]
         if len(phot_plus_spec) > len(good_phot_gals):
-            phot_plus_spec.loc[good_spec_gals.index,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[good_spec_gals.index,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
-
+            try: 
+                phot_plus_spec.loc[good_spec_gals.index,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[good_spec_gals.index,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
+            except:
+                
+                for ind in good_spec_gals.index:
+                   
+                    try:
+                       phot_plus_spec.loc[ind,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[ind,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
+                    except:
+                       logger.warning("Failed in the %s band at index %s"%(s.band,ind))
+            
         else:
 
             phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values

@@ -168,8 +168,9 @@ def optimize(parsed):
             psf_df.loc[str(newpsf),str(newteff)] = psf
     for df in [lim_df,psf_df]:
         best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
-        # ADD TO PLOT! 
+        # ADD TO PLOT!
 
+    return best
 def do_stack(f,b,y,ch,wd,cuts):
     #Performs the actual stack for a given set of cuts, and returns the limiting magnitudes and psf
     s = stack.Stack(f,b,y,ch,wd,cuts)
@@ -178,3 +179,8 @@ def do_stack(f,b,y,ch,wd,cuts):
     lim = np.median(s.init_phot()[ch])
     psf = np.mean(np.loadtxt(os.path.join(s.band_dir,str(ch),'ana','%s_ana.qual'%s.cutstring))[1:])
     return (lim,psf)
+
+def main():
+    parsed = parser()
+    best = optimize(parsed)
+    print (best)

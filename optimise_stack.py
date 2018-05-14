@@ -140,7 +140,7 @@ def optimize(parsed):
             lim,psf = do_stack(f,b,y,ch,wd,cuts = {'zp':None,'teff':teff_cut,'psf':psf_cut})
             lim_df.loc[str(psf_cut),str(teff_cut)] = lim
             psf_df.loc[str(psf_cut),str(teff_cut)] = psf
-    best={'depth':,'psf':}
+    best={'depth':None,'psf':None}
     for df in [lim_df,psf_df]:
         best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
         # TO BE ADDED: MAKE A PLOT

@@ -121,10 +121,10 @@ def sex_worker(arg_pair):
     zp,sex_fwhm = init_calib(s,chip,sexcat)
 
     qual = np.array([zp,model_fwhm,sex_fwhm])
-    qualsave = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
+    qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
     np.savetxt(qualsave,qual)
 
-    print("Written quality factors to %s" %qualsave)
+    print("Written quality factors to %s" %qual_fn)
     qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
     qual_df = pd.DataFrame([qual_dict],index = [chip])
     print("Quality of stack:\n %s" %qual_df)

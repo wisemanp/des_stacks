@@ -161,6 +161,10 @@ def get_sn_dat(sn):
     dat = conn.query_to_pandas(q)
     ra,dec =dat[['RA','DEC']].iloc[0].values
     y = dat['SEASON'].values[0]
+    ####TEMPORARY FIX - REMOVE WHEN Y5 AVAILABLE!####
+    if y in [5,'5']:
+        y = 'none'
+    #################
     obj_field = sn[5:7]
     the_field = chiplims[obj_field]
     for ccd in the_field.keys():

@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
-'''Stack Everything'''
-# exectuable to run through the entire stack process
+##############################################################################
+#
+# Copyright (c) 2018 University of Southampton
+# All Rights Reserved.
+# 12/05/2018
+##############################################################################
+
+__author__ = "Philip Wiseman <p.s.wiseman@soton.ac.uk>"
+__version__ = "0.9"
+__date__ = "12/05/18"
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from astropy.table import Table
-from astropy.io import fits
-from astropy.time import Time
 import matplotlib.pyplot as plt
 import datetime
 import configparser
@@ -14,12 +20,17 @@ import os
 import logging
 import argparse
 import glob
+
 from time import gmtime, strftime
+from astropy.table import Table
+from astropy.io import fits
+from astropy.time import Time
+
 from des_stacks import des_stack as stack
 from des_stacks.utils.loop_stack import iterate_sex_loop, init_sex_loop
 
-
-all_years = ['none','1','2','3','4']
+# define some DES specific lists
+all_years = ['none','1','2','3','4'] # add 5 when available
 all_fields = ['SN-X1','SN-X2','SN-X3','SN-C1','SN-C2','SN-C3','SN-E1','SN-E2','SN-S1','SN-S2']
 all_chips = np.arange(1,62)
 all_bands = ['g','r','i','z']
@@ -31,9 +42,10 @@ def parser():
     parser.add_argument('-my','--minusyears', help = 'Which minus years to stack (e.g. 1,2,3,4,none)',nargs='?',required=False,default='1')
     parser.add_argument('-ch','--chips', help = 'Which chips to stack (e.g. [1,5] = 1,3,4)',nargs=1,required=False,default='All')
     parser.add_argument('-wd','--workdir', help = 'Working directory', default = './')
-    parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "zp", "b" or "both")',required = False, default = 'both')
+    parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "teff", "b"/"both")',required = False, default = 'teff')
     parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, default =0.25)
     parser.add_argument('-zs','--zpstep', help ='Size of the cut step for zeropoint cuts',required=False,default = 0.025)
+    parser.add_argument('-ts','--teffstep',help = 'Size of cut step for teff cuts',required=False,default = 0.02)
     parser.add_argument('-zc','--zcut', help ='Define zp cut to do a stack with',required=False,nargs=1,default= None)
     parser.add_argument('-pc','--pcut', help ='Define psf cut to do a stack with',required=False,nargs=1,default= None)
     parser.add_argument('-tc','--tcut', help ='Define teff cut to do a stack with',required=False,nargs=1,default= None,type=float)

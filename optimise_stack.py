@@ -187,7 +187,7 @@ def do_stack(f,b,y,ch,wd,cuts):
 
 def main():
     parsed = parser()
-    chips = [[int(chip)] for chip in parsed['chips'][0].split(',')]
+    chips = [[str(chip)] for chip in parsed['chips'][0].split(',')]
     for y in parsed['mys']:
         for f in parsed['fields']:
             for b in parsed['bands']:

@@ -139,7 +139,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
         logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
     ## Save results
-elif -1 <cuts['teff'] < 500:
+    elif -1 < cuts['teff'] < 500:
         logger.info('Doing the cut based on T_eff > %s'%cuts['teff'])
         good_frame = pd.DataFrame()
         good_exps = []

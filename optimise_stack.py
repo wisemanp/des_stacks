@@ -182,7 +182,7 @@ def do_stack(f,b,y,ch,wd,cuts):
     s.do_my_stack(cuts=cuts,final=True)
     s.run_stack_sex(cuts=cuts,final=True)
     lim = np.median(s.init_phot()[ch[0]])
-    psf = np.mean(np.loadtxt(os.path.join(s.band_dir,str(ch),'ana','%s_ana.qual'%s.cutstring))[1:])
+    psf = np.mean(np.loadtxt(os.path.join(s.band_dir,ch[0],'ana','%s_ana.qual'%s.cutstring))[1:])
     return (lim,psf)
 
 def main():

@@ -46,7 +46,7 @@ def parser():
     parser.add_argument('-pr','--psfrange',help = 'Range to optimize psf in (min,max): [1.5,3]',required=False,default= '1.5,3.0')
     parser.add_argument('-tr','--teffrange',help = 'Range to optimize teff in (min,max): [0,0.5]',required=False,default= '0.0,0.5')
     parser.add_argument('-st','--step',help = 'Size of step in the cut you want to optimize over (psf,teff): [0.25,0.01]',required = False, default = '0.25,0.01')
-    parser.add_argument('-t','--tidy',help = 'Tidy up temporary files after?'action = 'store_true')
+    parser.add_argument('-t','--tidy',help = 'Tidy up temporary files after?',action = 'store_true')
     args=parser.parse_args()
     try:
         fields = args.field.split(',')

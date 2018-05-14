@@ -152,7 +152,7 @@ def optimize(parsed):
     elif parsed['looptype']=='psf':
         teff_start = best['psf'][1]
         psf_start = best['psf'][0]
-    elif parsed['looptype']=='both'
+    elif parsed['looptype']=='both':
         teff_start = np.mean(best['depth'][1],best['psf'][1])
         psf_start = np.mean(best['depth'][0],best['psf'][0])
     zoomed_teffrange = np.arange(teff_start-parsed['step'][1]*5,teff_start+parsed['step'][1]*5,smaller_teff_step)

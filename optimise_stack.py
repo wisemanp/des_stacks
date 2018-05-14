@@ -173,6 +173,16 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps):
     for df in [lim_df,psf_df]:
         best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
         # ADD TO PLOT!
+    f1,ax1 = plt.subplots()
+    for teffcut in lim_df.columns:
+        for idx in lim_df.index:
+            ax.scatter(float(teffcut),float(idx),marker='s',s=600,color='purple',alpha=lim_df.loc[idx,teffcut])
+    plt.savefig('/home/wiseman/test_optimize_teff_%s_%s_%s_%s.pdf'%(f,b,y,ch))
+    f2,ax2 = plt.subplots()
+    for psfcut in psf_df.columns:
+        for idx in psf_df.index:
+            ax2.scatter(float(psfcut),float(idx),marker='s',s=600,color='green',alpha=psf_df.loc[idx,psfcut])
+    plt.savefig('/home/wiseman/test_optimize_psf_%s_%s_%s_%s.pdf'%(f,b,y,ch))
 
     return best
 def do_stack(f,b,y,ch,wd,cuts):

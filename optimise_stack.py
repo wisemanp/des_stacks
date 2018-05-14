@@ -195,7 +195,7 @@ def main():
                 for ch in chips:
                     t0,t1,ts = float(parsed['teffrange'][0]),float(parsed['teffrange'][1]),float(parsed['step'][1])
                     p0,p1,ps = float(parsed['psfrange'][0]),float(parsed['psfrange'][1]),float(parsed['step'][0])
-
+                    print ('Sending chip %s to optimize'%ch)
                     best = optimize(f,b,y,ch,parsed['workdir'],t0,t1,ts,p0,p1,ps)
     print (best)
 

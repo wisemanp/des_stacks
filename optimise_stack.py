@@ -127,15 +127,17 @@ def parser():
 
     return parsed
 
-def optimize(parsed):
+def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps):
     # a function that iterates through stacks until the best one is reached
-    teff_range = np.arange(float(parsed['teffrange'][0]),float(parsed['teffrange'][1]),float(parsed['step'][1]))
-    psf_range = np.arange(float(parsed['psfrange'][0]),float(parsed['psfrange'][1]),float(parsed['step'][0]))
+    print(t0,t1,ts)
+    print(p0,p1,ps)
+    teff_range = np.arange(t0,t1,ts)
+    psf_range = np.arange(p0,p1,ps)
     lim_df = pd.DataFrame(index = [str(r) for r in psf_range],columns=[str(r) for r in teff_range])
     psf_df = pd.DataFrame(index = [str(r) for r in psf_range],columns=[str(r) for r in teff_range])#create the DataFrame to put the quality measurements in
     lim_df.name = 'depth'
     psf_df.name = 'psf'
-    f,b,y,ch,wd = (parsed['%s'%p] for p in ['fields','bands','mys','chips','workdir'])
+
     for psf_cut in psf_range:
         for teff_cut in teff_range:
             lim,psf = do_stack(f,b,y,ch,wd,cuts = {'zp':None,'teff':teff_cut,'psf':psf_cut})
@@ -156,8 +158,8 @@ def optimize(parsed):
     elif parsed['looptype']=='both':
         teff_start = np.mean(best['depth'][1],best['psf'][1])
         psf_start = np.mean(best['depth'][0],best['psf'][0])
-    zoomed_teffrange = np.arange(teff_start-float(parsed['step'][1])*5,teff_start+float(parsed['step'][1])*5,smaller_teff_step)
-    zoomed_psfrange = np.arange(psf_start-float(parsed['step'][0])*5,psf_start+float(parsed['step'][0])*5,smaller_psf_step)
+    zoomed_teffrange = np.arange(teff_start-float(ts)*5,teff_start+float(ts)*5,smaller_teff_step)
+    zoomed_psfrange = np.arange(psf_start-float(ps)*5,psf_start+float(ps)*5,smaller_psf_step)
     for newpsf in zoomed_psfrange:
         lim_df = lim_df.append(pd.DataFrame(index=[str(newpsf)],columns=lim_df.columns))
         psf_df = psf_df.append(pd.DataFrame(index=[str(newpsf)],columns=psf_df.columns))
@@ -184,7 +186,14 @@ def do_stack(f,b,y,ch,wd,cuts):
 
 def main():
     parsed = parser()
-    best = optimize(parsed)
+    for y in parsed['mys']:
+        for f in parsed['fields']:
+            for b in parsed['bands']:
+                for ch in parsed['chips']:
+                    t0,t1,ts = float(parsed['teffrange'][0]),float(parsed['teffrange'][1]),float(parsed['step'][1])
+                    p0,p1,ps = float(parsed['psfrange'][0]),float(parsed['psfrange'][1]),float(parsed['step'][0])
+
+                    best = optimize(f,b,y,ch,parsed['workdir'],t0,t1,ts,p0,p1,ps)
     print (best)
 
 if __name__=="__main__":

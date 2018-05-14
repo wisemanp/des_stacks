@@ -184,3 +184,6 @@ def main():
     parsed = parser()
     best = optimize(parsed)
     print (best)
+
+if __name__=="__main__":
+    main()

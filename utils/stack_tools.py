@@ -153,7 +153,9 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
                 t_eff = this_qual['T_EFF'].values[0]
             except:
                 t_eff = 2
-            if t_eff > cuts['teff']:
+            if not cuts['psf']:
+                cuts['psf']=5
+            if t_eff > cuts['teff'] and this_exp['PSF_NEA']>cuts['psf']:
                 this_exp['T_EFF']= t_eff
                 good_frame = good_frame.append(this_exp)
                 good_exps.append(exp)

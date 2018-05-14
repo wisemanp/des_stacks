@@ -159,6 +159,8 @@ class Stack():
             self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
         elif cuts['teff']:
             self.cutstring = '%s'%cuts['teff']
+        elif cuts['teff'] and cuts['psf']:
+            self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         field = self.field
         band = self.band
         my = self.my

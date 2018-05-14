@@ -115,9 +115,9 @@ def parser():
     except:
         parsed['teffrange'] = [0.0,0.5]
     try:
-        parsed['psfrange'] = args.teffrange.split(',')
+        parsed['psfrange'] = args.psfrange.split(',')
     except:
-        parsed['psfrange'] = [0.0,0.5]
+        parsed['psfrange'] = [1.5,3.0]
     try:
         parsed['step'] = args.step.split(',')
     except:

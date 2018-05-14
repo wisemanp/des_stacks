@@ -174,6 +174,7 @@ def optimize(parsed):
     return best
 def do_stack(f,b,y,ch,wd,cuts):
     #Performs the actual stack for a given set of cuts, and returns the limiting magnitudes and psf
+    print ('Making stack of %s,%s,%s,%s,%s'%(f,b,y,ch,wd,cuts))
     s = stack.Stack(f,b,y,ch,wd,cuts)
     s.do_my_stack(cuts=cuts,final=False)
     s.run_stack_sex(cuts=cuts,final=False)

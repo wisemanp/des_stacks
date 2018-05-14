@@ -128,7 +128,7 @@ def parser():
 
     return parsed
 
-def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps):
+def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
     # a function that iterates through stacks until the best one is reached
     print(t0,t1,ts)
     print(p0,p1,ps)
@@ -148,15 +148,15 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps):
     for df in [lim_df,psf_df]:
         best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
         # TO BE ADDED: MAKE A PLOT
-    smaller_teff_step = float(parsed['step'][1])/5
-    smaller_psf_step = float(parsed['step'][0])/5
-    if parsed['looptype']=='depth':
+    smaller_teff_step = ts/5
+    smaller_psf_step = ps/5
+    if lt=='depth':
         teff_start = best['depth'][1]
         psf_start = best['depth'][0]
-    elif parsed['looptype']=='psf':
+    elif lt=='psf':
         teff_start = best['psf'][1]
         psf_start = best['psf'][0]
-    elif parsed['looptype']=='both':
+    elif lt=='both':
         teff_start = np.mean(best['depth'][1],best['psf'][1])
         psf_start = np.mean(best['depth'][0],best['psf'][0])
     zoomed_teffrange = np.arange(teff_start-float(ts)*5,teff_start+float(ts)*5,smaller_teff_step)
@@ -206,7 +206,7 @@ def main():
                     t0,t1,ts = float(parsed['teffrange'][0]),float(parsed['teffrange'][1]),float(parsed['step'][1])
                     p0,p1,ps = float(parsed['psfrange'][0]),float(parsed['psfrange'][1]),float(parsed['step'][0])
                     print ('Sending chip %s to optimize'%ch)
-                    best = optimize(f,b,y,ch,parsed['workdir'],t0,t1,ts,p0,p1,ps)
+                    best = optimize(f,b,y,ch,parsed['workdir'],t0,t1,ts,p0,p1,ps,parsed['lt'])
     print (best)
 
 if __name__=="__main__":

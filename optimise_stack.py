@@ -179,8 +179,8 @@ def do_stack(f,b,y,ch,wd,cuts):
     #Performs the actual stack for a given set of cuts, and returns the limiting magnitudes and psf
     print ('Making stack of',f,b,y,ch,wd,cuts)
     s = stack.Stack(f,b,y,ch,wd,cuts)
-    s.do_my_stack(cuts=cuts,final=False)
-    s.run_stack_sex(cuts=cuts,final=False)
+    s.do_my_stack(cuts=cuts,final=True)
+    s.run_stack_sex(cuts=cuts,final=True)
     lim = np.median(s.init_phot()[ch])
     psf = np.mean(np.loadtxt(os.path.join(s.band_dir,str(ch),'ana','%s_ana.qual'%s.cutstring))[1:])
     return (lim,psf)

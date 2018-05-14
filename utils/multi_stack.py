@@ -122,7 +122,7 @@ def sex_worker(arg_pair):
 
     qual = np.array([zp,model_fwhm,sex_fwhm])
     qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
-    np.savetxt(qualsave,qual)
+    np.savetxt(qual_fn,qual)
 
     print("Written quality factors to %s" %qual_fn)
     qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}

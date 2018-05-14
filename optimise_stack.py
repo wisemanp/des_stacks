@@ -129,8 +129,8 @@ def parser():
 
 def optimize(parsed):
     # a function that iterates through stacks until the best one is reached
-    teff_range = np.arange(parsed['teffrange'][0],parsed['teffrange'][1],parsed['step'][1])
-    psf_range = np.arange(parsed['psfrange'][0],parsed['psfrange'][1],parsed['step'][0])
+    teff_range = np.arange(float(parsed['teffrange'][0]),float(parsed['teffrange'][1]),float(parsed['step'][1]))
+    psf_range = np.arange(float(parsed['psfrange'][0]),float(parsed['psfrange'][1]),float(parsed['step'][0]))
     lim_df = pd.DataFrame(index = [str(r) for r in psf_range],columns=[str(r) for r in teff_range])
     psf_df = pd.DataFrame(index = [str(r) for r in psf_range],columns=[str(r) for r in teff_range])#create the DataFrame to put the quality measurements in
     lim_df.name = 'depth'
@@ -145,8 +145,8 @@ def optimize(parsed):
     for df in [lim_df,psf_df]:
         best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
         # TO BE ADDED: MAKE A PLOT
-    smaller_teff_step = parsed['step'][1]/5
-    smaller_psf_step = parsed['step'][0]/5
+    smaller_teff_step = float(parsed['step'][1])/5
+    smaller_psf_step = float(parsed['step'][0])/5
     if parsed['looptype']=='depth':
         teff_start = best['depth'][1]
         psf_start = best['depth'][0]
@@ -156,8 +156,8 @@ def optimize(parsed):
     elif parsed['looptype']=='both':
         teff_start = np.mean(best['depth'][1],best['psf'][1])
         psf_start = np.mean(best['depth'][0],best['psf'][0])
-    zoomed_teffrange = np.arange(teff_start-parsed['step'][1]*5,teff_start+parsed['step'][1]*5,smaller_teff_step)
-    zoomed_psfrange = np.arange(psf_start-parsed['step'][0]*5,psf_start+parsed['step'][0]*5,smaller_psf_step)
+    zoomed_teffrange = np.arange(teff_start-float(parsed['step'][1])*5,teff_start+float(parsed['step'][1])*5,smaller_teff_step)
+    zoomed_psfrange = np.arange(psf_start-float(parsed['step'][0])*5,psf_start+float(parsed['step'][0])*5,smaller_psf_step)
     for newpsf in zoomed_psfrange:
         lim_df = lim_df.append(pd.DataFrame(index=[str(newpsf)],columns=lim_df.columns))
         psf_df = psf_df.append(pd.DataFrame(index=[str(newpsf)],columns=psf_df.columns))

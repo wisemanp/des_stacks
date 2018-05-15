@@ -194,6 +194,7 @@ def do_stack(f,b,y,ch,wd,cuts):
     s.run_stack_sex(cuts=cuts,final=True)
     lim = np.median(s.init_phot()[ch[0]])
     psf = np.mean(np.loadtxt(os.path.join(s.band_dir,ch[0],'ana','%s_ana.qual'%s.cutstring))[1:])
+    np.savetxt(os.path.join(s.ana_dir,'%s_limmags.txt'%s.cutstring),np.array([lim,psf]))
     return (lim,psf)
 
 def main():

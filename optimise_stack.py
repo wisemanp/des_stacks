@@ -132,6 +132,7 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
     # a function that iterates through stacks until the best one is reached
     print(t0,t1,ts)
     print(p0,p1,ps)
+    print (lt)
     teff_range = np.arange(t0,t1,ts)
     psf_range = np.arange(p0,p1,ps)
     lim_df = pd.DataFrame(index = [str(r) for r in psf_range],columns=[str(r) for r in teff_range])

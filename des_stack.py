@@ -157,7 +157,7 @@ class Stack():
         self.zp_cut,self.psf_cut,self.t_cut = cuts['zp'], cuts['psf'],cuts['teff']
         if cuts['zp'] and cuts['psf'] and not cuts['teff']:
             self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
-        elif cuts['teff']:
+        elif cuts['teff'] and not cuts['psf']:
             self.cutstring = '%s'%cuts['teff']
         elif -1<cuts['teff']<100 and  cuts['psf']:
             self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])

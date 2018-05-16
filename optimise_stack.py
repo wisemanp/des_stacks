@@ -149,7 +149,7 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
     for df in [lim_df,psf_df]:
         best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
         # TO BE ADDED: MAKE A PLOT
-    smaller_teff_step = ts/5
+    '''smaller_teff_step = ts/5
     smaller_psf_step = ps/5
     if lt=='depth':
         teff_start = best['depth'][1]
@@ -170,7 +170,7 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
             psf_df[str(newteff)] = ''
             lim,psf = do_stack(f,b,y,ch,wd,cuts = {'zp':None,'teff':newteff,'psf':newpsf})
             lim_df.loc[str(newpsf),str(newteff)] = lim
-            psf_df.loc[str(newpsf),str(newteff)] = psf
+            psf_df.loc[str(newpsf),str(newteff)] = psf'''
     for df in [lim_df,psf_df]:
         best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
         # ADD TO PLOT!

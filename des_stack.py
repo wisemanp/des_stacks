@@ -127,7 +127,7 @@ class Stack():
         # read the .ini file
         cp.read(ini_fn)
         # Make a list of years
-        years = ['Y1','Y2','Y3','Y4']
+        years = ['Y1','Y2','Y3','Y4','Y5']
         self.year_lims = {}
         self.data_dirs = {}
         for y in years:

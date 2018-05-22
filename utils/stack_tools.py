@@ -280,7 +280,7 @@ def get_des_obs_year(night,logger=None):
     # read the .ini file
     cp.read('/media/data3/wiseman/des/coadding/config/snobs_params.ini')
     # Make a list of years
-    years= ['Y1','Y2','Y3','Y4']
+    years= ['Y1','Y2','Y3','Y4','Y5']
     year_night_lims = {}
     for y in years:
         year_night_lim = cp.get('year_night_lims',y)
@@ -297,6 +297,8 @@ def get_des_obs_year(night,logger=None):
     elif ((night > year_night_lims['Y4'][0]) and
           (night < year_night_lims['Y4'][1])):
         year = 'Y4'
+    elif ((night > year_night_lims['Y5'][0]) and
+          (night < year_night_lims['Y5'][1])):
     else:
         raise ValueError
     return year
@@ -370,7 +372,7 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
             #logger.info(fits.getheader(obs_fn)['EXPNUM'])
             continue
 
-        if year == 'Y4':
+        if year == 'Y4' or 'Y5':
             obs_fn = obs_fn+'[0]'
         if base_obs_fn[:3]!='DSN':
             obs_fns.append(obs_fn)

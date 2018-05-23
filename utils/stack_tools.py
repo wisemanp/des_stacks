@@ -162,7 +162,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
                 good_frame = good_frame.append(this_exp)
                 good_exps.append(exp)
         good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cuts['teff']))
-    txtname = good_fn[:-4]+'.txt'
+    txtname = good_fn[:-4]+'txt'
     np.savetxt(txtname,good_exps,fmt='%s')
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
@@ -299,6 +299,7 @@ def get_des_obs_year(night,logger=None):
         year = 'Y4'
     elif ((night > year_night_lims['Y5'][0]) and
           (night < year_night_lims['Y5'][1])):
+        year = 'Y5'
     else:
         raise ValueError
     return year
@@ -372,7 +373,7 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
             #logger.info(fits.getheader(obs_fn)['EXPNUM'])
             continue
 
-        if year == 'Y4' or 'Y5':
+        if year == 'Y4' : #or 'Y5'
             obs_fn = obs_fn+'[0]'
         if base_obs_fn[:3]!='DSN':
             obs_fns.append(obs_fn)

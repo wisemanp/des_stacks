@@ -13,6 +13,8 @@ __date__ = "12/05/18"
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import datetime
 import configparser

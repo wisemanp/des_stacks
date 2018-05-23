@@ -45,7 +45,9 @@ def get_sn_dat(sn):
     where transient_name = \'%s\''%sn
     dat = conn.query_to_pandas(q)
     ra,dec =dat[['RA','DEC']].iloc[0].values
-    y = dat['SEASON'].values[0]=
+    y = dat['SEASON'].values[0]
+    if y ==5:
+        y = 'none'
     
     obj_field = sn[5:7]
     the_field = chiplims[obj_field]
@@ -60,7 +62,7 @@ def main(args,logger):
     if sn_name:
         l = [sn_name]
     else:
-        l = args.namelist
+        l = np.loadtxt(args.namelist,dtype='str')
     for sn in l:
         logger.info("Locating result file for %s ..."%sn)
         logger.info("First querying the DES database to get the RA,Dec of %s."%sn)

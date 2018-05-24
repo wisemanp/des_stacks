@@ -90,7 +90,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         ## 4
         ## Subtract the average ZP for each year off the individual zps for that year
 
-        years =['Y1','Y2','Y3','Y4']
+        years =[1,2,3,4,5]
         info['ZP_RES']=''
         for year in years:
             logger.info('Subtracting the median zeropoint for {0} from all exposures that year'.format(year))
@@ -202,7 +202,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         good_band_my =good_band
     else:
 
-        good_band_my = good_band[good_band['YEAR']!='Y{0}'.format(MY)]
+        good_band_my = good_band[good_band['SEASON']!=int(MY)]
     good_my_exps = good_band_my['EXPNUM'].unique()
     #for each good exposure, find it's file
     stack_fns = {}

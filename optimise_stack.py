@@ -181,6 +181,7 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
         for idx in lim_df.index:
             ax.scatter(float(teffcut),float(idx),marker='s',s=600,color='purple',alpha=lim_df.loc[idx,teffcut])
     plt.savefig('/home/wiseman/test_optimize_teff_%s_%s_%s_%s.pdf'%(f,b,y,ch))
+    plt.close()
     f2,ax2 = plt.subplots()
     for psfcut in psf_df.columns:
         for idx in psf_df.index:

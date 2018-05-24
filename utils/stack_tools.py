@@ -375,8 +375,9 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
             #logger.info(base_obs_fn)
             #logger.info(fits.getheader(obs_fn)['EXPNUM'])
             continue
-
-        if year == 'Y4' : #or 'Y5'
+        #logger.info('Year: %s'%year)
+        if year in['Y4','Y5']:
+            #logger.info('Adding a [0]')
             obs_fn = obs_fn+'[0]'
         if base_obs_fn[:3]!='DSN':
             obs_fns.append(obs_fn)

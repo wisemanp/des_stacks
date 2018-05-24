@@ -129,28 +129,41 @@ def main(args,logger):
 
                 logger.debug('Done non-matched galaxies')
                 for ind in match.index:
-                    mag,magerr = match['MAG_AUTO_%s'%b].iloc[ind],match['MAGERR_AUTO_%s'%b].iloc[ind]
-                    print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['RA'].loc[ind],match['DEC'].iloc[ind],mag,magerr),file = myreg)
+                    try: 
+                        mag,magerr = match['MAG_AUTO_%s'%b].iloc[ind],match['MAGERR_AUTO_%s'%b].iloc[ind]
+                    
+                    except: 
+                        mag,magerr = match['MAG_AUTO_%s'%b],match['MAGERR_AUTO_%s'%b]
+                    try:
+                        print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['RA'].loc[ind],match['DEC'].iloc[ind],mag,magerr),file = myreg)
+                    except:
+                        print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['RA'],match['DEC'],mag,magerr),file = myreg)
                 print ('fk5; point %s %s # point=cross text={%s} color=red width=2'%(sn_ra,sn_dec,sn),file = myreg)
                 myreg.close()
                 logger.info("Saved region file to %s "%os.path.join(sn_dir,'%s_%s.reg'%(sn,b)))
         else:
+            matches = []
             restype='phot'
             logger.info("No spectroscopically redshifted galaxies nearby; going to check the photometric catalog")
             for b in bands:
                 phot_fn = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,b))
                 phot_res = pd.read_csv(phot_fn)
+                
                 res_objs = SkyCoord(ra=phot_res['X_WORLD']*u.degree,dec=phot_res['Y_WORLD']*u.degree)
                 idx,d2d,d3d = snloc.match_to_catalog_sky(res_objs)
                 logger.info("In %s band, I found the following source(s):"%b)
                 match = phot_res.iloc[int(idx)]
                 logger.info(match)
-
+                matches.append(match)
                 reg = open(os.path.join(sn_dir,'%s_%s.reg'%(sn,b)),'w')
                 for i in range(len(phot_res)):
                     print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f} color=green'%(phot_res['X_WORLD'].loc[i],phot_res['Y_WORLD'].iloc[i],phot_res['MAG_AUTO'].iloc[i],phot_res['MAGERR_AUTO'].iloc[i]),file=reg)
-                for ind in match.index:
+                try:
+                    for ind in match.index:
+                        print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['X_WORLD'].loc[ind],match['X_WORLD'].loc[ind],match['MAG_AUTO'].loc[ind],match['MAGERR_AUTO'].loc[ind]),file=reg)
+                except:
                     print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['X_WORLD'],match['X_WORLD'],match['MAG_AUTO'],match['MAGERR_AUTO']),file=reg)
+                    
                 print ('fk5; point %s %s # point=cross text={%s} color=red width=2'%(sn_ra,sn_dec,sn),file=reg)
                 reg.close()
                 logger.info("Saved region file to %s "%os.path.join(sn_dir,'%s_%s.reg'%(sn,b)))
@@ -184,10 +197,10 @@ def main(args,logger):
                         ras,decs,mags,errs = res.RA.values,res.DEC.values,res['MAG_AUTO_%s'%band].values,res['MAGERR_AUTO_%s'%band].values
 
                     else:
-                        print ("Loading the %s band result file" %band)
-                        phot_fn = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,b))
+                        logger.info("Loading the %s band result file" %band)
+                        phot_fn = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,band))
                         res = pd.read_csv(phot_fn)
-
+                        logger.info("Loaded %s"%phot_fn)
                         res = res[res['X_WORLD']<sn_ra+(w/2)]
                         res = res[res['X_WORLD']>sn_ra-(w/2)]
                         res = res[res['Y_WORLD']<sn_dec+(w/2)]
@@ -197,37 +210,37 @@ def main(args,logger):
                     fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[band])
                     fg.recenter(sn_ra,sn_dec,width=w,height=w)
                     fg.show_lines([ver_line,hor_line],color='r',linewidth=.5)
-                    fg.show_grayscale(vmin=-1.,vmax=15.)
+                    fg.show_grayscale(vmin=-0.8,vmax=8.)
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
                     fg.set_theme('publication')
                     fg.ticks.set_length(-3)
                     fg.add_label(0.1,0.8,band,relative=True,color='r',fontsize=14)
                     if restype=='spec':
-                         fg.show_circles(res.RA.values,res.DEC.values,radius=0.00027,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
+                         fg.show_circles(res.RA.values,res.DEC.values,radius=0.0004,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
                     else:
-                         fg.show_circles(res.X_WORLD.values,res.Y_WORLD.values,0.00027,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
+                         fg.show_circles(res.X_WORLD.values,res.Y_WORLD.values,0.0004,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
                     for i in range(len(ras)):
-                        fg.add_label(ras[i],decs[i]+0.0003,'%.2f +/- %.2f'%(mags[i],errs[i]),size=6,color='g')
-                    print ("Finished loading the %s band region!" %band)
+                        fg.add_label(ras[i],decs[i]+0.00045,'%.2f +/- %.2f'%(mags[i],errs[i]),size=6,color='g')
+                    logger.info("Finished loading the %s band region!" %band)
 
                     try:
                         for index,row in match.iterrows():
 
                             if restype=='spec':
-                                fg.show_circles(row['RA'],row['DEC'],radius = 0.00015,edgecolor='r',facecolor='none',linewidth=.8)
-                                fg.add_label(row['RA'],row['DEC'],'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),size=6,color='r')
+                                fg.show_circles(row['RA'],row['DEC'],radius = 0.0004,edgecolor='r',facecolor='none',linewidth=.8)
+                                fg.add_label(row['RA'],row['DEC']+0.00045,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),size=6,color='r')
                             else:
-                                fg.show_circles(row['X_WORLD'],row['Y_WORLD'],radius = 0.00015,edgecolor='b',facecolor='none',linewidth=.8)
-                                fg.add_label(row['X_WORLD'],row['Y_WORLD'],'%.2f +/- %.2f'%(row['MAG_AUTO'],row['MAGERR_AUTO']),size=6,color='b')
+                                fg.show_circles(row['X_WORLD'],row['Y_WORLD'],radius = 0.0004,edgecolor='b',facecolor='none',linewidth=.8)
+                                fg.add_label(row['X_WORLD'],row['Y_WORLD']+0.00045,'%.2f +/- %.2f'%(row['MAG_AUTO'],row['MAGERR_AUTO']),size=6,color='b')
                     except:
 
                             if restype=='spec':
-                                fg.show_circles(match['RA'],match['DEC'],radius = 0.00015,edgecolor='r',facecolor='none',linewidth=.8)
-                                fg.add_label(match['RA'],match['DEC'],'%.2f +/- %.2f'%(match['MAG_AUTO_%s'%b],match['MAGERR_AUTO_%s'%b]),size=6,color='r')
+                                fg.show_circles(match['RA'],match['DEC'],radius = 0.0004,edgecolor='r',facecolor='none',linewidth=.8)
+                                fg.add_label(match['RA'],match['DEC']+0.00045,'%.2f +/- %.2f'%(match['MAG_AUTO_%s'%band],match['MAGERR_AUTO_%s'%band]),size=6,color='r')
                             else:
-                                fg.show_circles(match['X_WORLD'],match['Y_WORLD'],radius = 0.00027,edgecolor='b',facecolor='none',linewidth=1.2)
-                                fg.add_label(match['X_WORLD'],match['Y_WORLD'],'%.2f +/- %.2f'%(match['MAG_AUTO'],match['MAGERR_AUTO']),size=6,color='b')
+                                fg.show_circles(matches[counter]['X_WORLD'],matches[counter]['Y_WORLD'],radius = 0.0004,edgecolor='b',facecolor='none',linewidth=1.2)
+                                fg.add_label(matches[counter]['X_WORLD'],matches[counter]['Y_WORLD']+0.00045,'%.2f +/- %.2f'%(matches[counter]['MAG_AUTO'],matches[counter]['MAGERR_AUTO']),size=6,color='b')
 
                     if counter in [0,2]:
                         fg.tick_labels.show_y()

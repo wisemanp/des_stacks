@@ -141,7 +141,7 @@ class Stack():
         '''Gets the current info file (originally from the DESDB)'''
         info_tab = Table.read(os.path.join(self.config_dir,'snobsinfo.fits'))
         self.info_df = info_tab.to_pandas()
-        self.qual_tab = pd.read_csv(os.path.join(self.config_dir,'SN_TABLE_EVAL.txt'),sep=' ')
+        #self.qual_tab = Table.read(os.path.join(self.config_dir,'firstcut_eval.fits')).to_pandas()
     def do_my_stack(self, cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
         '''Does a stack defined by the parameters from the Stack object it is passed.
         keyword arguments:

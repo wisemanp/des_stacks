@@ -52,7 +52,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     logger.info('Getting median zeropoint for each exposure, calculating residual for each image')
 
     info = s.info_df
-    qual = s.qual_tab
+
     import math
     info = info[info['FIELD']==field]
     logger.info('These are the bands available for field {0}'.format(field))
@@ -149,9 +149,12 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
             this_exp = info[info['EXPNUM']==exp]
             exp_idx = this_exp.index
             try:
-                this_qual= qual[qual['EXPNUM']==exp]
-                t_eff = this_qual['T_EFF'].values[0]
+                t_eff = this_exp['T_EFF'].values[0]
             except:
+                t_eff = 2
+            if t_eff < -1:
+                t_eff = 2
+            elif not t_eff:
                 t_eff = 2
             if not cuts['psf']:
                 psf_cut=5

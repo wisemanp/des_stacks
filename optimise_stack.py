@@ -208,9 +208,10 @@ def do_stack(f,b,y,ch,wd,cuts):
     #Performs the actual stack for a given set of cuts, and returns the limiting magnitudes and psf
     print ('Making stack of',f,b,y,ch,wd,cuts)
     s = stack.Stack(f,b,y,ch,wd,cuts)
+    scifile = os.path.join(s.band_dir,'ccd_%s_%s_%s_%s_sci.fits'%(ch[0],b,cuts['teff'],cuts['psf']))
     s.do_my_stack(cuts=cuts,final=True)
     s.ana_dir = os.path.join(s.band_dir,ch[0],'ana')
-    sexname = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%s_sci.sexcat' %(s.my,s.field,s.band,chip,s.cutstring))
+    sexname = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%s_sci.sexcat' %(y,f,b,ch[0],s.cutstring))
     if os.path.isfile(sexname):
         s.sexcats = [sexname]
     else:

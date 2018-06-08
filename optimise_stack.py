@@ -180,7 +180,7 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
     depthmin = np.min(lim_df.min().values)
     depthmax = np.max(lim_df.max().values)
     depthrang = depthmax-depthmin
-    
+
     for teffcut in lim_df.columns:
         for idx in lim_df.index:
             print ('Lim at this loc:%s'%lim_df.loc[idx,teffcut])
@@ -193,13 +193,13 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
     psfmin = np.min(psf_df.min().values)
     psfmax = np.max(psf_df.max().values)
     psfrang = psfmax-psfmin
-    
+
     for psfcut in psf_df.columns:
         for idx in psf_df.index:
             print ('Lim at this loc:%s'%psf_df.loc[idx,teffcut])
             alpha = (psf_df.loc[idx,teffcut]-psfmin)/psfrang
             print ('Trying to set an alpha of %s'%alpha)
-            
+
             ax2.scatter(float(psfcut),float(idx),marker='s',s=1600,color='b',alpha=alpha)
     plt.savefig('/home/wiseman/test_optimize_psf_%s_%s_%s_%s.pdf'%(f,b,y,ch))
 
@@ -209,7 +209,12 @@ def do_stack(f,b,y,ch,wd,cuts):
     print ('Making stack of',f,b,y,ch,wd,cuts)
     s = stack.Stack(f,b,y,ch,wd,cuts)
     s.do_my_stack(cuts=cuts,final=True)
-    s.run_stack_sex(cuts=cuts,final=True)
+    s.ana_dir = os.path.join(s.band_dir,ch[0],'ana')
+    sexname = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%s_sci.sexcat' %(s.my,s.field,s.band,chip,s.cutstring))
+    if os.path.isfile(sexname):
+        s.sexcats = [sexname]
+    else:
+        s.run_stack_sex(cuts=cuts,final=True)
     lim = np.median(s.init_phot()[ch[0]])
     psf = np.mean(np.loadtxt(os.path.join(s.band_dir,ch[0],'ana','%s_ana.qual'%s.cutstring))[1:])
     np.savetxt(os.path.join(s.ana_dir,'%s_limmags.txt'%s.cutstring),np.array([lim,psf]))

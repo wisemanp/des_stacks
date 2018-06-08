@@ -48,7 +48,7 @@ def get_sn_dat(sn):
     y = dat['SEASON'].values[0]
     if y ==5:
         y = 'none'
-    
+
     obj_field = sn[5:7]
     the_field = chiplims[obj_field]
     for ccd in the_field.keys():
@@ -129,10 +129,10 @@ def main(args,logger):
 
                 logger.debug('Done non-matched galaxies')
                 for ind in match.index:
-                    try: 
+                    try:
                         mag,magerr = match['MAG_AUTO_%s'%b].iloc[ind],match['MAGERR_AUTO_%s'%b].iloc[ind]
-                    
-                    except: 
+
+                    except:
                         mag,magerr = match['MAG_AUTO_%s'%b],match['MAGERR_AUTO_%s'%b]
                     try:
                         print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['RA'].loc[ind],match['DEC'].iloc[ind],mag,magerr),file = myreg)
@@ -148,7 +148,7 @@ def main(args,logger):
             for b in bands:
                 phot_fn = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,b))
                 phot_res = pd.read_csv(phot_fn)
-                
+
                 res_objs = SkyCoord(ra=phot_res['X_WORLD']*u.degree,dec=phot_res['Y_WORLD']*u.degree)
                 idx,d2d,d3d = snloc.match_to_catalog_sky(res_objs)
                 logger.info("In %s band, I found the following source(s):"%b)
@@ -163,7 +163,7 @@ def main(args,logger):
                         print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['X_WORLD'].loc[ind],match['X_WORLD'].loc[ind],match['MAG_AUTO'].loc[ind],match['MAGERR_AUTO'].loc[ind]),file=reg)
                 except:
                     print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['X_WORLD'],match['X_WORLD'],match['MAG_AUTO'],match['MAGERR_AUTO']),file=reg)
-                    
+
                 print ('fk5; point %s %s # point=cross text={%s} color=red width=2'%(sn_ra,sn_dec,sn),file=reg)
                 reg.close()
                 logger.info("Saved region file to %s "%os.path.join(sn_dir,'%s_%s.reg'%(sn,b)))

@@ -180,13 +180,7 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
     depthmin = np.min(lim_df.min().values)
     depthmax = np.max(lim_df.max().values)
     depthrang = depthmax-depthmin
-
-    for teffcut in lim_df.columns:
-        for idx in lim_df.index:
-            print ('Lim at this loc:%s'%lim_df.loc[idx,teffcut])
-            alpha = (lim_df.loc[idx,teffcut]-depthmin)/depthrang
-            print ('Trying to set an alpha of %s'%alpha)
-            ax1.scatter(float(teffcut),float(idx),marker='s',s=1600,color='r',alpha=alpha)
+    sns.heatmap(lim_df,ax=ax1,annot=True)
     plt.savefig('/home/wiseman/test_optimize_teff_%s_%s_%s_%s.pdf'%(f,b,y,ch))
     plt.close()
     f2,ax2 = plt.subplots()
@@ -194,14 +188,15 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
     psfmax = np.max(psf_df.max().values)
     psfrang = psfmax-psfmin
 
-    for psfcut in psf_df.columns:
+    '''for psfcut in psf_df.columns:
         for idx in psf_df.index:
             print ('Lim at this loc:%s'%psf_df.loc[idx,teffcut])
             alpha = (psf_df.loc[idx,teffcut]-psfmin)/psfrang
             print ('Trying to set an alpha of %s'%alpha)
 
-            ax2.scatter(float(psfcut),float(idx),marker='s',s=1600,color='b',alpha=alpha)
-    plt.savefig('/home/wiseman/test_optimize_psf_%s_%s_%s_%s.pdf'%(f,b,y,ch))
+            ax2.scatter(float(psfcut),float(idx),marker='s',s=1600,color='b',alpha=alpha)'''
+    sns.heatmap(psf_df,ax=ax2,annot=True)
+    plt.savefig('/home/wiseman/test_optimize_psf_%s_%s_%s_%s.pdf'%(f,b,y,ch[0]))
 
     return best
 def do_stack(f,b,y,ch,wd,cuts):

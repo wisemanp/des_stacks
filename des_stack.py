@@ -207,8 +207,10 @@ class Stack():
         if not self.cutstring:
             if cuts['zp'] and cuts['psf'] and not cuts['teff']:
                 self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
-            elif cuts['teff']:
+            elif cuts['teff'] and not cuts['psf']:
                 self.cutstring = '%s'%cuts['teff']
+            elif -1<cuts['teff']<100 and  cuts['psf']:
+                self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         if final ==None:
             #check to make sure we haven't just forgotten to say this is a temporary run of Sextractor
             try:

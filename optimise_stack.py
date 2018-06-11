@@ -180,23 +180,19 @@ def optimize(f,b,y,ch,wd,t0,t1,ts,p0,p1,ps,lt):
     depthmin = np.min(lim_df.min().values)
     depthmax = np.max(lim_df.max().values)
     depthrang = depthmax-depthmin
-    sns.heatmap(lim_df,ax=ax1,annot=True)
-    plt.savefig('/home/wiseman/test_optimize_teff_%s_%s_%s_%s.pdf'%(f,b,y,ch))
+    lim_df = lim_df.astype(float)
+    psf_df = psf_df.astype(float)
+    '''sns.heatmap(lim_df,ax=ax1,cmap='Oranges',cbar_kws={'label': 'Limiting Magnitude'})
+    ax1.set_xlabel('$\\tau_{effective} cut$')
+    ax1.set_ylabel('PSF cut')
+    plt.savefig('/media/data3/wiseman/des/coadding/optimise/optimize_teff_%s_%s_%s_%s.pdf'%(f,b,y,ch[0]))
     plt.close()
     f2,ax2 = plt.subplots()
-    psfmin = np.min(psf_df.min().values)
-    psfmax = np.max(psf_df.max().values)
-    psfrang = psfmax-psfmin
-
-    '''for psfcut in psf_df.columns:
-        for idx in psf_df.index:
-            print ('Lim at this loc:%s'%psf_df.loc[idx,teffcut])
-            alpha = (psf_df.loc[idx,teffcut]-psfmin)/psfrang
-            print ('Trying to set an alpha of %s'%alpha)
-
-            ax2.scatter(float(psfcut),float(idx),marker='s',s=1600,color='b',alpha=alpha)'''
-    sns.heatmap(psf_df,ax=ax2,annot=True)
-    plt.savefig('/home/wiseman/test_optimize_psf_%s_%s_%s_%s.pdf'%(f,b,y,ch[0]))
+   
+    sns.heatmap(psf_df,ax=ax2,cmap='Blues',cbar_kws={'label': 'Limiting Magnitude'})
+    ax2.set_xlabel('$\\tau_{effective} cut$')
+    ax2.set_ylabel('PSF cut')
+    plt.savefig('/media/data3/wiseman/des/coadding/optimise/optimize_psf_%s_%s_%s_%s.pdf'%(f,b,y,ch[0]))'''
 
     return best
 def do_stack(f,b,y,ch,wd,cuts):
@@ -204,13 +200,22 @@ def do_stack(f,b,y,ch,wd,cuts):
     print ('Making stack of',f,b,y,ch,wd,cuts)
     s = stack.Stack(f,b,y,ch,wd,cuts)
     scifile = os.path.join(s.band_dir,'ccd_%s_%s_%s_%s_sci.fits'%(ch[0],b,cuts['teff'],cuts['psf']))
-    s.do_my_stack(cuts=cuts,final=True)
-    s.ana_dir = os.path.join(s.band_dir,ch[0],'ana')
-    sexname = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%s_sci.sexcat' %(y,f,b,ch[0],s.cutstring))
-    if os.path.isfile(sexname):
-        s.sexcats = [sexname]
+    if not os.path.isfile(scifile):
+        print ('Did not find a file for these cuts; doing stack')
+        s.do_my_stack(cuts=cuts,final=True)
     else:
+        print ('Found a stacked file for these cuts; going to sex')
+    s.ana_dir = os.path.join(s.band_dir,ch[0],'ana')
+    sexname = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%s_%s_sci.sexcat' %(y,f,b,ch[0],cuts['teff'],cuts['psf']))
+    print ('Looking for file under the name: %s'%sexname)
+    if os.path.isfile(sexname):
+        print ('Found a sexcat for these cuts at: %s'%sexname)
+        s.sexcats = [sexname]
+        s.cuts=cuts
+    else:
+        print ('No sexcat yet; running sextractor')
         s.run_stack_sex(cuts=cuts,final=True)
+    s.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
     lim = np.median(s.init_phot()[ch[0]])
     psf = np.mean(np.loadtxt(os.path.join(s.band_dir,ch[0],'ana','%s_ana.qual'%s.cutstring))[1:])
     np.savetxt(os.path.join(s.ana_dir,'%s_limmags.txt'%s.cutstring),np.array([lim,psf]))
@@ -219,6 +224,8 @@ def do_stack(f,b,y,ch,wd,cuts):
 def main():
     parsed = parser()
     chips = [[str(chip)] for chip in parsed['chips'][0].split(',')]
+    best_teff_df = pd.read_csv('/media/data3/wiseman/des/coadding/optimise/best_teff.csv',header=0)
+    best_psf_df = pd.read_csv('/media/data3/wiseman/des/coadding/optimise/best_psf.csv',header=0)
     for y in parsed['mys']:
         for f in parsed['fields']:
             for b in parsed['bands']:
@@ -228,7 +235,9 @@ def main():
                     p0,p1,ps = float(parsed['psfrange'][0]),float(parsed['psfrange'][1]),float(parsed['step'][0])
                     print ('Sending chip %s to optimize'%ch)
                     best = optimize(f,b,y,ch,parsed['workdir'],t0,t1,ts,p0,p1,ps,parsed['looptype'][0])
-    print (best)
-
+                    best_teff_df = best_teff_df.append(pd.DataFrame([[f,b,ch,best['depth'][0],best['depth'][1]]]))
+                    best_psf_df = best_psf_df.append(pd.DataFrame([[f,b,ch,best['psf'][0],best['psf'][1]]]))
+    best_teff_df.to_csv('/media/data3/wiseman/coadding/optimise/best_teff.csv')
+    best_psf_df.to_csv('/media/data3/wiseman/coadding/optimise/best_psf.csv')
 if __name__=="__main__":
     main()

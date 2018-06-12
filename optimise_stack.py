@@ -157,31 +157,29 @@ class optimiser():
                 lim_df.loc[str(psf_cut),str(teff_cut)] = lim
                 psf_df.loc[str(psf_cut),str(teff_cut)] = psf
         best={'depth':None,'psf':None}
-        for df in [lim_df,psf_df]:
-            best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
-            # TO BE ADDED: MAKE A PLOT
-    '''smaller_teff_step = ts/5
-    smaller_psf_step = ps/5
-    if lt=='depth':
-        teff_start = best['depth'][1]
-        psf_start = best['depth'][0]
-    elif lt=='psf':
-        teff_start = best['psf'][1]
-        psf_start = best['psf'][0]
-    elif lt=='both':
-        teff_start = np.mean(best['depth'][1],best['psf'][1])
-        psf_start = np.mean(best['depth'][0],best['psf'][0])
-    zoomed_teffrange = np.arange(teff_start-float(ts)*5,teff_start+float(ts)*5,smaller_teff_step)
-    zoomed_psfrange = np.arange(psf_start-float(ps)*5,psf_start+float(ps)*5,smaller_psf_step)
-    for newpsf in zoomed_psfrange:
-        lim_df = lim_df.append(pd.DataFrame(index=[str(newpsf)],columns=lim_df.columns))
-        psf_df = psf_df.append(pd.DataFrame(index=[str(newpsf)],columns=psf_df.columns))
-        for newteff in zoomed_teffrange:
-            lim_df[str(newteff)] = ''
-            psf_df[str(newteff)] = ''
-            lim,psf = do_stack(f,b,y,ch,wd,cuts = {'zp':None,'teff':newteff,'psf':newpsf})
-            lim_df.loc[str(newpsf),str(newteff)] = lim
-            psf_df.loc[str(newpsf),str(newteff)] = psf'''
+
+        '''smaller_teff_step = ts/5
+        smaller_psf_step = ps/5
+        if lt=='depth':
+            teff_start = best['depth'][1]
+            psf_start = best['depth'][0]
+        elif lt=='psf':
+            teff_start = best['psf'][1]
+             psf_start = best['psf'][0]
+        elif lt=='both':
+            teff_start = np.mean(best['depth'][1],best['psf'][1])
+            psf_start = np.mean(best['depth'][0],best['psf'][0])
+        zoomed_teffrange = np.arange(teff_start-float(ts)*5,teff_start+float(ts)*5,smaller_teff_step)
+        zoomed_psfrange = np.arange(psf_start-float(ps)*5,psf_start+float(ps)*5,smaller_psf_step)
+        for newpsf in zoomed_psfrange:
+            lim_df = lim_df.append(pd.DataFrame(index=[str(newpsf)],columns=lim_df.columns))
+            psf_df = psf_df.append(pd.DataFrame(index=[str(newpsf)],columns=psf_df.columns))
+            for newteff in zoomed_teffrange:
+                lim_df[str(newteff)] = ''
+                psf_df[str(newteff)] = ''
+                lim,psf = do_stack(f,b,y,ch,wd,cuts = {'zp':None,'teff':newteff,'psf':newpsf})
+                lim_df.loc[str(newpsf),str(newteff)] = lim
+                psf_df.loc[str(newpsf),str(newteff)] = psf'''
         for df in [lim_df,psf_df]:
             best[df.name] = [np.float(np.argmax(df.max(axis=1))),np.float(np.argmax(df.max(axis=0)))]
             # ADD TO PLOT!
@@ -239,6 +237,7 @@ def main():
     chips = [[str(chip)] for chip in parsed['chips'][0].split(',')]
     best_teff_df = pd.read_csv('/media/data3/wiseman/des/coadding/optimise/best_teff.csv',header=0)
     best_psf_df = pd.read_csv('/media/data3/wiseman/des/coadding/optimise/best_psf.csv',header=0)
+
     for y in parsed['mys']:
         for f in parsed['fields']:
             for b in parsed['bands']:
@@ -247,9 +246,10 @@ def main():
 
                     print ('Sending chip %s to optimize'%ch)
                     best = o.optimise(f,b,y,ch)
-                    best_teff_df = best_teff_df.append(pd.DataFrame([[f,b,ch,best['depth'][0],best['depth'][1]]]))
-                    best_psf_df = best_psf_df.append(pd.DataFrame([[f,b,ch,best['psf'][0],best['psf'][1]]]))
-    best_teff_df.to_csv('/media/data3/wiseman/coadding/optimise/best_teff.csv')
-    best_psf_df.to_csv('/media/data3/wiseman/coadding/optimise/best_psf.csv')
+                    
+                    best_teff_df = best_teff_df.append(pd.DataFrame([[f,b,ch,best['depth'][0],best['depth'][1]]],columns=best_teff_df.columns))
+                    best_psf_df = best_psf_df.append(pd.DataFrame([[f,b,ch,best['psf'][0],best['psf'][1]]],columns=best_psf_df.columns))
+    best_teff_df.to_csv('/media/data3/wiseman/des/coadding/optimise/best_teff.csv')
+    best_psf_df.to_csv('/media/data3/wiseman/des/coadding/optimise/best_psf.csv')
 if __name__=="__main__":
     main()

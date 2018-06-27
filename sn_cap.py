@@ -16,7 +16,9 @@ def parser():
     parser.add_argument('-l','--namelist',help='List of SN names as a .txt or .csv file',default = None)
     parser.add_argument('-av','--avoid',help='Avoid these SN, if it is in the list given by l. e.g. [DES16C2nm]',default=None)
     parser.add_argument('-wd','--workdir',help='Path to directory to work in',default = '/media/data3/wiseman/des/coadding')
+    parser.add_argument('-sf','--savename',help='Filename to save results to',default=None)
     parser.add_argument('-ow','--overwrite',help='Overwrite existing results?',action = 'store_true')
+
     return parser.parse_args()
 
 def cap(args,logger):
@@ -33,19 +35,26 @@ def cap(args,logger):
         sn_list = np.loadtxt(args.namelist,dtype='str')
         logger.info("Doing CAP on following input list")
         logger.info(sn_list)
-        try:
-            done_sn = pd.read_csv('/media/data3/wiseman/des/coadding/results/all_sn_phot.csv',index_col=0)
-        except:
+        if not args.savename:
+
+            try:
+                done_sn = pd.read_csv('/media/data3/wiseman/des/coadding/results/all_sn_phot.csv',index_col=0)
+            except:
+                done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD'])
+        else:
             done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD'])
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
-            
+
             if sn_name not in done_sn.SN_NAME.unique():
                 if sn_name not in avoid_list:
                     cap_phot_sn(sn_name,args.workdir)
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
-                    cap_phot_sn(sn_name,args.workdir)
+                    if not args.savename:
+                        cap_phot_sn(sn_name,args.workdir)
+                    else:
+                        cap_phot_sn(sn_name,args.workdir,args.savename)
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
 if __name__ == "__main__":

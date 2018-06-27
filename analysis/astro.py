@@ -235,7 +235,7 @@ def init_phot(s,chip,cat,pl='n'):
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
 #####################################################################################################
-def cap_phot_sn(sn_name,wd = 'coadding'):
+def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
     '''get aperture photometry for a single sn host'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -318,7 +318,7 @@ def cap_phot_sn(sn_name,wd = 'coadding'):
         print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
         reg.close()
     res_df.index = res_df['BAND']
-    all_sn_fn = os.path.join(sg.res_dir,'all_sn_phot.csv')
+    all_sn_fn = os.path.join(sg.res_dir,savename)
     if os.path.isfile(all_sn_fn):
         all_sn = pd.read_csv(all_sn_fn,index_col=0)
     else:
@@ -480,17 +480,17 @@ def cap_phot_all(y,f,chip,wd='coadding'):
                             overlap_inds.append(ind)
                     phot_plus_spec.loc[overlap_inds,col]=previous_phot_plus_spec.loc[overlap_inds,col]
         if len(phot_plus_spec) > len(good_phot_gals):
-            try: 
+            try:
                 phot_plus_spec.loc[good_spec_gals.index,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[good_spec_gals.index,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
             except:
-                
+
                 for ind in good_spec_gals.index:
-                   
+
                     try:
                        phot_plus_spec.loc[ind,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[ind,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
                     except:
                        logger.warning("Failed in the %s band at index %s"%(s.band,ind))
-            
+
         else:
 
             phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values

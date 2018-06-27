@@ -268,9 +268,19 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
     if not os.path.isfile(det_name):
         logger.info("Couldn't find a detection image, so going to make 300x300 pix stamps of each band plus white")
         det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,300,300)
-    # do common aperture photometry
-    logger.info("Going to cap_sex to do CAP on each band")
-    sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
+    # check to see if sexcats exist already
+    existing_sexcats = glob.glob(os.path.join(sg.out_dir,'CAP',sn_name,*.sexcat))
+    sexcats = {}
+    for b in bands:
+        sexcat_fn = '%s_%s_cap_sci.sexcat'%(sn_name,b)
+        if sexcat_fn in existing_sexcats:
+            sexcats[b]=os.path.join(sg.out_dir,'CAP',sn_name,sexcat_fn)
+    if len(existing_sexcats)!=4:
+
+        # do common aperture photometry
+        logger.info("Going to cap_sex to do CAP on each band")
+
+        sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
      'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'KRON_RADIUS','CLASS_STAR'])

@@ -224,6 +224,7 @@ class optimiser():
             s.cuts=cuts
         else:
             print ('No sexcat yet; running sextractor')
+            print ('Sending %s to run_stack_sex'%cuts)
             s.run_stack_sex(cuts=cuts,final=True)
         s.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         lim = np.median(s.init_phot()[ch[0]])
@@ -249,7 +250,7 @@ def main():
                     
                     best_teff_df = best_teff_df.append(pd.DataFrame([[f,b,ch,best['depth'][0],best['depth'][1]]],columns=best_teff_df.columns))
                     best_psf_df = best_psf_df.append(pd.DataFrame([[f,b,ch,best['psf'][0],best['psf'][1]]],columns=best_psf_df.columns))
-    best_teff_df.to_csv('/media/data3/wiseman/des/coadding/optimise/best_teff.csv')
-    best_psf_df.to_csv('/media/data3/wiseman/des/coadding/optimise/best_psf.csv')
+    best_teff_df.to_csv('/media/data3/wiseman/des/coadding/optimise/best_teff.csv',index=False)
+    best_psf_df.to_csv('/media/data3/wiseman/des/coadding/optimise/best_psf.csv',index=False)
 if __name__=="__main__":
     main()

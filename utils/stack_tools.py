@@ -164,7 +164,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
                 this_exp['T_EFF']= t_eff
                 good_frame = good_frame.append(this_exp)
                 good_exps.append(exp)
-        good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,cuts['teff']))
+        good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,cuts['teff'],cuts['psf']))
     txtname = good_fn[:-4]+'txt'
     np.savetxt(txtname,good_exps,fmt='%s')
     try:
@@ -340,29 +340,24 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
         subdir=glob.glob(glob_str)[0]+'/'
         field_glob_str = subdir+'*%s_%s*' % (field, band)
         field_subdir = glob.glob(field_glob_str)[-1]+'/'
-    field_subsubdir = field_subdir + os.listdir(field_subdir)[-1]+'/'
+    procs = []
+    counts  = []
+    for counter,ext in enumerate(os.listdir(field_subdir)):
+        procs.append(int(ext[1:]))
+        counts.append(counter)
+    which = np.argmax(np.array(procs))
+    try:
+        field_subsubdir = field_subdir + os.listdir(field_subdir)[counts[which]]+'/'
+    except:
+        field_subsubdir = field_subdir + os.listdir(field_subdir)[-1]+'/'
+    #field_subsubdir = field_subdir + os.listdir(field_subdir)[-1]+'/'
     # then the chip
     chip_subdir = '%sccd%02d' % (field_subsubdir, chipnum)
     #------------------------------------
     # step 3 - find the final fits file at the end of the dir structure
-    subdir_list = [chip_subdir]
-    rabbit_hole = True
-    while rabbit_hole:
-        curr_subdir = '/'.join(subdir_list)
-        try:
-            curr_dir_cont = os.listdir(curr_subdir)
-        except:
-            logger.info('CCD {0} not observed on that night in that band'.format(chipnum))
-            return None
-        next_subdir = '/'.join([
-            curr_subdir,
-            curr_dir_cont[0]])
-        try:
-            next_subdir_cont = os.listdir(next_subdir)
-            subdir_list.append(curr_dir_cont[0])
-        except:
-            obs_dir = next_subdir
-            rabbit_hole = False
+    obs_dir = os.path.join(chip_subdir,'red','immask')
+    
+       
     #------------------------------------
     # step 4 - CHECK THIS IS THE CORRECT EXPOSURE NUMBER!!!
     obs_fns = []

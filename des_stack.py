@@ -35,11 +35,11 @@ class Stack():
             elif self.band in ['i','z']:
                 cuts ={'teff':0.25, 'zp':None,'psf':None}
 
-        if cuts['teff']:
+        if cuts['teff'] and not cuts['psf']:
             self.cutstring = '%s'%cuts['teff']
 
-        elif cuts['zp'] and cuts['psf'] and not cuts['teff']:
-            self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
+        elif cuts['teff'] and cuts['psf']:
+            self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         self._define_paths()
         self._init_log()
         self._get_info()
@@ -170,7 +170,7 @@ class Stack():
         #does list of good frames exist?
         if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.fits'%(field,band,self.cutstring))):
             #get the list of good frames
-            self.logger.info('No good frame list yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(self.t_cut,self.zp_cut,self.psf_cut))
+            self.logger.info('No good frame list with conditions (%s, %s, %s) yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(field,band,self.cutstring,self.t_cut,self.zp_cut,self.psf_cut))
             self.good_frame = make_good_frame_list(self,field,band,cuts)
 
         else:
@@ -211,6 +211,7 @@ class Stack():
                 self.cutstring = '%s'%cuts['teff']
             elif -1<cuts['teff']<100 and  cuts['psf']:
                 self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
+        self.logger.info("Cutstring: %s"%self.cutstring)
         if final ==None:
             #check to make sure we haven't just forgotten to say this is a temporary run of Sextractor
             try:

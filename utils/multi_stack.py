@@ -132,12 +132,8 @@ def sex_worker(arg_pair):
     print("******************************************************")
     return sexcat
 def multitask(s,y,field,band,cuts,final,w='stack'):
-    n_chips = len(s.chips)
-
     args = [s,y,field,band,cuts,final]
-
     pool_size = multiprocessing.cpu_count()*2
-    #s.logger.info("Starting %s processes"%pool_size)
     act = multiprocessing.active_children()
     pool = pp.ProcessPool(processes=pool_size,
                                 maxtasksperchild=2,

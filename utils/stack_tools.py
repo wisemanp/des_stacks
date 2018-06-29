@@ -355,28 +355,41 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
     chip_subdir = '%sccd%02d' % (field_subsubdir, chipnum)
     #------------------------------------
     # step 3 - find the final fits file at the end of the dir structure
-    obs_dir = os.path.join(chip_subdir,'red','immask')
+    curr_obs_dir = os.path.join(chip_subdir,'red')
+    rabbit_hole=True
+    while rabbit_hole:
+        obs_subdir_list = os.listdir(curr_obs_dir)
+        try:
+            if os.path.isfile(os.path.join(curr_obs_dir,obs_subdir_list[0])):
+                obs_dir = curr_obs_dir
+                rabbit_hole=False
+            else:
+                curr_obs_dir = os.path.join(curr_obs_dir,obs_subdir_list[0])
+        except:
+            logger.info('No files in %s'%curr_obs_dir)
+            return None
+
     
-       
     #------------------------------------
     # step 4 - CHECK THIS IS THE CORRECT EXPOSURE NUMBER!!!
     obs_fns = []
-    for base_obs_fn in os.listdir(os.path.dirname(obs_dir)):
+    if os.path.split(obs_dir)[-1] =='red':
+        list_of_imgs = glob.glob(os.path.join(obs_dir,'*immasked*'))
+        if len(list_of_imgs) == 0:
+            list_of_imgs = glob.glob(os.path.join(obs_dir,'*'))
+    else:
+        list_of_imgs = glob.glob(os.path.join(obs_dir,'*'))
+    for obs_fn in list_of_imgs:
         try:
-            obs_fn = os.path.join(os.path.dirname(obs_dir),os.path.basename(base_obs_fn))
             fits_expnum = fits.getheader(obs_fn)['EXPNUM']
-            #logger.info('Attempted EXPNUM: {0}; Got: {1}'.format(expnum,fits_expnum))
         except:
-            #logger.info(base_obs_fn)
-            #logger.info(fits.getheader(obs_fn)['EXPNUM'])
             continue
-        #logger.info('Year: %s'%year)
-        if year in['Y4','Y5']:
-            #logger.info('Adding a [0]')
+        
+        if obs_fn[-9:] =='sked.fits':
             obs_fn = obs_fn+'[0]'
-        if base_obs_fn[:3]!='DSN':
+        fn_ext = os.path.split(obs_fn)[-1]
+        if fn_ext[:3]!='DSN':
             obs_fns.append(obs_fn)
-
     return obs_fns
 
 def rn_stack(stack):
@@ -464,7 +477,7 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
 
             swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
-
+            
     except TypeError:
         img = str(img_list)
         swarp_cmd = ['swarp','%s'%img,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']

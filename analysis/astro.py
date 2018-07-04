@@ -316,7 +316,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
             match['BAND'] = s.band
             match['SN_NAME'] = sn_name
             res_df = res_df.append(match)
-
+            res_df['LIMMAG'] = limmag
         else:
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))

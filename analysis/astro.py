@@ -339,6 +339,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         all_sn = pd.DataFrame(columns = ['SN_NAME','BAND','X_WORLD', 'Y_WORLD', 'MAG_AUTO', 'MAGERR_AUTO',
          'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
     all_sn = all_sn.append(res_df)
+    print ('Saving result to %s'%all_sn_fn)
     all_sn.to_csv(all_sn_fn)
 
     logger.info("Done doing CAP for %s"%sn_name)

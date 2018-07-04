@@ -210,6 +210,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
     good_band_my.sort_values('CHIP_ZERO_POINT',ascending=False,inplace=True)
     n,l=0,0
     stack_fns[0]=[]
+    nights = []
     for counter,exp in enumerate(good_my_exps):
 
         this_exp = good_band_my[good_band_my['EXPNUM']==exp]
@@ -218,13 +219,16 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         #chip = first['CCDNUM']
         this_exp_fn = get_dessn_obs(s,field,band,night,exp,chip,logger)
         #logger.info("Adding file from %s" %night)
-        if this_exp_fn:
-            for fn in this_exp_fn:
-                n+=1
-                stack_fns[l].append(fn)
-                if n%100.0 == 0:
-                    l+=1
-                    stack_fns[l]=[]
+        if night not in nights:
+            if this_exp_fn:
+                nights.append(night)
+                for fn in this_exp_fn:
+                    n+=1
+                    stack_fns[l].append(fn)
+                
+                    if n%100.0 == 0:
+                        l+=1
+                        stack_fns[l]=[]
     logger.info('Added %s files to the %s, %s band, chip %s stack'%(counter,field,band,chip))
     cmd_list = {}
     for j in range(0,l+1):
@@ -342,6 +346,9 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
         field_subdir = glob.glob(field_glob_str)[-1]+'/'
     procs = []
     counts  = []
+    if len(os.listdir(field_subdir))==0:
+        return None
+
     for counter,ext in enumerate(os.listdir(field_subdir)):
         procs.append(int(ext[1:]))
         counts.append(counter)

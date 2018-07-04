@@ -270,7 +270,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,300,300)
     # check to see if sexcats exist already
     existing_sexcats = glob.glob(os.path.join(sg.out_dir,'CAP',sn_name,'*.sexcat'))
-    
+
     sexcats = {}
     for b in bands:
         sexcat_fn = '%s_%s_cap_sci.sexcat'%(sn_name,b)
@@ -286,8 +286,8 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
-     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'KRON_RADIUS','CLASS_STAR'])
-    
+     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'KRON_RADIUS','CLASS_STAR','LIMMAG'])
+
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
         capcat = Table.read(sexcats[s.band]).to_pandas()
@@ -307,6 +307,9 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         idx,d2d,d3d = snloc.match_to_catalog_sky(catobjs)
         match = capcat.iloc[int(idx)]
         r_kr,elong = match['KRON_RADIUS'],match['ELONGATION']
+        with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
+            header = [next(res) for x in range(8)]
+        limmag = header[-1].split(' ')[-1].strip('\n')
         if d2d.arcsec < (2.5*r_kr*np.sqrt(elong)):
             logger.info("The SN lies within the Kron radius of a galaxy")
             logger.info("The magnitude in %s is %.3f"%(s.band,match['MAG_AUTO']))
@@ -315,9 +318,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
             res_df = res_df.append(match)
 
         else:
-            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
-                header = [next(res) for x in range(8)]
-            limmag = header[-1].split(' ')[-1].strip('\n')
+
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
             logger.debug(res_df)
             logger.debug([sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1])
@@ -337,7 +338,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         all_sn = pd.read_csv(all_sn_fn,index_col=0)
     else:
         all_sn = pd.DataFrame(columns = ['SN_NAME','BAND','X_WORLD', 'Y_WORLD', 'MAG_AUTO', 'MAGERR_AUTO',
-         'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
+         'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR','LIMMAG'])
     all_sn = all_sn.append(res_df)
     print ('Saving result to %s'%all_sn_fn)
     all_sn.to_csv(all_sn_fn)

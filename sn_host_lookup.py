@@ -208,7 +208,11 @@ def main(args,logger):
                         ras,decs,mags,errs = res.X_WORLD.values,res.Y_WORLD.values,res.MAG_AUTO.values,res.MAGERR_AUTO.values
                     img = fits.open(img_fn)
                     fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[band])
-                    fg.recenter(sn_ra,sn_dec,width=w,height=w)
+                    try:
+                        fg.recenter(sn_ra,sn_dec,width=w,height=w)
+                    except:
+                        logger.info('Could not recenter to outside the frame')
+
                     fg.show_lines([ver_line,hor_line],color='r',linewidth=.5)
                     fg.show_grayscale(vmin=-0.8,vmax=8.)
                     fg.axis_labels.hide()

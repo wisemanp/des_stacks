@@ -306,25 +306,28 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
         idx,d2d,d3d = snloc.match_to_catalog_sky(catobjs)
         match = capcat.iloc[int(idx)]
+        match['LIMMAG']='' 
         r_kr,elong = match['KRON_RADIUS'],match['ELONGATION']
+        logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
             header = [next(res) for x in range(8)]
         limmag = header[-1].split(' ')[-1].strip('\n')
+        match['LIMMAG'] = limmag
+        logger.info('Limiting magnitude in %s band: %s'%(s.band,limmag))
         if d2d.arcsec < (2.5*r_kr*np.sqrt(elong)):
             logger.info("The SN lies within the Kron radius of a galaxy")
             logger.info("The magnitude in %s is %.3f"%(s.band,match['MAG_AUTO']))
             match['BAND'] = s.band
             match['SN_NAME'] = sn_name
             res_df = res_df.append(match)
-            res_df['LIMMAG'] = limmag
+            #res_df['LIMMAG'].loc[s.band] = limmag
+           
         else:
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
             logger.debug(res_df)
-            logger.debug([sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1])
-            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1]
-
-
+            logger.debug([sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag])
+            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag]
         # make region files for ds9
         reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
 

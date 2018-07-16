@@ -225,7 +225,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
                 for fn in this_exp_fn:
                     n+=1
                     stack_fns[l].append(fn)
-                
+
                     if n%100.0 == 0:
                         l+=1
                         stack_fns[l]=[]
@@ -376,7 +376,7 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
             logger.info('No files in %s'%curr_obs_dir)
             return None
 
-    
+
     #------------------------------------
     # step 4 - CHECK THIS IS THE CORRECT EXPOSURE NUMBER!!!
     obs_fns = []
@@ -391,7 +391,7 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
             fits_expnum = fits.getheader(obs_fn)['EXPNUM']
         except:
             continue
-        
+
         if obs_fn[-9:] =='sked.fits':
             obs_fn = obs_fn+'[0]'
         fn_ext = os.path.split(obs_fn)[-1]
@@ -484,7 +484,7 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
 
             swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
-            
+
     except TypeError:
         img = str(img_list)
         swarp_cmd = ['swarp','%s'%img,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
@@ -686,3 +686,12 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
     endtime=float(time.time())
     logger.info('Done making detection image for for MY%s, %s, chip %s, took %.3f seconds'%(sg.my,sg.field,chip,endtime-starttime))
     return '%s_%s_%s_white.fits'%(sg.my,sg.field,chip)
+
+def get_cuts(f,b):
+    cp=configparser.ConfigParser()
+    # read the .ini file
+    cp.read(ini_fn)
+    if f[-1]!='3':
+        cuts = cp.get('cuts_shallow',b)
+    else:
+        cuts = cp.get('cuts_deep',b)

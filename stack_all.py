@@ -52,6 +52,7 @@ def parser():
 
     parser.add_argument('-ic','--initcuts',help = 'Define starting cuts for a loop stack',required=False,default= [-0.150,2.5])
     parser.add_argument('-t','--tidy',help = 'Tidy up temporary files after? 1 = Yes, 0 = no. Default = 1, turn off when testing',default = True)
+    parser.add_argument('-o','--optimized',help = 'Use pre-saved optimized cuts',action='store_true')
     args=parser.parse_args()
     parsed = {}
     try:
@@ -146,9 +147,12 @@ def parser():
     except:
         parsed['tidy'] = 1
     parsed['tidy'] = bool(float(parsed['tidy']))
+    if args.optimized:
+        parsed['optimized']=True
     return parsed
 
     parsed['tidy'] = bool(float(parsed['tidy']))
+
 def simple_stack(logger,parsed):
     '''code to run the stacks'''
     #read in parameters from the command line

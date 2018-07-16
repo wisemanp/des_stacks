@@ -306,7 +306,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
         idx,d2d,d3d = snloc.match_to_catalog_sky(catobjs)
         match = capcat.iloc[int(idx)]
-        match['LIMMAG']='' 
+        match['LIMMAG']=''
         r_kr,elong = match['KRON_RADIUS'],match['ELONGATION']
         logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
@@ -321,7 +321,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
             match['SN_NAME'] = sn_name
             res_df = res_df.append(match)
             #res_df['LIMMAG'].loc[s.band] = limmag
-           
+
         else:
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
@@ -347,7 +347,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
     all_sn.to_csv(all_sn_fn)
 
     logger.info("Done doing CAP for %s"%sn_name)
-    return None
+    return res_df
 
 def cap_phot_all(y,f,chip,wd='coadding'):
     '''get aperture photometry for an entire chip'''

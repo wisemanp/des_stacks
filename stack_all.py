@@ -28,7 +28,7 @@ from astropy.time import Time
 
 from des_stacks import des_stack as stack
 from des_stacks.utils.loop_stack import iterate_sex_loop, init_sex_loop
-
+from des_stacks.utils.stack_tools import get_cuts
 # define some DES specific lists
 all_years = ['none','1','2','3','4'] # add 5 when available
 all_fields = ['SN-X1','SN-X2','SN-X3','SN-C1','SN-C2','SN-C3','SN-E1','SN-E2','SN-S1','SN-S2']
@@ -159,10 +159,14 @@ def simple_stack(logger,parsed):
     logger.info('Chips: ')
     logger.info(chips)
     workdir = parsed['workdir']
+
+
     cuts={'zp':parsed['zcut'],'psf':parsed['pcut'],'teff':parsed['tcut']}
     logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for f in fields:
         for b in bands:
+            if parsed['optimized']:
+                cuts = get_cuts(f,b)
             for my in mys:
                 s = stack.Stack(f,b,my,chips,workdir,cuts=cuts)
                 s.do_my_stack(cuts=cuts,final=True)

@@ -65,7 +65,7 @@ class Stack():
         self.res_dir = os.path.join(self.coadding_dir,'results')
         if not os.path.isdir(self.res_dir):
             os.mkdir(self.res_dir)
-        self.out_dir = os.path.join(self.coadding_dir,'stacks')
+        self.out_dir = os.path.join(self.coadding_dir,'5yr_stacks')
         if not os.path.isdir(self.out_dir):
             os.mkdir(self.out_dir)
         self.temp_dir = os.path.join(self.coadding_dir,'temp')
@@ -185,7 +185,7 @@ class Stack():
             self.chips =[]
             chips = self.info_df.CCDNUM.sort_values().unique()
             for c in chips:
-                self.chips.append(str(c))
+                self.chips.append(str(int(c)))
         # get swarp commands
         log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s.log' %(field, band, my)),'a')
         log.flush()

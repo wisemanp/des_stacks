@@ -263,7 +263,8 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band
     logger.info("Setting up Stack instances for each band")
-    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
+    cuts = [stack_tools.get_cuts(f,b) for b in bands]
+    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
 
     # if there is no white image, make ones
     det_name = os.path.join(sg.out_dir,'CAP',sn_name,'%s_white_stamp.fits'%(sn_name))
@@ -272,7 +273,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,300,300)
     # check to see if sexcats exist already
     existing_sexcats = glob.glob(os.path.join(sg.out_dir,'CAP',sn_name,'*.sexcat'))
-    logger.info(sg.cutstring,sr.cutstring,si.cutstring,sz.cutstring)
+
     sexcats = {}
     for b in bands:
         sexcat_fn = '%s_%s_cap_sci.sexcat'%(sn_name,b)

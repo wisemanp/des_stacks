@@ -203,6 +203,7 @@ def init_phot(s,chip,cat,pl='n'):
 
     rest[['X_WORLD','Y_WORLD']]=radec[['X_WORLD','Y_WORLD']]
     rest['CLASS_STAR']=cat['CLASS_STAR']
+    rest['FLUX_RADIUS']=cat['FLUX_RADIUS']
     cols = rest.columns.tolist()
     rearranged = cols[-2:]+cols[:-2]
     re = rest[rearranged]
@@ -228,6 +229,7 @@ def init_phot(s,chip,cat,pl='n'):
     reshead +='# PSF Magnitude error\n'
     reshead +='# FWHM of the source (arcsec)\n'
     reshead +='# Elongation of source\n'
+    reshead +='# Flux Radius\n'
     resfile.write(reshead)
     resfile.write(psfstring)
     savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip))
@@ -286,7 +288,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
     res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
-     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'KRON_RADIUS','CLASS_STAR','LIMMAG'])
+     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'KRON_RADIUS','CLASS_STAR','LIMMAG','FLUX_RADIUS'])
 
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
@@ -341,7 +343,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         all_sn = pd.read_csv(all_sn_fn,index_col=0)
     else:
         all_sn = pd.DataFrame(columns = ['SN_NAME','BAND','X_WORLD', 'Y_WORLD', 'MAG_AUTO', 'MAGERR_AUTO',
-         'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR','LIMMAG'])
+         'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR','LIMMAG','FLUX_RADIUS'])
     all_sn = all_sn.append(res_df)
     print ('Saving result to %s'%all_sn_fn)
     all_sn.to_csv(all_sn_fn)

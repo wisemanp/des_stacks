@@ -701,4 +701,13 @@ def get_cuts(f,b):
     else:
         cuts = cp['%s_deep'%b]
     cuts = dict(cuts)
+    try:
+        cuts['teff']=float(cuts['teff'])
+    except:
+        pass
+    try:
+        cuts['psf']=float(cuts['psf'])
+    except:
+        pass
+    
     return cuts

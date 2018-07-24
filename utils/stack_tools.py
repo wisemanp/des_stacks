@@ -58,7 +58,12 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     logger.info('These are the bands available for field {0}'.format(field))
     logger.info(info.BAND.unique())
     info = info[info['BAND']==band]
+    logger.info('Cuts: ')
+    logger.info(cuts)
+
     if cuts['zp']:
+        logger.warning('Gone to do ZP residuals, not sure you want this.')
+        logger.info(cuts['zp'])
         info['ZP_EXPRES']=''
         for counter,exp in enumerate(info.EXPNUM.unique()):
             this_exp = info[info['EXPNUM']==exp]
@@ -691,7 +696,7 @@ def get_cuts(f,b):
     cp=configparser.ConfigParser()
     # read the .ini file
     cp.read('/media/data3/wiseman/des/coadding/config/snobs_params.ini')
-    
+
     if f[-1]!='3':
         cuts = cp['%s_shallow'%b]
     else:

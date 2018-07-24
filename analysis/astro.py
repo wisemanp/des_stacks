@@ -272,7 +272,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
         det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,300,300)
     # check to see if sexcats exist already
     existing_sexcats = glob.glob(os.path.join(sg.out_dir,'CAP',sn_name,'*.sexcat'))
-
+    logger.info(sg.cutstring,sr.cutstring,si.cutstring,sz.cutstring)
     sexcats = {}
     for b in bands:
         sexcat_fn = '%s_%s_cap_sci.sexcat'%(sn_name,b)

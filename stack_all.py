@@ -172,6 +172,9 @@ def simple_stack(logger,parsed):
             if parsed['optimized']:
                 cuts = get_cuts(f,b)
             for my in mys:
+                logger.info('Here be cuts: ')
+                logger.info(cuts)
+                logger.info('There were cuts')
                 s = stack.Stack(f,b,my,chips,workdir,cuts=cuts)
                 s.do_my_stack(cuts=cuts,final=True)
                 s.run_stack_sex(cuts=cuts,final=True)

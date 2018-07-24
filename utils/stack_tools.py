@@ -690,8 +690,11 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
 def get_cuts(f,b):
     cp=configparser.ConfigParser()
     # read the .ini file
-    cp.read(ini_fn)
+    cp.read('/media/data3/wiseman/des/coadding/config/snobs_params.ini')
+    
     if f[-1]!='3':
-        cuts = cp.get('cuts_shallow',b)
+        cuts = cp['%s_shallow'%b]
     else:
-        cuts = cp.get('cuts_deep',b)
+        cuts = cp['%s_deep'%b]
+
+    return cuts

@@ -27,7 +27,7 @@ class Stack():
         self.my =my
         self.chips=chips
         self.coadding_dir =working_dir
-
+        
         if cuts=={'none':None}:
             if self.band in ['g','r']:
                 cuts ={'teff':0.15, 'zp':None,'psf':None}
@@ -159,7 +159,7 @@ class Stack():
             self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
         elif cuts['teff'] and not cuts['psf']:
             self.cutstring = '%s'%cuts['teff']
-        elif -1<cuts['teff']<100 and  cuts['psf']:
+        elif -1<float(cuts['teff'])<100 and  cuts['psf']:
             self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         field = self.field
         band = self.band

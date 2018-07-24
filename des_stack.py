@@ -27,7 +27,6 @@ class Stack():
         self.my =my
         self.chips=chips
         self.coadding_dir =working_dir
-        
         if cuts=={'none':None}:
             if self.band in ['g','r']:
                 cuts ={'teff':0.15, 'zp':None,'psf':None}

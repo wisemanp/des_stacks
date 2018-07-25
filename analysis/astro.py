@@ -307,7 +307,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         zp = float(quals[0])
         av_fwhm = float(quals[2])
-        capcat = Table.read('/media/data3/wiseman/des/coadding/stacks/CAP/DES13C1hwx/DES13C1hwx_%s_cap_sci.sexcat'%s.band).to_pandas()
+        capcat = Table.read(os.path.join(sg.out_dir,'CAP',sn_name,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))).to_pandas()
         capcat['MAG_APER']=capcat['MAG_APER']+zp
         capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
 

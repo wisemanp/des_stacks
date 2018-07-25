@@ -315,6 +315,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         catalog = SkyCoord(ra = capcat.X_WORLD*u.deg,dec = capcat.Y_WORLD*u.deg)
         d2d= sncoord.separation(catalog)
         close_inds = d2d <dist_thresh*u.arcsec
+        dists = d2d[close_inds]
         match = capcat.iloc[close_inds]
         if len(match)==0:
 

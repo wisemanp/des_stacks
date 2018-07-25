@@ -337,19 +337,19 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             band_cols = {}
             for col in cols:
                 band_cols[col]=col+'_%s'%s.band
-            res.rename(index=str,columns=band_cols)
-            dlr = dists/(res['FLUX_RADIUS']*0.27*u.arcsec)
-            res['DLR_%s'%s.band] = np.array(dlr)
+            match.rename(index=str,columns=band_cols)
+            dlr = dists/(match['FLUX_RADIUS']*0.27*u.arcsec)
+            match['DLR_%s'%s.band] = np.array(dlr)
             try:
-                res_df.loc[res.index[:],res.columns]=res
+                res_df.loc[match.index[:],match.columns]=match
             except:
-                res_df = res_df.append(res)
+                res_df = res_df.append(match)
 
 
 
             logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
-            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
-                header = [next(res) for x in range(8)]
+            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as match:
+                header = [next(match) for x in range(8)]
             limmag = header[-1].split(' ')[-1].strip('\n')
             res_df['LIMMAG_%s'%s.band]= limmag
             logger.info('Limiting magnitude in %s band: %s'%(s.band,limmag))

@@ -338,13 +338,21 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             band_cols = {}
             for col in cols:
                 band_cols[col]=col+'_%s'%s.band
-            match.rename(index=str,columns=band_cols)
-            dlr = dists/(match['FLUX_RADIUS']*0.27*u.arcsec)
+            match.rename(index=str,columns=band_cols,inplace=True)
+            dlr = dists*3600/(match['FLUX_RADIUS_%s'%s.band]*0.27*u.arcsec)
             match['DLR_%s'%s.band] = np.array(dlr)
-            try:
-                res_df.loc[match.index[:],match.columns]=match
-            except:
+             
+            if s.band =='g':
+
                 res_df = res_df.append(match)
+
+            for c in match.columns:
+                res_df[c] = ''
+                res_df[c].loc[match.index] = match[c]
+                
+                
+            
+ 
 
 
 

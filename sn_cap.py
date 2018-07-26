@@ -31,7 +31,7 @@ def cap(args,logger):
         if not args.savename:
             cap_phot_sn(args.sn_name,args.workdir)
         else:
-            print (os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
+            
             cap_phot_sn(args.sn_name,args.workdir,args.savename)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")

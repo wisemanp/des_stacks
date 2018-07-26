@@ -341,7 +341,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             match.rename(index=str,columns=band_cols,inplace=True)
             dlr = dists*3600/(match['FLUX_RADIUS_%s'%s.band]*0.27*u.arcsec)
             match['DLR_%s'%s.band] = np.array(dlr)
-             
+
             if s.band =='g':
 
                 res_df = res_df.append(match)
@@ -349,12 +349,9 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             for c in match.columns:
                 res_df[c] = ''
                 res_df[c].loc[match.index] = match[c]
-                
-                
-            
- 
 
-
+            rank = res['DLR_%s'%s.band].rank().astype(int)
+            res['DLR_RANK_%s'%s.band]=rank
 
             logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
             with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as match:

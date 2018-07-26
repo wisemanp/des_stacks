@@ -350,8 +350,8 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 res_df[c] = ''
                 res_df[c].loc[match.index] = match[c]
 
-            rank = res['DLR_%s'%s.band].rank().astype(int)
-            res['DLR_RANK_%s'%s.band]=rank
+            rank = res_df['DLR_%s'%s.band].rank().astype(int)
+            res_df['DLR_RANK_%s'%s.band]=rank
 
             logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
             with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as match:

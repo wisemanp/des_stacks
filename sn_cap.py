@@ -19,6 +19,7 @@ def parser():
     parser.add_argument('-wd','--workdir',help='Path to directory to work in',default = '/media/data3/wiseman/des/coadding')
     parser.add_argument('-sf','--savename',help='Filename to save results to',default=None)
     parser.add_argument('-ow','--overwrite',help='Overwrite existing results?',action = 'store_true')
+    parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=5)
 
     return parser.parse_args()
 
@@ -29,8 +30,11 @@ def cap(args,logger):
     else:
        avoid_list = [None]
     if args.sn_name:
-        logger.info("Doing common aperture photometry on %s"%args.sn_name)
-        cap_phot_sn(args.sn_name,args.workdir)
+        if not args.savename:
+            cap_phot_sn(args.sn_name,args.workdir)
+        else:
+
+            cap_phot_sn(args.sn_name,args.workdir,args.savename)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
         sn_list = np.loadtxt(args.namelist,dtype='str')
@@ -43,24 +47,19 @@ def cap(args,logger):
             except:
                 done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
         else:
-            print (os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
-            try:
-                done_sn = pd.read_csv(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename),index_col=0)
-                print ('Loaded results file',done_sn)
-            except:
-                done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
+            done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
 
             if sn_name not in done_sn.SN_NAME.unique():
                 if sn_name not in avoid_list:
-                    cap_phot_sn(sn_name,args.workdir,args.savename)
+                    cap_phot_sn(sn_name,args.workdir,args.savename,thresh = args.threshold)
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:
-                        cap_phot_sn(sn_name,args.workdir)
+                        cap_phot_sn(sn_name,args.workdir,thresh = args.threshold)
                     else:
-                        cap_phot_sn(sn_name,args.workdir,args.savename)
+                        cap_phot_sn(sn_name,args.workdir,args.savename,thresh = args.threshold)
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
 if __name__ == "__main__":
@@ -75,4 +74,6 @@ if __name__ == "__main__":
     logger.info("Initialising *** sn_cap.py *** at %s UT" % strftime("%Y-%m-%d %H:%M:%S", gmtime()))
     logger.info("***********************************")
     args = parser()
+    cap(args,logger)
+
     cap(args,logger)

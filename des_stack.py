@@ -65,7 +65,7 @@ class Stack():
         self.res_dir = os.path.join(self.coadding_dir,'results')
         if not os.path.isdir(self.res_dir):
             os.mkdir(self.res_dir)
-        self.out_dir = os.path.join(self.coadding_dir,'5yr_stacks')
+        self.out_dir = os.path.join(self.coadding_dir,'stacks')
         if not os.path.isdir(self.out_dir):
             os.mkdir(self.out_dir)
         self.temp_dir = os.path.join(self.coadding_dir,'temp')

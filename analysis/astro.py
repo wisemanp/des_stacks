@@ -20,7 +20,7 @@ import copy
 from scipy.interpolate import UnivariateSpline as spln
 
 from des_stacks import des_stack as stack
-from des_stacks.utils.stack_tools import make_cap_stamps, resample_chip_for_cap, get_chip_vals
+from des_stacks.utils.stack_tools import make_cap_stamps, resample_chip_for_cap, get_chip_vals, get_cuts
 from des_stacks.utils.sex_tools import cap_sex_sn, cap_sex_chip, get_sn_dat
 
 sns.set_palette('Dark2')
@@ -273,18 +273,18 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     existing_sexcats = glob.glob(os.path.join(sg.out_dir,'CAP',sn_name,'*.sexcat'))
 
     sexcats = {}
-    for b in bands:
+    '''for b in bands:
         sexcat_fn = '%s_%s_cap_sci.sexcat'%(sn_name,b)
         sexcat_path = os.path.join(sg.out_dir,'CAP',sn_name)
         full_sexcat_fn = os.path.join(sexcat_path,sexcat_fn)
         if full_sexcat_fn in existing_sexcats:
             sexcats[b]=os.path.join(sg.out_dir,'CAP',sn_name,full_sexcat_fn)
-    if len(existing_sexcats)!=4:
+    if len(existing_sexcats)!=4:'''
 
         # do common aperture photometry
-        logger.info("Going to cap_sex to do CAP on each band")
+    logger.info("Going to cap_sex to do CAP on each band")
 
-        sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
+    sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
     rescols = ['SN_NAME','X_WORLD', 'Y_WORLD',
                            'MAG_AUTO_g', 'MAGERR_AUTO_g','MAG_APER_g', 'MAGERR_APER_g',
@@ -301,8 +301,8 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     res_df = pd.DataFrame(columns=rescols)
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
-
-        quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        qualfiles = glob.glob(os.path.join(s.band_dir,str(chip),'ana','*_ana.qual'))
+        quals= np.loadtxt(qualfiles[0])
         zp = float(quals[0])
         av_fwhm = float(quals[2])
         capcat = Table.read(os.path.join(sg.out_dir,'CAP',sn_name,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))).to_pandas()
@@ -315,6 +315,9 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         close_inds = d2d <dist_thresh*u.arcsec
         dists = d2d[close_inds]
         match = capcat.iloc[close_inds]
+        with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as resheader:
+            header = [next(resheader) for x in range(8)]
+        limmag = header[-1].split(' ')[-1].strip('\n')
         if len(match)==0:
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
@@ -352,9 +355,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             res_df['DLR_RANK_%s'%s.band]=rank
 
             logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
-            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as match:
-                header = [next(match) for x in range(8)]
-            limmag = header[-1].split(' ')[-1].strip('\n')
+            
             res_df['LIMMAG_%s'%s.band]= limmag
             logger.info('Limiting magnitude in %s band: %s'%(s.band,limmag))
 

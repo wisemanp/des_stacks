@@ -47,19 +47,24 @@ def cap(args,logger):
             except:
                 done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
         else:
-            done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
+            try:
+                done_sn = pd.read_csv(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename),index_col=0)
+                logger.info('Read in %s'%os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
+            except:
+                done_sn = pd.DataFrame(columns=['SN_NAME'])
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
-
-            if sn_name not in done_sn.SN_NAME.unique():
+            logger.info("Done SN: %s"%done_sn.index)
+            logger.info(sn_name)
+            if sn_name+'_0' not in done_sn.index:
                 if sn_name not in avoid_list:
-                    cap_phot_sn(sn_name,args.workdir,args.savename,thresh = args.threshold)
+                    cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:
-                        cap_phot_sn(sn_name,args.workdir,thresh = args.threshold)
+                        cap_phot_sn(sn_name,args.workdir,dist_thresh = args.threshold)
                     else:
-                        cap_phot_sn(sn_name,args.workdir,args.savename,thresh = args.threshold)
+                        cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
 if __name__ == "__main__":

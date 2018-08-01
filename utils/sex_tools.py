@@ -171,7 +171,7 @@ def get_sn_dat(sn):
                 return (ra,dec,'SN-%s'%obj_field,y,ccd)
 
 
-def cap_sex_sn(sg,sr,si,sz,chip,sn_name):
+def cap_sex_sn(sg,sr,si,sz,chip,sn_name,leave_if_done = False):
     '''Runs SExtractor in dual image mode to get common aperture photometry'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -191,7 +191,7 @@ def cap_sex_sn(sg,sr,si,sz,chip,sn_name):
     sexcats ={}
     for s in [sg,sr,si,sz]:
         sexcat = os.path.join(sn_dir,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))
-        if os.path.isfile(sexcat):
+        if os.path.isfile(sexcat) and leave_if_done:
             logger.info("Already done the photometry in the %s band!"%s.band)
         else:
             glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))

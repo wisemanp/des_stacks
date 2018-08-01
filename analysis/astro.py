@@ -235,7 +235,7 @@ def init_phot(s,chip,cat,pl='n'):
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
 #####################################################################################################
-def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
+def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5):
     '''get aperture photometry for a single sn host'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -261,7 +261,8 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band
     logger.info("Setting up Stack instances for each band")
-    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
+    cuts = [get_cuts(f,b) for b in bands]
+    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
 
     # if there is no white image, make ones
     det_name = os.path.join(sg.out_dir,'CAP',sn_name,'%s_white_stamp.fits'%(sn_name))
@@ -285,63 +286,92 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv'):
 
         sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
-    res_df = pd.DataFrame(columns=['SN_NAME','X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
-     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'KRON_RADIUS','CLASS_STAR','LIMMAG'])
-
+    rescols = ['SN_NAME','X_WORLD', 'Y_WORLD',
+                           'MAG_AUTO_g', 'MAGERR_AUTO_g','MAG_APER_g', 'MAGERR_APER_g',
+                           'MAG_AUTO_r', 'MAGERR_AUTO_r','MAG_APER_r', 'MAGERR_APER_r',
+                           'MAG_AUTO_i', 'MAGERR_AUTO_i','MAG_APER_i', 'MAGERR_APER_i',
+                           'MAG_AUTO_z', 'MAGERR_AUTO_z','MAG_APER_z', 'MAGERR_APER_z',
+                           'FWHM_WORLD_g','FWHM_WORLD_r','FWHM_WORLD_i','FWHM_WORLD_z',
+                           'ELONGATION_g','ELONGATION_r','ELONGATION_i','ELONGATION_z',
+                           'KRON_RADIUS_g','KRON_RADIUS_r','KRON_RADIUS_i','KRON_RADIUS_z',
+                           'CLASS_STAR_g','CLASS_STAR_r','CLASS_STAR_i','CLASS_STAR_z',
+                           'LIMMAG_g','LIMMAG_r','LIMMAG_i','LIMMAG_z',
+                           'FLUX_RADIUS_g','FLUX_RADIUS_r','FLUX_RADIUS_i','FLUX_RADIUS_z',
+                           'DLR_g','DLR_r','DLR_i','DLR_z']
+    res_df = pd.DataFrame(columns=rescols)
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
-        capcat = Table.read(sexcats[s.band]).to_pandas()
+
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         zp = float(quals[0])
         av_fwhm = float(quals[2])
-        capcat = capcat.sort_values(by='X_WORLD')
-        logger.info("Calibrating in %s band using zeropoint from result file: %.3f"%(s.band,zp))
+        capcat = Table.read(os.path.join(sg.out_dir,'CAP',sn_name,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))).to_pandas()
         capcat['MAG_APER']=capcat['MAG_APER']+zp
         capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
-        # get rid of clearly wrong values
-        truth =capcat['MAG_AUTO']<35
-        capcat = capcat.iloc[truth.values]
-        # find the host galaxy
-        snloc = SkyCoord(ra=ra*u.degree,dec = dec*u.degree)
-        catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
-        idx,d2d,d3d = snloc.match_to_catalog_sky(catobjs)
-        match = capcat.iloc[int(idx)]
-        match['LIMMAG']=''
-        r_kr,elong = match['KRON_RADIUS'],match['ELONGATION']
-        logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
-        with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
-            header = [next(res) for x in range(8)]
-        limmag = header[-1].split(' ')[-1].strip('\n')
-        match['LIMMAG'] = limmag
-        logger.info('Limiting magnitude in %s band: %s'%(s.band,limmag))
-        if d2d.arcsec < (2.5*r_kr*np.sqrt(elong)):
-            logger.info("The SN lies within the Kron radius of a galaxy")
-            logger.info("The magnitude in %s is %.3f"%(s.band,match['MAG_AUTO']))
-            match['BAND'] = s.band
-            match['SN_NAME'] = sn_name
-            res_df = res_df.append(match)
-            #res_df['LIMMAG'].loc[s.band] = limmag
 
-        else:
+        sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
+        catalog = SkyCoord(ra = capcat.X_WORLD*u.deg,dec = capcat.Y_WORLD*u.deg)
+        d2d= sncoord.separation(catalog)
+        close_inds = d2d <dist_thresh*u.arcsec
+        dists = d2d[close_inds]
+        match = capcat.iloc[close_inds]
+        if len(match)==0:
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
-            logger.debug(res_df)
-            logger.debug([sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag])
-            res_df.loc[s.band]=[sn_name,ra,dec,s.band,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag]
-        # make region files for ds9
-        reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
 
-        for i in range(len(capcat['X_WORLD'].values)):
-            print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=reg)
-        print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
-        reg.close()
-    res_df.index = res_df['BAND']
+            res_df.append(pd.DateFrame([sn_name,ra,dec,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1,-1],
+            index=sn_name+'1',
+            columns=['SN_NAME','X_WORLD', 'Y_WORLD',
+                   'MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
+                   'FWHM_WORLD_%s'%s.band,
+                   'ELONGATION_%s'%s.band,
+                   'KRON_RADIUS_%s'%s.band,
+                   'CLASS_STAR_%s'%s.band,
+                   'LIMMAG_%s'%s.band,
+                   'FLUX_RADIUS_%s'%s.band,
+                   'DLR_%s'%s.band]))
+        else:
+            match.index = ['%s_%s'%(sn_name,i) for i in range(len(match.index))]
+            cols = match.columns
+            band_cols = {}
+            for col in cols:
+                band_cols[col]=col+'_%s'%s.band
+            match.rename(index=str,columns=band_cols,inplace=True)
+            dlr = dists*3600/(match['FLUX_RADIUS_%s'%s.band]*0.27*u.arcsec)
+            match['DLR_%s'%s.band] = np.array(dlr)
+
+            if s.band =='g':
+
+                res_df = res_df.append(match)
+
+            for c in match.columns:
+                res_df[c] = ''
+                res_df[c].loc[match.index] = match[c]
+
+            rank = res_df['DLR_%s'%s.band].rank().astype(int)
+            res_df['DLR_RANK_%s'%s.band]=rank
+
+            logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
+            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as match:
+                header = [next(match) for x in range(8)]
+            limmag = header[-1].split(' ')[-1].strip('\n')
+            res_df['LIMMAG_%s'%s.band]= limmag
+            logger.info('Limiting magnitude in %s band: %s'%(s.band,limmag))
+
+
+            # make region files for ds9
+            reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
+
+            for i in range(len(capcat['X_WORLD'].values)):
+                print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=reg)
+            print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
+            reg.close()
+
     all_sn_fn = os.path.join(sg.res_dir,savename)
     if os.path.isfile(all_sn_fn):
         all_sn = pd.read_csv(all_sn_fn,index_col=0)
     else:
-        all_sn = pd.DataFrame(columns = ['SN_NAME','BAND','X_WORLD', 'Y_WORLD', 'MAG_AUTO', 'MAGERR_AUTO',
-         'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR','LIMMAG'])
+        all_sn = pd.DataFrame(columns = rescols)
     all_sn = all_sn.append(res_df)
     print ('Saving result to %s'%all_sn_fn)
     all_sn.to_csv(all_sn_fn)

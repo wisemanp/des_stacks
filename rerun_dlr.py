@@ -15,7 +15,6 @@ from astropy import wcs
 from des_stacks import des_stack, stack_all
 from des_stacks.utils import stack_tools,sex_tools
 from des_stacks.analysis import astro
-%matplotlib notebook
 sns.set_color_codes(palette='colorblind')
 import time
 import _pickle as cpickle
@@ -60,7 +59,7 @@ def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
 
 
 
-
+sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
 sngals = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sngals2.csv',index_col=0)
 sngals['DLR_reprod']=''
 sngals['DLR_diff']=''
@@ -70,7 +69,7 @@ galindex = []
 for i in sngals.index:
     n+=1
     print ('Doing %s of %s'%(n,len(sngals)))
-    snra,sndec,sn_name = specIas[['RA','DEC','TRANSIENT_NAME']].loc[i]
+    snra,sndec,sn_name = sncand[['RA','DEC','TRANSIENT_NAME']].loc[i]
     sn_name = sn_name.strip(' ')
     match = sngals[sngals['TRANSIENT_NAME']==sn_name]
     sncoord = SkyCoord(ra=snra*u.degree,dec=sndec*u.degree)

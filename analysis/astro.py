@@ -235,7 +235,7 @@ def init_phot(s,chip,cat,pl='n'):
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
 #####################################################################################################
-def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5):
+def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 15):
     '''get aperture photometry for a single sn host'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -321,9 +321,10 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         limmag = header[-1].split(' ')[-1].strip('\n')
         if len(match)==0:
 
-            logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
+            logger.info("Didn't detect a galaxy within %s arcsec of the SN; reporting limit of %s in %s band"%(dist_thresh,limmag,s.band))
 
             init_lim_array = np.array([sn_name,ra,dec,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
+            
             init_lim_cols = ['SN_NAME','X_WORLD', 'Y_WORLD',
                    'MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
                    'FWHM_WORLD_%s'%s.band,
@@ -333,9 +334,10 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                    'LIMMAG_%s'%s.band,
                    'FLUX_RADIUS_%s'%s.band,
                    'DLR_%s'%s.band]
-            if s.band =='g':
-                res_df.append(pd.DataFrame(lim_array),
-                columns=init_lim_cols))
+            if s.band =='g': 
+                logger.info('Filling in g band with limits') 
+                res_df = pd.DataFrame([init_lim_array],columns=init_lim_cols)
+                
             else:
                 lim_cols = ['MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
                    'FWHM_WORLD_%s'%s.band,
@@ -345,10 +347,10 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                    'LIMMAG_%s'%s.band,
                    'FLUX_RADIUS_%s'%s.band,
                    'DLR_%s'%s.band]
-                   lim_array = np.array([limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
-                   for counter,c in enumerate(lim_cols):
-                       res_df[c] = ''
-                       res_df[c].iloc[0] = lim_array[counter]
+                lim_array = np.array([limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
+                for counter,c in enumerate(lim_cols):
+                   res_df[c] = ''
+                   res_df[c].iloc[0] = lim_array[counter]
         else:
             match.index = ['%s_%s'%(sn_name,i) for i in range(len(match.index))]
             cols = match.columns

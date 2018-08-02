@@ -54,9 +54,9 @@ def cap(args,logger):
                 done_sn = pd.DataFrame(columns=['SN_NAME'])
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
-            logger.info("Done SN: %s"%done_sn.index)
+            logger.info("Done SN: %s"%done_sn.SN_NAME.unique())
             logger.info(sn_name)
-            if sn_name+'_0' not in done_sn.index:
+            if sn_name not in done_sn.SN_NAME.unique():
                 if sn_name not in avoid_list:
                     cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
             elif args.overwrite == True:

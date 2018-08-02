@@ -317,6 +317,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         close_inds = d2d <dist_thresh*u.arcsec
         dists = d2d[close_inds]
         match = capcat.iloc[close_inds]
+        angsep = d2d[close_inds]
         if len(match)==0:
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
@@ -339,7 +340,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             for col in cols:
                 band_cols[col]=col+'_%s'%s.band
             match.rename(index=str,columns=band_cols,inplace=True)
-            dlr = dists*3600/(match['FLUX_RADIUS_%s'%s.band]*0.27*u.arcsec)
+            dlr = get_DLR_ABT(ra,dec, match.RA, match.DEC, match.A_IMAGE, match.B_IMAGE, match.THETA_IMAGE, angsep)
             match['DLR_%s'%s.band] = np.array(dlr)
 
             if s.band =='g':
@@ -549,3 +550,34 @@ def cap_phot_all(y,f,chip,wd='coadding'):
 
     phot_plus_spec.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.result'%(sg.my,sg.field,chip)))
     return phot_plus_spec
+
+
+
+def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
+    # inputs are arrays
+    rad  = np.pi/180                   # convert deg to rad
+    pix_arcsec = 0.264                 # pixel scale (arcsec per pixel)
+    pix2_arcsec2 = 0.264**2            # pix^2 to arcsec^2 conversion factor
+    pix2_deg2 = pix2_arcsec2/(3600**2) # pix^2 to deg^2 conversion factor
+    global numFailed
+    rPHI = np.empty_like(angsep)
+    d_DLR = np.empty_like(angsep)
+
+    # convert from IMAGE units (pixels) to WORLD (arcsec^2)
+    A_ARCSEC = A_IMAGE*pix_arcsec
+    B_ARCSEC = B_IMAGE*pix_arcsec
+
+    # angle between RA-axis and SN-host vector
+    GAMMA = np.arctan((DEC_SN - DEC)/(np.cos(DEC_SN*rad)*(RA_SN - RA)))
+
+    # angle between semi-major axis of host and SN-host vector
+    PHI = np.radians(THETA_IMAGE) + GAMMA # angle between semi-major axis of host and SN-host vector
+
+    rPHI = A_ARCSEC*B_ARCSEC/np.sqrt((A_ARCSEC*np.sin(PHI))**2 +
+                                     (B_ARCSEC*np.cos(PHI))**2)
+
+    # directional light radius
+    #  where 2nd moments are bad, set d_DLR = 99.99
+    d_DLR = angsep/rPHI
+
+    return [d_DLR, A_ARCSEC, B_ARCSEC, rPHI]

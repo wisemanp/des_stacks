@@ -12,6 +12,7 @@ import subprocess
 import _pickle as cpickle
 import easyaccess as ea
 import glob
+from astropy.table import Table
 
 def sex_for_psfex(s,chip,cuts=None):
     '''Runs SExtractor on a certain stacked frame, to send to PSFex'''
@@ -155,10 +156,12 @@ def sex_for_cat(s,chip,cuts = None):
 def get_sn_dat(sn):
     f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
     chiplims = cpickle.load(f)
-    conn = ea.connect(section='desoper')
-    q = 'select ra,dec,field,season,z_spec,z_spec_err from SNCAND \
-    where transient_name = \'%s\''%sn
-    dat = conn.query_to_pandas(q)
+    
+    sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
+    gap = ' '
+    ngaps = (11-len(sn))*gap
+    dat = sncand[sncand['TRANSIENT_NAME']==sn+ngaps]
+    
     ra,dec =dat[['RA','DEC']].iloc[0].values
     y = dat['SEASON'].values[0]
 

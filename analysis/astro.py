@@ -299,6 +299,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                            'FLUX_RADIUS_g','FLUX_RADIUS_r','FLUX_RADIUS_i','FLUX_RADIUS_z',
                            'DLR_g','DLR_r','DLR_i','DLR_z']
     res_df = pd.DataFrame(columns=rescols)
+
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
         qualfiles = glob.glob(os.path.join(s.band_dir,str(chip),'ana','*_ana.qual'))
@@ -322,9 +323,8 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
 
-            '''res_df.append(pd.DataFrame(np.array([sn_name,ra,dec,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1]),
-            index=[sn_name+'_1'],
-            columns=['SN_NAME','X_WORLD', 'Y_WORLD',
+            init_lim_array = np.array([sn_name,ra,dec,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
+            init_lim_cols = ['SN_NAME','X_WORLD', 'Y_WORLD',
                    'MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
                    'FWHM_WORLD_%s'%s.band,
                    'ELONGATION_%s'%s.band,
@@ -332,7 +332,23 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                    'CLASS_STAR_%s'%s.band,
                    'LIMMAG_%s'%s.band,
                    'FLUX_RADIUS_%s'%s.band,
-                   'DLR_%s'%s.band]))'''
+                   'DLR_%s'%s.band]
+            if s.band =='g':
+                res_df.append(pd.DataFrame(lim_array),
+                columns=init_lim_cols))
+            else:
+                lim_cols = ['MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
+                   'FWHM_WORLD_%s'%s.band,
+                   'ELONGATION_%s'%s.band,
+                   'KRON_RADIUS_%s'%s.band,
+                   'CLASS_STAR_%s'%s.band,
+                   'LIMMAG_%s'%s.band,
+                   'FLUX_RADIUS_%s'%s.band,
+                   'DLR_%s'%s.band]
+                   lim_array = np.array([limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
+                   for counter,c in enumerate(lim_cols):
+                       res_df[c] = ''
+                       res_df[c].iloc[0] = lim_array[counter]
         else:
             match.index = ['%s_%s'%(sn_name,i) for i in range(len(match.index))]
             cols = match.columns
@@ -355,7 +371,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             res_df['DLR_RANK_%s'%s.band]=rank
 
             logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
-            
+
             res_df['LIMMAG_%s'%s.band]= limmag
             logger.info('Limiting magnitude in %s band: %s'%(s.band,limmag))
 

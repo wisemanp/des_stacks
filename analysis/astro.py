@@ -322,8 +322,8 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
 
-            res_df.append(pd.DateFrame([sn_name,ra,dec,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1,-1],
-            index=sn_name+'1',
+            '''res_df.append(pd.DataFrame(np.array([sn_name,ra,dec,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1]),
+            index=[sn_name+'_1'],
             columns=['SN_NAME','X_WORLD', 'Y_WORLD',
                    'MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
                    'FWHM_WORLD_%s'%s.band,
@@ -332,7 +332,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                    'CLASS_STAR_%s'%s.band,
                    'LIMMAG_%s'%s.band,
                    'FLUX_RADIUS_%s'%s.band,
-                   'DLR_%s'%s.band]))
+                   'DLR_%s'%s.band]))'''
         else:
             match.index = ['%s_%s'%(sn_name,i) for i in range(len(match.index))]
             cols = match.columns

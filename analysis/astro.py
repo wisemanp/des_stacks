@@ -324,7 +324,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         close_inds = d2d <dist_thresh*u.arcsec
         dists = d2d[close_inds]
         match = capcat.iloc[close_inds]
-        angsep = d2d[close_inds]
+        angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for i in range(d2d[close_inds]))])
         with open(os.path.join(s.band_dir,str(chip),'ana',
             '%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as resheader:
             header = [next(resheader) for x in range(8)]
@@ -347,7 +347,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 res_df=pd.DataFrame([init_lim_array],
                 columns=init_lim_cols)
             else:
-                
+
                 lim_cols = ['MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
                    'FWHM_WORLD_%s'%s.band,
                    'ELONGATION_%s'%s.band,
@@ -359,11 +359,11 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 lim_array = np.array([limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
                 for counter,c in enumerate(lim_cols):
                     res_df[c] = ''
-                    
+
                     res_df[c].iloc[0] = lim_array[counter]
         else:
             #match.index = ['%s_%s'%(sn_name,i) for i in range(len(match.index))]
-            
+
             band_col_keys = ['MAG_AUTO', 'MAGERR_AUTO', 'MAG_APER', 'MAGERR_APER','CLASS_STAR']
             band_cols = {}
             new_band_cols = []
@@ -372,11 +372,11 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 new_band_cols.append(col+'_%s'%s.band)
             if s.band =='g':
                 match =match.rename(index=str,columns=band_cols)
-                
+
                 res_df = res_df.append(match)
                 res_df['SN_NAME']=sn_name
                 dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
-            
+
                 res_df['DLR'] = np.array(dlr)
                 rank = res_df['DLR'].rank().astype(int)
                 for counter, r in enumerate(res_df['DLR'].values):
@@ -385,12 +385,12 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 res_df['DLR_RANK']=rank
             else:
                 match =match.rename(index=str,columns=band_cols)
-                
+
                 match = match[new_band_cols]
                 for c in match.columns:
                     res_df[c]= match[c]
             res_df['LIMMAG_%s'%s.band]= limmag
-            
+
             # make region files for ds9
             reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
 

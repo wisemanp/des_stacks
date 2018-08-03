@@ -291,19 +291,20 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
 
         sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
-    rescols = ['SN_NAME','X_WORLD', 'Y_WORLD','X_IMAGE','Y_IMAGE'
+    rescols = ['SN_NAME','X_WORLD', 'Y_WORLD','X_IMAGE','Y_IMAGE',
+               'A_IMAGE','B_IMAGE','THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE',
                            'MAG_AUTO_g', 'MAGERR_AUTO_g','MAG_APER_g', 'MAGERR_APER_g',
                            'MAG_AUTO_r', 'MAGERR_AUTO_r','MAG_APER_r', 'MAGERR_APER_r',
                            'MAG_AUTO_i', 'MAGERR_AUTO_i','MAG_APER_i', 'MAGERR_APER_i',
                            'MAG_AUTO_z', 'MAGERR_AUTO_z','MAG_APER_z', 'MAGERR_APER_z',
                            'FWHM_WORLD_g','FWHM_WORLD_r','FWHM_WORLD_i','FWHM_WORLD_z',
-                           'ELONGATION_g','ELONGATION_r','ELONGATION_i','ELONGATION_z',
-                           'KRON_RADIUS_g','KRON_RADIUS_r','KRON_RADIUS_i','KRON_RADIUS_z',
+                           'ELONGATION',
+                           'KRON_RADIUS',
                            'CLASS_STAR_g','CLASS_STAR_r','CLASS_STAR_i','CLASS_STAR_z',
                            'LIMMAG_g','LIMMAG_r','LIMMAG_i','LIMMAG_z',
                            'FLUX_RADIUS_g','FLUX_RADIUS_r','FLUX_RADIUS_i','FLUX_RADIUS_z',
-                           'DLR_g','DLR_r','DLR_i','DLR_z',
-                           'DLR_RANK_g','DLR_RANK_r','DLR_RANK_i','DLR_RANK_z',]
+                           'DLR',
+                           'DLR_RANK']
     res_df = pd.DataFrame(columns=rescols)
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
@@ -346,7 +347,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 res_df=pd.DataFrame([init_lim_array],
                 columns=init_lim_cols)
             else:
-                logger.info(res_df)
+                
                 lim_cols = ['MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
                    'FWHM_WORLD_%s'%s.band,
                    'ELONGATION_%s'%s.band,
@@ -358,46 +359,38 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 lim_array = np.array([limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
                 for counter,c in enumerate(lim_cols):
                     res_df[c] = ''
-                    logger.info(c)
+                    
                     res_df[c].iloc[0] = lim_array[counter]
         else:
             #match.index = ['%s_%s'%(sn_name,i) for i in range(len(match.index))]
-            cols = match.columns
+            
+            band_col_keys = ['MAG_AUTO', 'MAGERR_AUTO', 'MAG_APER', 'MAGERR_APER','CLASS_STAR']
             band_cols = {}
-
-            for col in cols:
-                if col not in ['SN_NAME','X_WORLD','Y_WORLD','X_IMAGE','Y_IMAGE']:
-                    band_cols[col]=col+'_%s'%s.band
-                else:
-                    band_cols[col]=col
-            band_match = match.rename(index=str,columns=band_cols,inplace=True)
-            dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE_%s'%s.band], match['B_IMAGE_%s'%s.band], match['THETA_IMAGE_%s'%s.band], angsep)[0]
-            match['DLR_%s'%s.band] = np.array(dlr)
-
+            new_band_cols = []
+            for col in band_col_keys:
+                band_cols[col]=col+'_%s'%s.band
+                new_band_cols.append(col+'_%s'%s.band)
             if s.band =='g':
-
-                res_df = res_df.append(band_match)
-                for c in ['SN_NAME','X_WORLD','Y_WORLD','X_IMAGE','Y_IMAGE']:
-                    res_df[c] = ''
-                    res_df[c] = match[c]
-            for c in band_match.columns:
-                res_df[c] = ''
-                logger.info('Adding %s to %s in res_df'%(band_match[c],c))
-                res_df[c].loc[band_match.index] = band_match[c]
-
-            rank = res_df['DLR_%s'%s.band].rank().astype(int)
-            for counter, r in enumerate(res_df['DLR_%s'%s.band].values):
-                if r >3:
-                    rank[counter]*=-1
-
-            res_df['DLR_RANK_%s'%s.band]=rank
-
-            logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
-
+                match =match.rename(index=str,columns=band_cols)
+                
+                res_df = res_df.append(match)
+                res_df['SN_NAME']=sn_name
+                dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
+            
+                res_df['DLR'] = np.array(dlr)
+                rank = res_df['DLR'].rank().astype(int)
+                for counter, r in enumerate(res_df['DLR'].values):
+                    if r >3:
+                        rank[counter]*=-1
+                res_df['DLR_RANK']=rank
+            else:
+                match =match.rename(index=str,columns=band_cols)
+                
+                match = match[new_band_cols]
+                for c in match.columns:
+                    res_df[c]= match[c]
             res_df['LIMMAG_%s'%s.band]= limmag
-            logger.info('Limiting magnitude in %s band: %s'%(s.band,limmag))
-
-
+            
             # make region files for ds9
             reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
 
@@ -411,7 +404,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         all_sn = pd.read_csv(all_sn_fn,index_col=0)
     else:
         all_sn = pd.DataFrame(columns = rescols)
-    all_sn = all_sn.append(res_df.reset_index(drop=True))
+    all_sn = all_sn.append(res_df.reset_index(drop=True)).reset_index(drop=True)
     print ('Saving result to %s'%all_sn_fn)
     all_sn.to_csv(all_sn_fn)
 

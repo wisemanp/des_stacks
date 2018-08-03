@@ -342,9 +342,10 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                    'FLUX_RADIUS_%s'%s.band,
                    'DLR_%s'%s.band]
             if s.band =='g':
-                res_df.append(pd.DataFrame([init_lim_array],
-                columns=init_lim_cols))
+                res_df=pd.DataFrame([init_lim_array],
+                columns=init_lim_cols)
             else:
+                logger.info(res_df)
                 lim_cols = ['MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
                    'FWHM_WORLD_%s'%s.band,
                    'ELONGATION_%s'%s.band,
@@ -356,6 +357,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 lim_array = np.array([limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
                 for counter,c in enumerate(lim_cols):
                     res_df[c] = ''
+                    logger.info(c)
                     res_df[c].iloc[0] = lim_array[counter]
         else:
             #match.index = ['%s_%s'%(sn_name,i) for i in range(len(match.index))]

@@ -400,7 +400,9 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=reg)
             print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
             reg.close()
-
+    nearby_grc,grc_coords = get_zs_box(sg,ra,dec,30)
+    gal_coords = SkyCoord(ra=res_df['X_WORLD'].values*u.deg,dec=res_df['Y_WORLD'].values*u.deg)
+    res_df = match_gals(grc_coords,gal_coords,nearby_grc,res_df)
     all_sn_fn = os.path.join(sg.res_dir,savename)
     if os.path.isfile(all_sn_fn):
         all_sn = pd.read_csv(all_sn_fn,index_col=0)
@@ -427,38 +429,7 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     logger.info("Entered 'cap_phot_all' to do common aperture photometry for MY%s, %s, chip %s"%(y,f,chip))
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
-    survey_flags = {
-    'DES_AAOmega':['3','4','6'],
-    'ZFIRE_UDS':['3'],
-    'NOAO_0522':['4','6'],
-    'NOAO_0334':['4','6'],
-    'N17B331':['4','6'],
-    'MOSDEF':['Any'],
-    'SpARCS':['1','2'],
-    'PanSTARRS_AAOmega   ':['3','4','6'],
-    'PanSTARRS_MMT': ['3','4','6'],
-    'PRIMUS': ['3','4'],
-    'NED': ['Any'],
-    'UDS_FORS2':['A','B'],
-    'UDS_VIMOS':['3','4'],
-    'ACES': ['3','4'],
-    'SDSS': ['0'],
-    '6dF': ['4'],
-    'ATLAS':['Any'],
-    '2dFGRS':['3','4'],
-    'GAMA':['4'],
-    'SNLS_FORS           ':['1','2'],
-    'CDB':['Any'],
-    'VVDS_DEEP':['3','4','13','14','23','24','213','214'],
-    'VVDS_CDFS':['3','4','13','14','23','24'],
-    'MUSE':['3','2'],
-    'SAGA':['4'],
-    'SNLS_AAOmega':['3','4','6'],
-    'VIPERS':['2','3','4','9','22','23','24','29','12','13','14','19','212','213','214','219'],
-    'DEEP2_DR4':['-1','3','4'],
-    'VUDS_COSMOS':['3','4','13','14','23','24','43','44'],
-    'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
-    }
+
     sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
 
     # if there is no white image, make ones
@@ -473,19 +444,13 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     res_df = pd.DataFrame(columns=['X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
      'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
     this_chip_lims = get_chip_vals(sg.field,chip,vals = 'lims')
-
+    chip_cent_ra = (this_chip_lims[0][0]+this_chip_lims[2][0])/2
+    chip_cent_dec = (this_chip_lims[0][1]+this_chip_lims[1][1])/2
+    chip_search_rad = np.abs(this_chip_lims[1][1]-this_chip_lims[0][1])
+    z_gals = get_zs_box(sg,chip_cent_ra,chip_cent_dec,chip_search_rad)
     # find the galaxies that OzDES has redshifts for
-    grc = Table.read(os.path.join(sg.cat_dir,'ozdes_grc.fits')).to_pandas()
-    good_redshifts = pd.DataFrame()
-    for survey,flags in survey_flags.items():
-        if flags !=['Any']:
-            for flag in flags:
-                good_redshifts = good_redshifts.append(grc[(grc['source']==survey)&(grc['flag']==flag)])
-        else:
-            good_redshifts = good_redshifts.append(grc[grc['source']==survey])
-    good_in_chip_inds = (good_redshifts['RA']< this_chip_lims[0][0])&(good_redshifts['RA']> this_chip_lims[2][0]) & (good_redshifts['DEC']> this_chip_lims[0][1]) & (good_redshifts['DEC']< this_chip_lims[1][1])
-    gals_with_z = good_redshifts[good_in_chip_inds]
-    z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
+
+
     phot_plus_spec = pd.DataFrame()
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
@@ -612,3 +577,59 @@ def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
     d_DLR = angsep/rPHI
 
     return [d_DLR, A_ARCSEC, B_ARCSEC, rPHI]
+
+def get_zs_box(s,search_ra,search_dec,search_rad):
+    survey_flags = {
+    'DES_AAOmega':['3','4','6'],
+    'ZFIRE_UDS':['3'],
+    'NOAO_0522':['4','6'],
+    'NOAO_0334':['4','6'],
+    'N17B331':['4','6'],
+    'MOSDEF':['Any'],
+    'SpARCS':['1','2'],
+    'PanSTARRS_AAOmega   ':['3','4','6'],
+    'PanSTARRS_MMT': ['3','4','6'],
+    'PRIMUS': ['3','4'],
+    'NED': ['Any'],
+    'UDS_FORS2':['A','B'],
+    'UDS_VIMOS':['3','4'],
+    'ACES': ['3','4'],
+    'SDSS': ['0'],
+    '6dF': ['4'],
+    'ATLAS':['Any'],
+    '2dFGRS':['3','4'],
+    'GAMA':['4'],
+    'SNLS_FORS           ':['1','2'],
+    'CDB':['Any'],
+    'VVDS_DEEP':['3','4','13','14','23','24','213','214'],
+    'VVDS_CDFS':['3','4','13','14','23','24'],
+    'MUSE':['3','2'],
+    'SAGA':['4'],
+    'SNLS_AAOmega':['3','4','6'],
+    'VIPERS':['2','3','4','9','22','23','24','29','12','13','14','19','212','213','214','219'],
+    'DEEP2_DR4':['-1','3','4'],
+    'VUDS_COSMOS':['3','4','13','14','23','24','43','44'],
+    'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
+    }
+    grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits')).to_pandas()
+    good_redshifts = pd.DataFrame()
+    for survey,flags in survey_flags.items():
+        if flags !=['Any']:
+            for flag in flags:
+                good_redshifts = good_redshifts.append(grc[(grc['source']==survey)&(grc['flag']==flag)])
+        else:
+            good_redshifts = good_redshifts.append(grc[grc['source']==survey])
+    good_in_search_box = (good_redshifts['RA']< search_ra+search_rad)&(good_redshifts['RA']> search_ra-search_rad) & (good_redshifts['DEC']> search_dec-search_rad) & (good_redshifts['DEC']< search_dec+search_rad)
+    gals_with_z = good_redshifts[good_in_search_box]
+    z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
+    return gals_with_z,z_gals
+
+def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
+    inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord)
+    init_matches = cat.iloc[inds]
+    close_match_inds = d2d< dist_thresh*u.arcsec
+    stack_gals_with_z = gals.iloc[close_match_inds]
+    stack_gal_zs = init_matches[close_match_inds]
+    stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
+    gals.loc[stack_gals_with_z.index]=stack_gals_with_z
+    return gals

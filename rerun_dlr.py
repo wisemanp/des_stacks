@@ -15,6 +15,7 @@ from astropy import wcs
 from des_stacks import des_stack, stack_all
 from des_stacks.utils import stack_tools,sex_tools
 from des_stacks.analysis import astro
+%matplotlib notebook
 sns.set_color_codes(palette='colorblind')
 import time
 import _pickle as cpickle
@@ -59,7 +60,7 @@ def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
 
 
 
-sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
+
 sngals = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sngals2.csv',index_col=0)
 sngals['DLR_reprod']=''
 sngals['DLR_diff']=''
@@ -67,32 +68,29 @@ sngals['DLR_RANK_new']=''
 n=0
 galindex = []
 for i in sngals.index:
-    try:
-        n+=1
-        print ('Doing %s of %s'%(n,len(sngals)))
-        snra,sndec,sn_name = sncand[['RA','DEC','TRANSIENT_NAME']].loc[i]
-        sn_name = sn_name.strip(' ')
-        match = sngals[sngals['TRANSIENT_NAME']==sn_name]
-        sncoord = SkyCoord(ra=snra*u.degree,dec=sndec*u.degree)
-        galcoords = SkyCoord(ra=match['RA'].values*u.deg,dec=match['DEC'].values*u.deg)
-        dist = sncoord.separation(galcoords)
-        dists = np.array([float(dist[i].to_string(unit=u.arcsec,decimal=True)) for i in range(len(dist))])
-        new_dlr = get_DLR_ABT(snra,sndec,match['RA'].values,match['DEC'].values,
-                match['A_IMAGE'].values,match['B_IMAGE'].values,
-               match['THETA_IMAGE'].values,dists)[0]
-        if len(new_dlr)>3:
-            print (sn_name, len)
+    n+=1
+    print ('Doing %s of %s'%(n,len(sngals)))
+    snra,sndec,sn_name = specIas[['RA','DEC','TRANSIENT_NAME']].loc[i]
+    sn_name = sn_name.strip(' ')
+    match = sngals[sngals['TRANSIENT_NAME']==sn_name]
+    sncoord = SkyCoord(ra=snra*u.degree,dec=sndec*u.degree)
+    galcoords = SkyCoord(ra=match['RA'].values*u.deg,dec=match['DEC'].values*u.deg)
+    dist = sncoord.separation(galcoords)
+    dists = np.array([float(dist[i].to_string(unit=u.arcsec,decimal=True)) for i in range(len(dist))])
+    new_dlr = get_DLR_ABT(snra,sndec,match['RA'].values,match['DEC'].values,
+            match['A_IMAGE'].values,match['B_IMAGE'].values,
+           match['THETA_IMAGE'].values,dists)[0]
+    if len(new_dlr)>3:
+        print (sn_name, len)
 
 
-        for ind in match.index:
-            galindex.append(ind)
-        sngals['DLR_reprod'].loc[match.index]=new_dlr
-        new_rank = sngals['DLR_reprod'].loc[match.index].rank()
-        for r in range(len(new_rank)):
-            if new_dlr[r]>4:
-                new_rank.iloc[r]=new_rank.iloc[r]*-1
-        sngals['DLR_RANK_new'].loc[match.index]=new_rank
-        sngals['DLR_diff'].loc[match.index]=sngals['DLR'].loc[match.index]-new_dlr
-    except:
-        pass
-sngals.to_csv('/media/data3/wiseman/des/coadding/catalogs/sngals_updated.csv')
+    for ind in match.index:
+        galindex.append(ind)
+    sngals['DLR_reprod'].loc[match.index]=new_dlr
+    new_rank = sngals['DLR_reprod'].loc[match.index].rank()
+    for r in range(len(new_rank)):
+        if new_dlr[r]>4:
+            new_rank.iloc[r]=new_rank.iloc[r]*-1
+    sngals['DLR_RANK_new'].loc[match.index]=new_rank
+    sngals['DLR_diff'].loc[match.index]=sngals['DLR'].loc[match.index]-new_dlr
+sngals.to_csv('/media/data3/wiseman/coadding/catalogs/sngals_updated.csv')

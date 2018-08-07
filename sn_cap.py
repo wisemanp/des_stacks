@@ -18,7 +18,7 @@ def parser():
     parser.add_argument('-wd','--workdir',help='Path to directory to work in',default = '/media/data3/wiseman/des/coadding')
     parser.add_argument('-sf','--savename',help='Filename to save results to',default=None)
     parser.add_argument('-ow','--overwrite',help='Overwrite existing results?',action = 'store_true')
-    parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=5)
+    parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=15)
 
     return parser.parse_args()
 
@@ -56,9 +56,9 @@ def cap(args,logger):
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:
-                        cap_phot_sn(sn_name,args.workdir,thresh = args.threshold)
+                        cap_phot_sn(sn_name,args.workdir,dist_thresh = args.threshold)
                     else:
-                        cap_phot_sn(sn_name,args.workdir,args.savename,thresh = args.threshold)
+                        cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
 if __name__ == "__main__":

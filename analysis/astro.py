@@ -253,6 +253,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     logger.addHandler(ch)
 
     logger.info("Entered 'cap_phot.py' to do common aperture photometry for the host of %s"%sn_name)
+    logger.info("Will search a radius of %s arcseconds around the SN location"%dist_thresh)
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
 
@@ -324,11 +325,12 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         close_inds = d2d <dist_thresh*u.arcsec
         dists = d2d[close_inds]
         match = capcat.iloc[close_inds]
-        angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for i in range(d2d[close_inds]))])
+        angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
         with open(os.path.join(s.band_dir,str(chip),'ana',
             '%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as resheader:
             header = [next(resheader) for x in range(8)]
         limmag = header[-1].split(' ')[-1].strip('\n')
+        logger.info("Found %s galaxies within %s arcseconds in %s band"%(len(match),dist_thresh,s.band))
         if len(match)==0:
 
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
@@ -380,7 +382,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 res_df['DLR'] = np.array(dlr)
                 rank = res_df['DLR'].rank().astype(int)
                 for counter, r in enumerate(res_df['DLR'].values):
-                    if r >3:
+                    if r >4:
                         rank[counter]*=-1
                 res_df['DLR_RANK']=rank
             else:
@@ -390,7 +392,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 for c in match.columns:
                     res_df[c]= match[c]
             res_df['LIMMAG_%s'%s.band]= limmag
-
+            res_df = res_df[res_df['DLR']<10]
             # make region files for ds9
             reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
 

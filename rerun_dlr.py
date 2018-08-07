@@ -95,4 +95,4 @@ for i in sngals.index:
         sngals['DLR_diff'].loc[match.index]=sngals['DLR'].loc[match.index]-new_dlr
     except:
         pass
-sngals.to_csv('/media/data3/wiseman/coadding/catalogs/sngals_updated.csv')
+sngals.to_csv('/media/data3/wiseman/des/coadding/catalogs/sngals_updated.csv')

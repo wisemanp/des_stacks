@@ -5,7 +5,6 @@ import numpy as np
 import logging
 import argparse
 import pandas as pd
-import os
 from time import gmtime, strftime
 #Note: import this first else it crashes importing sub-modules
 from des_stacks import des_stack as stack
@@ -19,7 +18,11 @@ def parser():
     parser.add_argument('-wd','--workdir',help='Path to directory to work in',default = '/media/data3/wiseman/des/coadding')
     parser.add_argument('-sf','--savename',help='Filename to save results to',default=None)
     parser.add_argument('-ow','--overwrite',help='Overwrite existing results?',action = 'store_true')
+<<<<<<< HEAD
     parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=5)
+=======
+    parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=15)
+>>>>>>> dlr_phot
 
     return parser.parse_args()
 
@@ -47,11 +50,15 @@ def cap(args,logger):
             except:
                 done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
         else:
+<<<<<<< HEAD
             try:
                 done_sn = pd.read_csv(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename),index_col=0)
                 logger.info('Read in %s'%os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
             except:
                 done_sn = pd.DataFrame(columns=['SN_NAME'])
+=======
+            done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
+>>>>>>> dlr_phot
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
             logger.info("Done SN: %s"%done_sn.SN_NAME.unique())

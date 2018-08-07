@@ -208,7 +208,7 @@ class optimiser():
     def do_stack(self,f,b,y,ch,wd,cuts):
         #Performs the actual stack for a given set of cuts, and returns the limiting magnitudes and psf
         print ('Making stack of',f,b,y,ch,wd,cuts)
-        s = stack.Stack(f,b,y,ch,wd,cuts)
+        s = stack.Stack(f,b,y,ch,wd,cuts,db=True)
         scifile = os.path.join(s.band_dir,'ccd_%s_%s_%s_%s_sci.fits'%(ch[0],b,cuts['teff'],cuts['psf']))
         if not os.path.isfile(scifile):
             print ('Did not find a file for these cuts; doing stack')

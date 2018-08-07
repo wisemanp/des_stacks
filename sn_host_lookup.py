@@ -78,6 +78,12 @@ def main(args,logger):
         chip_res_fn = os.path.join(cap_chip_dir,'spec_phot_galcat_%s_%s_%s.result'%(y,f,chip))
         logger.info("Filename should look like %s."%chip_res_fn)
         bands = ['g','r','i','z']
+
+        # First check to see if there is photometry for the SN in some results file
+
+
+
+
         if os.path.isfile(chip_res_fn):
             logger.info("Found the result file for MY%s, %s, chip %s! Now trying to find the SN host"%(y,f,chip))
 

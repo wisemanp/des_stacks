@@ -21,13 +21,12 @@ import des_stacks.utils.multi_stack as multi_stack
 from des_stacks.analysis.astro import init_phot, init_calib
 
 class Stack():
-    def __init__(self, field, band, my, chips ,working_dir,cuts={'none':None}):
+    def __init__(self, field, band, my, chips ,working_dir,cuts={'none':None},db = False):
         self.field = field
         self.band = band
         self.my =my
         self.chips=chips
         self.coadding_dir =working_dir
-        
         if cuts=={'none':None}:
             if self.band in ['g','r']:
                 cuts ={'teff':0.15, 'zp':None,'psf':None}
@@ -42,7 +41,8 @@ class Stack():
             self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         self._define_paths()
         self._init_log()
-        self._get_info()
+        if db:
+            self._get_info()
         self._get_configs()
         self.logger.info("Doing work in: %s as a root directory" % self.coadding_dir)
 

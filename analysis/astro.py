@@ -237,11 +237,7 @@ def init_phot(s,chip,cat,pl='n'):
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
 #####################################################################################################
-<<<<<<< HEAD
-def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 15):
-=======
 def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
->>>>>>> dlr_phot
     '''get aperture photometry for a single sn host'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -268,14 +264,10 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band
     logger.info("Setting up Stack instances for each band")
-<<<<<<< HEAD
-    cuts = [get_cuts(f,b) for b in bands]
-=======
     if autocuts:
         cuts = [get_cuts(f,b) for b in bands]
     else:
         cuts = [{'teff': 0.15, 'psf':None},{'teff': 0.15,'psf':None},{'teff': 0.25,'psf':None},{'teff': 0.25,'psf':None}]
->>>>>>> dlr_phot
     sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
 
     # if there is no white image, make ones
@@ -300,34 +292,13 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
 
     sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
-<<<<<<< HEAD
-    rescols = ['SN_NAME','X_WORLD', 'Y_WORLD',
-=======
     rescols = ['SN_NAME','X_WORLD', 'Y_WORLD','X_IMAGE','Y_IMAGE',
                'A_IMAGE','B_IMAGE','THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE',
->>>>>>> dlr_phot
                            'MAG_AUTO_g', 'MAGERR_AUTO_g','MAG_APER_g', 'MAGERR_APER_g',
                            'MAG_AUTO_r', 'MAGERR_AUTO_r','MAG_APER_r', 'MAGERR_APER_r',
                            'MAG_AUTO_i', 'MAGERR_AUTO_i','MAG_APER_i', 'MAGERR_APER_i',
                            'MAG_AUTO_z', 'MAGERR_AUTO_z','MAG_APER_z', 'MAGERR_APER_z',
                            'FWHM_WORLD_g','FWHM_WORLD_r','FWHM_WORLD_i','FWHM_WORLD_z',
-<<<<<<< HEAD
-                           'ELONGATION_g','ELONGATION_r','ELONGATION_i','ELONGATION_z',
-                           'KRON_RADIUS_g','KRON_RADIUS_r','KRON_RADIUS_i','KRON_RADIUS_z',
-                           'CLASS_STAR_g','CLASS_STAR_r','CLASS_STAR_i','CLASS_STAR_z',
-                           'LIMMAG_g','LIMMAG_r','LIMMAG_i','LIMMAG_z',
-                           'FLUX_RADIUS_g','FLUX_RADIUS_r','FLUX_RADIUS_i','FLUX_RADIUS_z',
-                           'DLR_g','DLR_r','DLR_i','DLR_z']
-    res_df = pd.DataFrame(columns=rescols)
-
-    for s in [sg,sr,si,sz]:
-        # load in the photometry from sextractor
-        qualfiles = glob.glob(os.path.join(s.band_dir,str(chip),'ana','*_ana.qual'))
-        quals= np.loadtxt(qualfiles[0])
-        zp = float(quals[0])
-        av_fwhm = float(quals[2])
-        capcat = Table.read(os.path.join(sg.out_dir,'CAP',sn_name,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))).to_pandas()
-=======
                            'ELONGATION',
                            'KRON_RADIUS',
                            'CLASS_STAR_g','CLASS_STAR_r','CLASS_STAR_i','CLASS_STAR_z',
@@ -345,7 +316,6 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         capcat_fn = os.path.join(sg.out_dir,'CAP',sn_name,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))
         logger.info('Reading in the catalog from: %s'%capcat_fn)
         capcat = Table.read(capcat_fn).to_pandas()
->>>>>>> dlr_phot
         capcat['MAG_APER']=capcat['MAG_APER']+zp
         capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
 
@@ -355,78 +325,6 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         close_inds = d2d <dist_thresh*u.arcsec
         dists = d2d[close_inds]
         match = capcat.iloc[close_inds]
-<<<<<<< HEAD
-        with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as resheader:
-            header = [next(resheader) for x in range(8)]
-        limmag = header[-1].split(' ')[-1].strip('\n')
-        if len(match)==0:
-
-            logger.info("Didn't detect a galaxy within %s arcsec of the SN; reporting limit of %s in %s band"%(dist_thresh,limmag,s.band))
-
-            init_lim_array = np.array([sn_name,ra,dec,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
-            
-            init_lim_cols = ['SN_NAME','X_WORLD', 'Y_WORLD',
-                   'MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
-                   'FWHM_WORLD_%s'%s.band,
-                   'ELONGATION_%s'%s.band,
-                   'KRON_RADIUS_%s'%s.band,
-                   'CLASS_STAR_%s'%s.band,
-                   'LIMMAG_%s'%s.band,
-                   'FLUX_RADIUS_%s'%s.band,
-                   'DLR_%s'%s.band]
-            if s.band =='g': 
-                logger.info('Filling in g band with limits') 
-                res_df = pd.DataFrame([init_lim_array],columns=init_lim_cols)
-                
-            else:
-                lim_cols = ['MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
-                   'FWHM_WORLD_%s'%s.band,
-                   'ELONGATION_%s'%s.band,
-                   'KRON_RADIUS_%s'%s.band,
-                   'CLASS_STAR_%s'%s.band,
-                   'LIMMAG_%s'%s.band,
-                   'FLUX_RADIUS_%s'%s.band,
-                   'DLR_%s'%s.band]
-                lim_array = np.array([limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
-                for counter,c in enumerate(lim_cols):
-                   res_df[c] = ''
-                   res_df[c].iloc[0] = lim_array[counter]
-        else:
-            match.index = ['%s_%s'%(sn_name,i) for i in range(len(match.index))]
-            cols = match.columns
-            band_cols = {}
-            for col in cols:
-                band_cols[col]=col+'_%s'%s.band
-            match.rename(index=str,columns=band_cols,inplace=True)
-            dlr = dists*3600/(match['FLUX_RADIUS_%s'%s.band]*0.27*u.arcsec)
-            match['DLR_%s'%s.band] = np.array(dlr)
-
-            if s.band =='g':
-
-                res_df = res_df.append(match)
-
-            for c in match.columns:
-                res_df[c] = ''
-                res_df[c].loc[match.index] = match[c]
-
-            rank = res_df['DLR_%s'%s.band].rank().astype(int)
-            res_df['DLR_RANK_%s'%s.band]=rank
-
-            logger.info(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)))
-
-            res_df['LIMMAG_%s'%s.band]= limmag
-            logger.info('Limiting magnitude in %s band: %s'%(s.band,limmag))
-
-
-            # make region files for ds9
-            reg = open(os.path.join(s.out_dir,'CAP',sn_name,'%s_%s.reg'%(sn_name,s.band)),'w')
-
-            for i in range(len(capcat['X_WORLD'].values)):
-                print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=reg)
-            print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
-            reg.close()
-
-=======
         angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
         with open(os.path.join(s.band_dir,str(chip),'ana',
             '%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as resheader:
@@ -503,17 +401,12 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
             reg.close()
 
->>>>>>> dlr_phot
     all_sn_fn = os.path.join(sg.res_dir,savename)
     if os.path.isfile(all_sn_fn):
         all_sn = pd.read_csv(all_sn_fn,index_col=0)
     else:
         all_sn = pd.DataFrame(columns = rescols)
-<<<<<<< HEAD
-    all_sn = all_sn.append(res_df)
-=======
     all_sn = all_sn.append(res_df.reset_index(drop=True)).reset_index(drop=True)
->>>>>>> dlr_phot
     print ('Saving result to %s'%all_sn_fn)
     all_sn.to_csv(all_sn_fn)
 

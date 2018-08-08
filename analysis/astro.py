@@ -400,14 +400,16 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=reg)
             print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
             reg.close()
-    if len(match)>0:
-        nearby_grc,grc_coords = get_zs_box(sg,ra,dec,30)
-
-        gal_coords = SkyCoord(ra=res_df['X_WORLD'].values*u.deg,dec=res_df['Y_WORLD'].values*u.deg)
-        logger.info('Attempting to add some redshift infomation')
-        res_df = match_gals(grc_coords,gal_coords,nearby_grc,res_df)
     for col in ['z','z_Err','flag','source']:
         res_df[col] = ''
+    if len(match)>0:
+        nearby_grc,grc_coords = get_zs_box(sg,ra,dec,30)
+        
+        gal_coords = SkyCoord(ra=res_df['X_WORLD'].values*u.deg,dec=res_df['Y_WORLD'].values*u.deg)
+        logger.info('Attempting to add some redshift infomation')
+
+        res_df = match_gals(grc_coords,gal_coords,nearby_grc,res_df)
+    
 
     all_sn_fn = os.path.join(sg.res_dir,savename)
     if os.path.isfile(all_sn_fn):
@@ -644,15 +646,15 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
 
     inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord)
     init_matches = cat.iloc[inds]
-    logger.info(inds)
-    logger.info(init_matches)
+    
     close_match_inds = d2d< dist_thresh*u.arcsec
     stack_gals_with_z = gals.iloc[close_match_inds]
+ 
     stack_gal_zs = init_matches[close_match_inds]
     logger.info('Matched %s galaxies with redshifts'%len(stack_gals_with_z))
 
     stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
-
+    
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
-
+    
     return gals

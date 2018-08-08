@@ -29,10 +29,11 @@ def cap(args,logger):
     else:
        avoid_list = [None]
     if args.sn_name:
+        logger.info('Have been given a name, doing CAP for just %s'%args.sn_name)
         if not args.savename:
             cap_phot_sn(args.sn_name,args.workdir,dist_thresh = args.threshold)
         else:
-
+            logger.info('Been given a savename, so doing cap now and saving it to that')
             cap_phot_sn(args.sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
@@ -84,4 +85,3 @@ if __name__ == "__main__":
     args = parser()
     cap(args,logger)
 
-    cap(args,logger)

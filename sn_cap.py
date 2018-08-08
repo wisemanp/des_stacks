@@ -30,10 +30,10 @@ def cap(args,logger):
        avoid_list = [None]
     if args.sn_name:
         if not args.savename:
-            cap_phot_sn(args.sn_name,args.workdir)
+            cap_phot_sn(args.sn_name,args.workdir,dist_thresh = args.threshold)
         else:
 
-            cap_phot_sn(args.sn_name,args.workdir,args.savename)
+            cap_phot_sn(args.sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
         sn_list = np.loadtxt(args.namelist,dtype='str')
@@ -46,7 +46,7 @@ def cap(args,logger):
             except:
                 done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
         else:
-        
+
             try:
                 logger.info('Reading in results file to find out which ones I still need to do')
                 logger.info(os.path.join('/media/data3/wiseman/des/coadding/results/',args.savename))
@@ -54,7 +54,7 @@ def cap(args,logger):
                 logger.info('Read in %s'%os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
             except:
                 done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
-            
+
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
             logger.info("Done SN: %s"%done_sn.SN_NAME.unique())

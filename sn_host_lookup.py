@@ -17,14 +17,17 @@ import matplotlib.pyplot as plt
 import _pickle as cpickle
 import math
 
-#Note: import this first else it crashes importing sub-modules
+# Note: import this first else it crashes importing sub-modules
+
+
 plot_locs={
 'g':[0.18,0.53,0.40,0.43],
 'r':[0.59,0.53,0.40,0.43],
 'i':[0.18,0.09,0.40,0.43],
 'z':[0.59,0.09,0.40,0.43]
 }
-
+bands = ['g','r','i','z']
+pix_arcsec = 0.264
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n','--sn_name',help='Full DES supernova ID, e.g. DES16C2nm (case sensitive)',default=None)
@@ -73,106 +76,24 @@ def main(args,logger):
         logger.info("Season: %s"%y)
         logger.info("Field:  %s"%f)
         logger.info("CCD:    %s"%chip)
-        cap_chip_dir = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip))
+        sn_cap_dir = os.path.join(args.workdir,'stacks','CAP',sn)
+        if not os.path.isdir(sn_cap_dir):
+            os.mkdir(sn_cap_dir)
+        sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn)
+        if not os.path.isfile(sn_res_fn):
+            from des_stacks import des_stack as stack
+            from des_stacks.analysis.astro import cap_phot_sn
+            cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15)
+            os.rename(os.path.join('/media/data3/wiseman/des/coadding/results',
+            '%s.result'%sn),sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn))
 
-        chip_res_fn = os.path.join(cap_chip_dir,'spec_phot_galcat_%s_%s_%s.result'%(y,f,chip))
-        logger.info("Filename should look like %s."%chip_res_fn)
-        bands = ['g','r','i','z']
+        sn_res = pd.read_csv(sn_res_fn,index_col=0)
+        has_spec = sn_res.dropna(subset=['z'])
+        if len(has_spec)>0:
+            loc = has_spec.index
+        host = sn_res[sn_res['DLR_RANK']==1]
+        phost = sn_res[sn_res['DLR_RANK']==-1]
 
-        # First check to see if there is photometry for the SN in some results file
-
-
-
-
-        if os.path.isfile(chip_res_fn):
-            logger.info("Found the result file for MY%s, %s, chip %s! Now trying to find the SN host"%(y,f,chip))
-
-        else:
-            logger.info("Result file doesn't exist yet; going to quickly do common aperture photometry on MY%s, %s, chip %s"%(y,f,chip))
-            try:
-                from des_stacks.analysis.astro import cap_phot_all
-                sg,sr,si,sz = [stack.Stack(f, b, y, chip ,'coadding')for b in bands]
-                cap_phot_all(sg,sr,si,sz,chip)
-            except:
-                if y=='none':
-                    raise Exception("Unable to import the des_stacks module to do the photometry - Talk to Phil!")
-                else:
-                    logger.info("I'll try to do it in MYnone just to give you a look")
-                    chip_res_fn = os.path.join(args.workdir,'stacks','MYnone',f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.result'%('none',f,chip))
-                    if os.path.isfile(chip_res_fn):
-                        logger.info("Found a result file for MYnone, so I'll use that!")
-
-                    else:
-                        logger.info("%s, %s still not done even in MYnone, you should bug Phil to get it done."%(f,chip))
-        # set up an empty results dataframe
-
-        chip_res = pd.read_csv(chip_res_fn)
-        res_objs = SkyCoord(ra=chip_res['RA']*u.degree,dec=chip_res['DEC']*u.degree)
-        snloc = SkyCoord(ra=sn_ra*u.degree,dec = sn_dec*u.degree)
-        idx,d2d,d3d = snloc.match_to_catalog_sky(res_objs)
-
-        match = chip_res.iloc[int(idx)]
-        logger.info(match)
-        sn_dir = os.path.join(args.workdir,'stacks','CAP',sn)
-        if not os.path.isdir(sn_dir):
-            os.mkdir(sn_dir)
-
-        if d2d.arcsec < (2*float(match_dist)):
-            restype='spec'
-            if d2d.arcsec < (float(match_dist)):
-                logger.info("The SN lies within %s arcsec of a galaxy with a redshift!"%match_dist)
-                logger.info("The galaxy details, including magnitudes from the deep DES SN stack, are: ")
-                logger.info(match)
-            else:
-                logger.info("The SN lies within %s arcsec of a galaxy with a redshift, here are details, including magnitudes from the deep DES SN stack"%d2d.arcsec)
-
-            for b in bands:
-                myreg = open(os.path.join(sn_dir,'%s_%s.reg'%(sn,b)),'w')
-                for i in range(len(chip_res)):
-                    logger.debug('Got into loop')
-                    mag,magerr= chip_res['MAG_AUTO_%s'%b].iloc[i], chip_res['MAGERR_AUTO_%s'%b].iloc[i]
-                    print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f} color=green'%(chip_res.RA.iloc[i],chip_res.DEC.iloc[i],mag,magerr),file = myreg)
-
-                logger.debug('Done non-matched galaxies')
-                for ind in match.index:
-                    try:
-                        mag,magerr = match['MAG_AUTO_%s'%b].iloc[ind],match['MAGERR_AUTO_%s'%b].iloc[ind]
-
-                    except:
-                        mag,magerr = match['MAG_AUTO_%s'%b],match['MAGERR_AUTO_%s'%b]
-                    try:
-                        print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['RA'].loc[ind],match['DEC'].iloc[ind],mag,magerr),file = myreg)
-                    except:
-                        print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['RA'],match['DEC'],mag,magerr),file = myreg)
-                print ('fk5; point %s %s # point=cross text={%s} color=red width=2'%(sn_ra,sn_dec,sn),file = myreg)
-                myreg.close()
-                logger.info("Saved region file to %s "%os.path.join(sn_dir,'%s_%s.reg'%(sn,b)))
-        else:
-            matches = []
-            restype='phot'
-            logger.info("No spectroscopically redshifted galaxies nearby; going to check the photometric catalog")
-            for b in bands:
-                phot_fn = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,b))
-                phot_res = pd.read_csv(phot_fn)
-
-                res_objs = SkyCoord(ra=phot_res['X_WORLD']*u.degree,dec=phot_res['Y_WORLD']*u.degree)
-                idx,d2d,d3d = snloc.match_to_catalog_sky(res_objs)
-                logger.info("In %s band, I found the following source(s):"%b)
-                match = phot_res.iloc[int(idx)]
-                logger.info(match)
-                matches.append(match)
-                reg = open(os.path.join(sn_dir,'%s_%s.reg'%(sn,b)),'w')
-                for i in range(len(phot_res)):
-                    print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f} color=green'%(phot_res['X_WORLD'].loc[i],phot_res['Y_WORLD'].iloc[i],phot_res['MAG_AUTO'].iloc[i],phot_res['MAGERR_AUTO'].iloc[i]),file=reg)
-                try:
-                    for ind in match.index:
-                        print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['X_WORLD'].loc[ind],match['X_WORLD'].loc[ind],match['MAG_AUTO'].loc[ind],match['MAGERR_AUTO'].loc[ind]),file=reg)
-                except:
-                    print ('fk5; circle(%s,%s,1.5") # text={%.2f +/- %.2f} color=blue width=3'%(match['X_WORLD'],match['X_WORLD'],match['MAG_AUTO'],match['MAGERR_AUTO']),file=reg)
-
-                print ('fk5; point %s %s # point=cross text={%s} color=red width=2'%(sn_ra,sn_dec,sn),file=reg)
-                reg.close()
-                logger.info("Saved region file to %s "%os.path.join(sn_dir,'%s_%s.reg'%(sn,b)))
         if args.stamp:
             logger.info("You want a stamp of %s too. So I'm making one."%sn)
             logger.warning("You might need AplPy installed...")
@@ -186,72 +107,63 @@ def main(args,logger):
             ax.set_ylabel('Declination (J2000)',fontsize=12,labelpad = 30)
             hor_line = np.array([[sn_ra-0.00027,sn_ra+0.00027],[sn_dec,sn_dec]])
             ver_line = np.array([[sn_ra,sn_ra],[sn_dec-0.00027,sn_dec+0.00027]])
-            for counter,band in enumerate(bands):
-                if band in ['g','r']:
-                    tc =0.15
-                else:
-                    tc =0.25
-                img_fn = os.path.join(cap_chip_dir,'ccd_%s_%s_%s_sci.resamp.fits'%(chip,band,tc))
+            for counter,b in enumerate(bands):
 
-                if os.path.isfile(img_fn) != 'Failed to load image':
-                    if restype=='spec':
-                        res = pd.read_csv(chip_res_fn)
-                        res = res[res['RA']<sn_ra+(w/2)]
-                        res = res[res['RA']>sn_ra-(w/2)]
-                        res = res[res['DEC']<sn_dec+(w/2)]
-                        res = res[res['DEC']>sn_dec-(w/2)]
-                        ras,decs,mags,errs = res.RA.values,res.DEC.values,res['MAG_AUTO_%s'%band].values,res['MAGERR_AUTO_%s'%band].values
 
-                    else:
-                        logger.info("Loading the %s band result file" %band)
-                        phot_fn = os.path.join(args.workdir,'stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,band))
-                        res = pd.read_csv(phot_fn)
-                        logger.info("Loaded %s"%phot_fn)
-                        res = res[res['X_WORLD']<sn_ra+(w/2)]
-                        res = res[res['X_WORLD']>sn_ra-(w/2)]
-                        res = res[res['Y_WORLD']<sn_dec+(w/2)]
-                        res = res[res['Y_WORLD']>sn_dec-(w/2)]
-                        ras,decs,mags,errs = res.X_WORLD.values,res.Y_WORLD.values,res.MAG_AUTO.values,res.MAGERR_AUTO.values
+                img_fn = glob.glob(os.path.join(cap_chip_dir,'ccd_*%s*_sci.resamp.fits'%b)[0]
+
+                if os.path.isfile(img_fn):
+                    phot_fn  = glob.glob(os.path.join(sn_cap_dir,'*%s*.sexcat'%b))[0]
+                    phot_res = Table.read(phot_fn,index_col=0).to_pandas()
+                    phot_res = phot_res[phot_res['X_WORLD']<sn_ra+(w)]
+                    phot_res = phot_res[phot_res['X_WORLD']>sn_ra-(w)]
+                    phot_res = phot_res[phot_res['Y_WORLD']<sn_dec+(w)]
+                    phot_res = phot_res[phot_res['Y_WORLD']>sn_dec-(w)]
+                    zp = np.loadtxt(glob.glob(os.path.join(args.workdir,'MY%s'%y,f,b,str(ccd),'ana','*.qual'))[0],dtype=str)[0]
+                    phot_res['MAG_AUTO'] = phot_res['MAG_AUTO']+float(zp)
+
+
                     img = fits.open(img_fn)
                     fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[band])
                     try:
-                        fg.recenter(sn_ra,sn_dec,width=w,height=w)
+                        fg.recenter(sn_ra,sn_dec,w)
                     except:
                         logger.info('Could not recenter to outside the frame')
 
                     fg.show_lines([ver_line,hor_line],color='r',linewidth=.5)
-                    fg.show_grayscale(vmin=-0.8,vmax=8.)
+                    fg.show_grayscale(vmin=-0.8,vmax=15.)
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
                     fg.set_theme('publication')
                     fg.ticks.set_length(-3)
-                    fg.add_label(0.1,0.8,band,relative=True,color='r',fontsize=14)
-                    if restype=='spec':
-                         fg.show_circles(res.RA.values,res.DEC.values,radius=0.0004,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
-                    else:
-                         fg.show_circles(res.X_WORLD.values,res.Y_WORLD.values,0.0004,edgecolor='g',facecolor='none',linewidth=.5,alpha=.8)
-                    for i in range(len(ras)):
-                        fg.add_label(ras[i],decs[i]+0.00045,'%.2f +/- %.2f'%(mags[i],errs[i]),size=6,color='g')
-                    logger.info("Finished loading the %s band region!" %band)
+                    fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=14)
 
-                    try:
-                        for index,row in match.iterrows():
+                    # now add some region ellipses and axis_labels
+                    i = phot_res[phot_res['X_WORLD']==host['X_WORLD'].values[0]].index
+                    phot_res.drop(i,inplace=True)
+                    As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
+                    ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values
+                    mags,errs = phot_res.MAG_AUTO.values,phot_res.MAGERR_AUTO.values
+                    fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=2,alpha=.8)
+                    fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=3)
 
-                            if restype=='spec':
-                                fg.show_circles(row['RA'],row['DEC'],radius = 0.0004,edgecolor='r',facecolor='none',linewidth=.8)
-                                fg.add_label(row['RA'],row['DEC']+0.00045,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),size=6,color='r')
-                            else:
-                                fg.show_circles(row['X_WORLD'],row['Y_WORLD'],radius = 0.0004,edgecolor='b',facecolor='none',linewidth=.8)
-                                fg.add_label(row['X_WORLD'],row['Y_WORLD']+0.00045,'%.2f +/- %.2f'%(row['MAG_AUTO'],row['MAGERR_AUTO']),size=6,color='b')
-                    except:
+                    for obj in range(len(ras)):
+                        fg.add_label(ras[obj],decs[obj]+0.00045,'%.2f +/- %.2f'%(mags[obj],errs[obj]),
+                                     size=8,color='g',weight='bold')
 
-                            if restype=='spec':
-                                fg.show_circles(match['RA'],match['DEC'],radius = 0.0004,edgecolor='r',facecolor='none',linewidth=.8)
-                                fg.add_label(match['RA'],match['DEC']+0.00045,'%.2f +/- %.2f'%(match['MAG_AUTO_%s'%band],match['MAGERR_AUTO_%s'%band]),size=6,color='r')
-                            else:
-                                fg.show_circles(matches[counter]['X_WORLD'],matches[counter]['Y_WORLD'],radius = 0.0004,edgecolor='b',facecolor='none',linewidth=1.2)
-                                fg.add_label(matches[counter]['X_WORLD'],matches[counter]['Y_WORLD']+0.00045,'%.2f +/- %.2f'%(matches[counter]['MAG_AUTO'],matches[counter]['MAGERR_AUTO']),size=6,color='b')
-
+                    for spec in range(len(has_spec.X_WORLD.values)):
+                        row = has_spec.iloc[spec]
+                        if row['X_WORLD']!=host['X_WORLD'].values[0]:
+                            print (row['X_WORLD'],host['X_WORLD'].values[0])
+                            fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
+                                         'z = %.3g'%has_spec.z.values[0],size=8,color='b',weight='bold')
+                            fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                     size=8,color='b',weight='bold')
+                        else:
+                            fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
+                                         'z = %.3g'%has_spec.z.values[0],size=8,color='r',weight='bold')
+                            fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                     size=8,color='r',weight='bold')
                     if counter in [0,2]:
                         fg.tick_labels.show_y()
                     if counter in [2,3]:

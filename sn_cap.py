@@ -9,7 +9,7 @@ from time import gmtime, strftime
 #Note: import this first else it crashes importing sub-modules
 from des_stacks import des_stack as stack
 from des_stacks.analysis.astro import cap_phot_sn
-
+import os
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n','--sn_name',help='Full DES supernova ID, e.g. DES16C2nm (case sensitive)',default=None)
@@ -46,7 +46,15 @@ def cap(args,logger):
             except:
                 done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
         else:
-            done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
+        
+            try:
+                logger.info('Reading in results file to find out which ones I still need to do')
+                logger.info(os.path.join('/media/data3/wiseman/des/coadding/results/',args.savename))
+                done_sn = pd.read_csv(os.path.join('/media/data3/wiseman/des/coadding/results/',args.savename),index_col=0)
+                logger.info('Read in %s'%os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
+            except:
+                done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
+            
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
             logger.info("Done SN: %s"%done_sn.SN_NAME.unique())

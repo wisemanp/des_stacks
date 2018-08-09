@@ -9,6 +9,7 @@ import easyaccess as ea
 from time import gmtime, strftime
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+from astropy.table import Table
 import astropy.io.fits as fits
 import os
 import matplotlib
@@ -16,9 +17,11 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import _pickle as cpickle
 import math
+import glob 
+import seaborn as sns
 
-# Note: import this first else it crashes importing sub-modules
 
+sns.set_color_codes(palette='colorblind')
 
 plot_locs={
 'g':[0.18,0.53,0.40,0.43],
@@ -84,8 +87,10 @@ def main(args,logger):
             from des_stacks import des_stack as stack
             from des_stacks.analysis.astro import cap_phot_sn
             cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15)
+        if not os.path.isfile(sn_res_fn):
             os.rename(os.path.join('/media/data3/wiseman/des/coadding/results',
-            '%s.result'%sn),sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn))
+            '%s.result'%sn),os.path.join(sn_cap_dir,'%s.result'%sn))
+        sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn)
 
         sn_res = pd.read_csv(sn_res_fn,index_col=0)
         has_spec = sn_res.dropna(subset=['z'])
@@ -110,21 +115,23 @@ def main(args,logger):
             for counter,b in enumerate(bands):
 
 
-                img_fn = glob.glob(os.path.join(cap_chip_dir,'ccd_*%s*_sci.resamp.fits'%b)[0]
+                img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
 
                 if os.path.isfile(img_fn):
                     phot_fn  = glob.glob(os.path.join(sn_cap_dir,'*%s*.sexcat'%b))[0]
-                    phot_res = Table.read(phot_fn,index_col=0).to_pandas()
+                    phot_res = Table.read(phot_fn).to_pandas()
                     phot_res = phot_res[phot_res['X_WORLD']<sn_ra+(w)]
                     phot_res = phot_res[phot_res['X_WORLD']>sn_ra-(w)]
                     phot_res = phot_res[phot_res['Y_WORLD']<sn_dec+(w)]
                     phot_res = phot_res[phot_res['Y_WORLD']>sn_dec-(w)]
-                    zp = np.loadtxt(glob.glob(os.path.join(args.workdir,'MY%s'%y,f,b,str(ccd),'ana','*.qual'))[0],dtype=str)[0]
+                    globstr = os.path.join(args.workdir,'stacks','MY%s'%y,f,b,str(chip),'ana','*.qual')
+                    logger.info('Searching for zp file in %s'%globstr)
+                    zp = np.loadtxt(glob.glob(globstr)[0],dtype=str)[0]
                     phot_res['MAG_AUTO'] = phot_res['MAG_AUTO']+float(zp)
 
 
                     img = fits.open(img_fn)
-                    fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[band])
+                    fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[b])
                     try:
                         fg.recenter(sn_ra,sn_dec,w)
                     except:
@@ -139,22 +146,30 @@ def main(args,logger):
                     fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=14)
 
                     # now add some region ellipses and axis_labels
-                    i = phot_res[phot_res['X_WORLD']==host['X_WORLD'].values[0]].index
+                    i = phot_res[(phot_res['X_WORLD']<host['X_WORLD'].values[0]+0.0001)&(phot_res['X_WORLD']>host['X_WORLD'].values[0]-0.0001)].index
+                    logger.info(i)
                     phot_res.drop(i,inplace=True)
                     As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
                     ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values
                     mags,errs = phot_res.MAG_AUTO.values,phot_res.MAGERR_AUTO.values
-                    fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=2,alpha=.8)
-                    fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=3)
+                    fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
+                    fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=1)
 
                     for obj in range(len(ras)):
-                        fg.add_label(ras[obj],decs[obj]+0.00045,'%.2f +/- %.2f'%(mags[obj],errs[obj]),
+                        logger.info(sn_dec+w)
+                        if decs[obj]+0.00045 < sn_dec+w:
+                            logger.info(decs[obj]+0.00045)
+              
+                            logger.info(mags[obj])
+                            
+                            fg.add_label(ras[obj],decs[obj]+0.00045,'%.2f +/- %.2f'%(mags[obj],errs[obj]),
                                      size=8,color='g',weight='bold')
-
+                        else: 
+                            fg.add_label(ras[obj],decs[obj]-0.00045,'%.2f +/- %.2f'%(mags[obj],errs[obj]),
+                                     size=8,color='g',weight='bold')
                     for spec in range(len(has_spec.X_WORLD.values)):
                         row = has_spec.iloc[spec]
                         if row['X_WORLD']!=host['X_WORLD'].values[0]:
-                            print (row['X_WORLD'],host['X_WORLD'].values[0])
                             fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
                                          'z = %.3g'%has_spec.z.values[0],size=8,color='b',weight='bold')
                             fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
@@ -169,16 +184,16 @@ def main(args,logger):
                     if counter in [2,3]:
                         fg.tick_labels.show_x()
                 else:
-                    fg = aplpy.FITSFigure('/media/data3/wiseman/des/coadding/config/blank2.fits',figure=fig,subplot=plot_locs[band])
+                    fg = aplpy.FITSFigure('/media/data3/wiseman/des/coadding/config/blank2.fits',figure=fig,subplot=plot_locs[b])
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
-                    fg.add_label(0.5,0.5,'[Failed to load %s band image]'%band,relative=True,fontsize=12,color='black')
+                    fg.add_label(0.5,0.5,'[Failed to load %s band image]'%b,relative=True,fontsize=12,color='black')
                 if counter ==0:
                     fg.add_label(0.99,1.05,sn,relative=True,fontsize=14,color='black')
 
             plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)
             if args.path =='sn_dir':
-                savepath =os.path.join(sn_dir,'%s_stamp.pdf'%sn)
+                savepath =os.path.join(sn_cap_dir,'%s_stamp.pdf'%sn)
             else:
                 savepath =os.path.join(args.path,'%s_stamp.pdf'%sn)
 

@@ -404,12 +404,12 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         res_df[col] = ''
     if len(match)>0:
         nearby_grc,grc_coords = get_zs_box(sg,ra,dec,30)
-        
+
         gal_coords = SkyCoord(ra=res_df['X_WORLD'].values*u.deg,dec=res_df['Y_WORLD'].values*u.deg)
         logger.info('Attempting to add some redshift infomation')
 
         res_df = match_gals(grc_coords,gal_coords,nearby_grc,res_df)
-    
+
 
     all_sn_fn = os.path.join(sg.res_dir,savename)
     if os.path.isfile(all_sn_fn):
@@ -423,7 +423,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     logger.info("Done doing CAP for %s"%sn_name)
     return res_df
 
-def cap_phot_all(y,f,chip,wd='coadding'):
+def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     '''get aperture photometry for an entire chip'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -437,10 +437,13 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     logger.info("Entered 'cap_phot_all' to do common aperture photometry for MY%s, %s, chip %s"%(y,f,chip))
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
+    if autocuts:
+        cuts = [get_cuts(f,b) for b in bands]
+    else:
+        cuts = [{'teff': 0.15, 'psf':None},{'teff': 0.15,'psf':None},{'teff': 0.25,'psf':None},{'teff': 0.25,'psf':None}]
+    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
 
-    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd) for b in bands]
-
-    # if there is no white image, make ones
+    # if there is no white image, make one
     det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_white.fits'%(y,f,chip))
     if not os.path.isfile(det_name):
         logger.info("Couldn't find a detection image, so going to resample each band plus white to the same pixels")
@@ -449,17 +452,27 @@ def cap_phot_all(y,f,chip,wd='coadding'):
     logger.info("Going to cap_sex to do CAP on each band")
     sexcats =cap_sex_chip(sg,sr,si,sz,chip)
     # set up an empty results dataframe
-    res_df = pd.DataFrame(columns=['X_WORLD', 'Y_WORLD', 'BAND','MAG_AUTO', 'MAGERR_AUTO',
-     'MAG_APER', 'MAGERR_APER', 'FWHM_WORLD', 'ELONGATION', 'CLASS_STAR'])
+    rescols= ['X_WORLD', 'Y_WORLD','X_IMAGE','Y_IMAGE',
+               'A_IMAGE','B_IMAGE','THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE',
+                           'MAG_AUTO_g', 'MAGERR_AUTO_g','MAG_APER_g', 'MAGERR_APER_g',
+                           'MAG_AUTO_r', 'MAGERR_AUTO_r','MAG_APER_r', 'MAGERR_APER_r',
+                           'MAG_AUTO_i', 'MAGERR_AUTO_i','MAG_APER_i', 'MAGERR_APER_i',
+                           'MAG_AUTO_z', 'MAGERR_AUTO_z','MAG_APER_z', 'MAGERR_APER_z',
+                           'FWHM_WORLD_g','FWHM_WORLD_r','FWHM_WORLD_i','FWHM_WORLD_z',
+                           'ELONGATION',
+                           'KRON_RADIUS',
+                           'CLASS_STAR_g','CLASS_STAR_r','CLASS_STAR_i','CLASS_STAR_z',
+                           'LIMMAG_g','LIMMAG_r','LIMMAG_i','LIMMAG_z',
+                           'FLUX_RADIUS_g','FLUX_RADIUS_r','FLUX_RADIUS_i','FLUX_RADIUS_z']
+
+    res_df = pd.DataFrame(columns=rescols)
     this_chip_lims = get_chip_vals(sg.field,chip,vals = 'lims')
     chip_cent_ra = (this_chip_lims[0][0]+this_chip_lims[2][0])/2
     chip_cent_dec = (this_chip_lims[0][1]+this_chip_lims[1][1])/2
     chip_search_rad = np.abs(this_chip_lims[1][1]-this_chip_lims[0][1])
     z_gals = get_zs_box(sg,chip_cent_ra,chip_cent_dec,chip_search_rad)
     # find the galaxies that OzDES has redshifts for
-
-
-    phot_plus_spec = pd.DataFrame()
+    cats, limmags = {},{}
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
         capcat = Table.read(sexcats[s.band]).to_pandas()
@@ -473,87 +486,30 @@ def cap_phot_all(y,f,chip,wd='coadding'):
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
-        capcat.to_csv(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot_galcat.result'%(y,f,chip,s.band)))
-        catobjs = SkyCoord(ra = capcat['X_WORLD']*u.degree,dec = capcat['Y_WORLD']*u.degree)
-        # match the cap catalog with the ozdes one
-        idx,d2d,d3d = catobjs.match_to_catalog_sky(z_gals)
-        init_good_zgals = gals_with_z.iloc[idx]
-        good_match_inds = np.nonzero(d2d.arcsec < 2.0)[0]
-        logger.info("In %s band, I found %s galaxies which match to within 3 arcseconds"%(s.band,len(good_match_inds)))
-        good_phot_gals = capcat.iloc[good_match_inds]
-        init_good_spec_gals = init_good_zgals.iloc[good_match_inds]
-        good_spec_gals = init_good_spec_gals[~init_good_spec_gals.index.duplicated(keep='first')]
-        good_phot_gals = good_phot_gals[~init_good_spec_gals.index.duplicated(keep='first')]
-        # make region files for ds9
-        photreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_phot.reg'%(y,f,chip,s.band)),'w')
-        specreg = open(os.path.join(s.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_%s_spec.reg'%(y,f,chip,s.band)),'w')
-        for i in range(len(capcat['X_WORLD'].values)):
-            print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=photreg)
-
-        photreg.close()
-        print ('global color=red',file=specreg)
-        for i in range(len(gals_with_z['RA'].values)):
-            print ('fk5; circle(%s,%s,1") # text={z = %.3f}'%(gals_with_z['RA'].iloc[i],gals_with_z['DEC'].iloc[i],gals_with_z['z'].iloc[i]),file=specreg)
-        specreg.close()
-        #write the phot and spec properties to a file
-        if s.band == 'g' and chip == 1:
-            phot_plus_spec =good_spec_gals
-
-        '''elif len(phot_plus_spec) < len(good_phot_gals):
-
-            logger.debug('New good_phot_gals is longer than old phot_plus_spec')
-            duplicated = good_phot_gals[good_phot_gals.index.duplicated()]
-            logger.debug(duplicated)
-            good_phot_gals = good_phot_gals[~good_phot_gals.index.duplicated(keep='first')]
-            logger.debug('It was duplicated, now it is the right length?')
-            logger.debug(len(phot_plus_spec))
-            logger.debug(len(good_phot_gals))'''
-        if len(phot_plus_spec) < len(good_phot_gals):
-
-            previous_phot_plus_spec = phot_plus_spec
-            phot_plus_spec = good_spec_gals
-
-            #find the already done columns
-            done_cols =previous_phot_plus_spec.columns
-            done_bands = []
-            for col in done_cols:
-                if 'MAG' in col:
-                    done_bands.append(col)
-
-            with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
+        cats[s.band] = capcat
+        with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(8)]
-            limmag = header[-1].split(' ')[-1].strip('\n')
-            for col in done_bands:
+        limmag = header[-1].split(' ')[-1].strip('\n')
+        limmags[s.band] = limmag
+
+    main_cat_df = cats['g']
+    for counter, b in enumerate(bands[:3]):
+        main_cat_df = main_cat_df.merge(cats[bands[counter+1]],left_index=True,right_index=True,how='outer',on=['X_WORLD','Y_WORLD','KRON_RADIUS','ELONGATION'],suffixes=('_%s'%b,'_%s'%bands[counter+1]))
+    for b in bands:
+        main_cat_df['MAG_AUTO_%s'%s.band].fillna(limmags[b])
+
+    catobjs = SkyCoord(ra = test_df['X_WORLD']*u.degree,dec = test_df['Y_WORLD']*u.degree)
+    # match the cap catalog with the ozdes one
+    idx,d2d,d3d = catobjs.match_to_catalog_sky(gals_with_z_coords)
+    init_good_zgals = gals_with_z.iloc[idx]
+    good_match_inds = np.nonzero(d2d.arcsec < 2.0)[0]
+    init_good_spec_gals = init_good_zgals.iloc[good_match_inds]
+    test_df[['z','z_Err','flag','source']] = pd.DataFrame(init_good_zgals[['z','z_Err','flag','source']].iloc[good_match_inds].values, index=good_phot_gals.index)
+    test_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
 
 
-                phot_plus_spec[col]=limmag
-                try:
-                    phot_plus_spec.loc[previous_phot_plus_spec.index,col]=previous_phot_plus_spec[col]
-                except KeyError:
-                    overlap_inds = []
-                    for ind in previous_phot_plus_spec.index:
-                        if ind in phot_plus_spec.index:
-                            overlap_inds.append(ind)
-                    phot_plus_spec.loc[overlap_inds,col]=previous_phot_plus_spec.loc[overlap_inds,col]
-        if len(phot_plus_spec) > len(good_phot_gals):
-            try:
-                phot_plus_spec.loc[good_spec_gals.index,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[good_spec_gals.index,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
-            except:
 
-                for ind in good_spec_gals.index:
-
-                    try:
-                       phot_plus_spec.loc[ind,'MAG_AUTO_%s'%s.band],phot_plus_spec.loc[ind,'MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
-                    except:
-                       logger.warning("Failed in the %s band at index %s"%(s.band,ind))
-
-        else:
-
-            phot_plus_spec['MAG_AUTO_%s'%s.band],phot_plus_spec['MAGERR_AUTO_%s'%s.band] = good_phot_gals['MAG_AUTO'].values,good_phot_gals['MAGERR_AUTO'].values
-
-
-    phot_plus_spec.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'spec_phot_galcat_%s_%s_%s.result'%(sg.my,sg.field,chip)))
-    return phot_plus_spec
+    return test_df
 
 
 
@@ -646,15 +602,15 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
 
     inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord)
     init_matches = cat.iloc[inds]
-    
+
     close_match_inds = d2d< dist_thresh*u.arcsec
     stack_gals_with_z = gals.iloc[close_match_inds]
- 
+
     stack_gal_zs = init_matches[close_match_inds]
     logger.info('Matched %s galaxies with redshifts'%len(stack_gals_with_z))
 
     stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
-    
+
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
-    
+
     return gals

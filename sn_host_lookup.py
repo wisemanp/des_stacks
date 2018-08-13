@@ -17,7 +17,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import _pickle as cpickle
 import math
-import glob 
+import glob
 import seaborn as sns
 
 
@@ -151,8 +151,12 @@ def main(args,logger):
                         phot_res.drop(i,inplace=True)
                     except:
                         pass
-                    
-                    
+                    try:
+                        j = phot_res[(phot_res['X_WORLD']<has_spec['X_WORLD'].values[0]+0.0001)&(phot_res['X_WORLD']>has_spec['X_WORLD'].values[0]-0.0001)].index
+                        phot_res.drop(j,inplace=True)
+                    except:
+                        pass
+
                     As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
                     ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values
                     mags,errs = phot_res.MAG_AUTO.values,phot_res.MAGERR_AUTO.values
@@ -167,13 +171,13 @@ def main(args,logger):
                             fg.add_label(host.X_WORLD.values[0],host.Y_WORLD.values[0]+0.00045,'%.2f +/- %.2f'%(host['MAG_AUTO_%s'%b].values[0],host['MAGERR_AUTO_%s'%b].values[0]),
                                      size=8,color='b',weight='bold')
                     for obj in range(len(ras)):
-                        
+
                         if decs[obj]+0.00045 < sn_dec+w:
-                            
-                            
+
+
                             fg.add_label(ras[obj],decs[obj]+0.00045,'%.2f +/- %.2f'%(mags[obj],errs[obj]),
                                      size=8,color='g',weight='bold')
-                        else: 
+                        else:
                             fg.add_label(ras[obj],decs[obj]-0.00045,'%.2f +/- %.2f'%(mags[obj],errs[obj]),
                                      size=8,color='g',weight='bold')
                     for spec in range(len(has_spec.X_WORLD.values)):
@@ -189,7 +193,7 @@ def main(args,logger):
                                          'z = %.3g'%has_spec.z.values[0],size=8,color='r',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='r',weight='bold')
-                        else: 
+                        else:
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
                                          'z = %.3g'%has_spec.z.values[0],size=8,color='b',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),

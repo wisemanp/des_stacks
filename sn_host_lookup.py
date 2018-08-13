@@ -86,7 +86,7 @@ def main(args,logger):
         if not os.path.isfile(sn_res_fn):
             from des_stacks import des_stack as stack
             from des_stacks.analysis.astro import cap_phot_sn
-            cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15)
+            cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=True)
         if not os.path.isfile(sn_res_fn):
             os.rename(os.path.join('/media/data3/wiseman/des/coadding/results',
             '%s.result'%sn),os.path.join(sn_cap_dir,'%s.result'%sn))
@@ -137,30 +137,39 @@ def main(args,logger):
                     except:
                         logger.info('Could not recenter to outside the frame')
 
-                    fg.show_lines([ver_line,hor_line],color='r',linewidth=.5)
+                    fg.show_lines([ver_line,hor_line],color='r',linewidth=.8)
                     fg.show_grayscale(vmin=-0.8,vmax=15.)
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
                     fg.set_theme('publication')
                     fg.ticks.set_length(-3)
-                    fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=14)
+                    fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=14,weight='bold')
 
                     # now add some region ellipses and axis_labels
-                    i = phot_res[(phot_res['X_WORLD']<host['X_WORLD'].values[0]+0.0001)&(phot_res['X_WORLD']>host['X_WORLD'].values[0]-0.0001)].index
-                    logger.info(i)
-                    phot_res.drop(i,inplace=True)
+                    try:
+                        i = phot_res[(phot_res['X_WORLD']<host['X_WORLD'].values[0]+0.0001)&(phot_res['X_WORLD']>host['X_WORLD'].values[0]-0.0001)].index
+                        phot_res.drop(i,inplace=True)
+                    except:
+                        pass
+                    
+                    
                     As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
                     ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values
                     mags,errs = phot_res.MAG_AUTO.values,phot_res.MAGERR_AUTO.values
                     fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
-                    fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=1)
-
+                    if len(host)>0:
+                        if not math.isnan(host['z'].values[0]):
+                            fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,
+4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=1)
+                        else:
+                            fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,
+4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
+                            fg.add_label(host.X_WORLD.values[0],host.Y_WORLD.values[0]+0.00045,'%.2f +/- %.2f'%(host['MAG_AUTO_%s'%b].values[0],host['MAGERR_AUTO_%s'%b].values[0]),
+                                     size=8,color='b',weight='bold')
                     for obj in range(len(ras)):
-                        logger.info(sn_dec+w)
+                        
                         if decs[obj]+0.00045 < sn_dec+w:
-                            logger.info(decs[obj]+0.00045)
-              
-                            logger.info(mags[obj])
+                            
                             
                             fg.add_label(ras[obj],decs[obj]+0.00045,'%.2f +/- %.2f'%(mags[obj],errs[obj]),
                                      size=8,color='g',weight='bold')
@@ -169,16 +178,22 @@ def main(args,logger):
                                      size=8,color='g',weight='bold')
                     for spec in range(len(has_spec.X_WORLD.values)):
                         row = has_spec.iloc[spec]
-                        if row['X_WORLD']!=host['X_WORLD'].values[0]:
-                            fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
+                        if len(host)>0:
+                            if row['X_WORLD']!=host['X_WORLD'].values[0]:
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
                                          'z = %.3g'%has_spec.z.values[0],size=8,color='b',weight='bold')
-                            fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='b',weight='bold')
-                        else:
-                            fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
+                            else:
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
                                          'z = %.3g'%has_spec.z.values[0],size=8,color='r',weight='bold')
-                            fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='r',weight='bold')
+                        else: 
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
+                                         'z = %.3g'%has_spec.z.values[0],size=8,color='b',weight='bold')
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                     size=8,color='b',weight='bold')
                     if counter in [0,2]:
                         fg.tick_labels.show_y()
                     if counter in [2,3]:

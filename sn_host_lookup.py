@@ -189,8 +189,8 @@ def main(args,logger):
                                          'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='b',weight='bold')
-                                fg.show_ellipses(row.X_WORLD.values,row.Y_WORLD.values,4*row.A_IMAGE.values*pix_arcsec/3600,
-         4*row.B_IMAGE.values*pix_arcsec/3600,row.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
+                                fg.show_ellipses(row.X_WORLD,row.Y_WORLD,4*row.A_IMAGE*pix_arcsec/3600,
+         4*row.B_IMAGE*pix_arcsec/3600,row.THETA_IMAGE,edgecolor='b',facecolor='none',linewidth=1)
                             else:
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
                                          'z = %.3g'%has_spec.z.values[spec],size=7,color='r',weight='bold')

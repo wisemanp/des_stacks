@@ -147,12 +147,12 @@ def main(args,logger):
 
                     # now add some region ellipses and axis_labels
                     try:
-                        i = phot_res[(phot_res['X_WORLD']<host['X_WORLD'].values[0]+0.0001)&(phot_res['X_WORLD']>host['X_WORLD'].values[0]-0.0001)].index
+                        i = phot_res[(phot_res['X_WORLD']<host['X_WORLD'].values[0]+0.00001)&(phot_res['X_WORLD']>host['X_WORLD'].values[0]-0.00001)].index
                         phot_res.drop(i,inplace=True)
                     except:
                         pass
                     try:
-                        j = phot_res[(phot_res['X_WORLD']<has_spec['X_WORLD'].values[0]+0.0001)&(phot_res['X_WORLD']>has_spec['X_WORLD'].values[0]-0.0001)].index
+                        j = phot_res[(phot_res['X_WORLD']<has_spec['X_WORLD'].values[0]+0.00001)&(phot_res['X_WORLD']>has_spec['X_WORLD'].values[0]-0.00001)].index
                         phot_res.drop(j,inplace=True)
                     except:
                         pass
@@ -170,6 +170,9 @@ def main(args,logger):
 4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
                             fg.add_label(host.X_WORLD.values[0],host.Y_WORLD.values[0]+0.00045,'%.2f +/- %.2f'%(host['MAG_AUTO_%s'%b].values[0],host['MAGERR_AUTO_%s'%b].values[0]),
                                      size=8,color='b',weight='bold')
+                    if len(has_spec)>0:
+                        fg.show_ellipses(has_spec.X_WORLD.values,has_spec.Y_WORLD.values,4*has_spec.A_IMAGE.values*pix_arcsec/3600,
+4*has_spec.B_IMAGE.values*pix_arcsec/3600,has_spec.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
                     for obj in range(len(ras)):
 
                         if decs[obj]+0.00045 < sn_dec+w:

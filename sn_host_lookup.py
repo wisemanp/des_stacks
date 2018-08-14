@@ -170,9 +170,7 @@ def main(args,logger):
 4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
                             fg.add_label(host.X_WORLD.values[0],host.Y_WORLD.values[0]+0.00045,'%.2f +/- %.2f'%(host['MAG_AUTO_%s'%b].values[0],host['MAGERR_AUTO_%s'%b].values[0]),
                                      size=8,color='b',weight='bold')
-                    if len(has_spec)>0:
-                        fg.show_ellipses(has_spec.X_WORLD.values,has_spec.Y_WORLD.values,4*has_spec.A_IMAGE.values*pix_arcsec/3600,
-4*has_spec.B_IMAGE.values*pix_arcsec/3600,has_spec.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
+                    
                     for obj in range(len(ras)):
 
                         if decs[obj]+0.00045 < sn_dec+w:
@@ -187,17 +185,17 @@ def main(args,logger):
                         row = has_spec.iloc[spec]
                         if len(host)>0:
                             if row['X_WORLD']!=host['X_WORLD'].values[0]:
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
                                          'z = %.3g'%has_spec.z.values[spec],size=8,color='b',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='b',weight='bold')
                             else:
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
                                          'z = %.3g'%has_spec.z.values[spec],size=8,color='r',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='r',weight='bold')
                         else:
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
+                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
                                          'z = %.3g'%has_spec.z.values[spec],size=8,color='b',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='b',weight='bold')

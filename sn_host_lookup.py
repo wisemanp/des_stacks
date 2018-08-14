@@ -188,17 +188,17 @@ def main(args,logger):
                         if len(host)>0:
                             if row['X_WORLD']!=host['X_WORLD'].values[0]:
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
-                                         'z = %.3g'%has_spec.z.values[0],size=8,color='b',weight='bold')
+                                         'z = %.3g'%has_spec.z.values[spec],size=8,color='b',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='b',weight='bold')
                             else:
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
-                                         'z = %.3g'%has_spec.z.values[0],size=8,color='r',weight='bold')
+                                         'z = %.3g'%has_spec.z.values[spec],size=8,color='r',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='r',weight='bold')
                         else:
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.0009,
-                                         'z = %.3g'%has_spec.z.values[0],size=8,color='b',weight='bold')
+                                         'z = %.3g'%has_spec.z.values[spec],size=8,color='b',weight='bold')
                                 fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                      size=8,color='b',weight='bold')
                     if counter in [0,2]:

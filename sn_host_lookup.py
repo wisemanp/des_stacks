@@ -157,56 +157,59 @@ def main(args,logger):
                     except:
                         pass
 
-                    As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
-                    ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values
-                    mags,errs = phot_res.MAG_AUTO.values,phot_res.MAGERR_AUTO.values
-                    
-                    fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
-                    if len(host)>0:
-                        if not math.isnan(host['z'].values[0]):
-                            fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,
-4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=1)
-                        else:
-                            fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,
-4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
-                            fg.add_label(host.X_WORLD.values[0],host.Y_WORLD.values[0]+0.00045,'%.3f +/- %.3f'%(host['MAG_AUTO_%s'%b].values[0],host['MAGERR_AUTO_%s'%b].values[0]),
-                                     size=8,color='b',weight='bold')
+                    try:
+                        As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
+                        ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values
+                        mags,errs = phot_res.MAG_AUTO.values,phot_res.MAGERR_AUTO.values
 
-                    for obj in range(len(ras)):
-
-                        if decs[obj]+0.00045 < sn_dec+w:
-
-
-                            fg.add_label(ras[obj],decs[obj]+0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
-                                     size=7,color='g',weight='bold')
-                        else:
-                            fg.add_label(ras[obj],decs[obj]-0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
-                                     size=7,color='g',weight='bold')
-                    for spec in range(len(has_spec.X_WORLD.values)):
-                        row = has_spec.iloc[spec]
+                        fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
                         if len(host)>0:
-                            if row['X_WORLD']!=host['X_WORLD'].values[0]:
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
-                                         'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
-                                     size=8,color='b',weight='bold')
-                                fg.show_ellipses(row.X_WORLD,row.Y_WORLD,4*row.A_IMAGE*pix_arcsec/3600,
-         4*row.B_IMAGE*pix_arcsec/3600,row.THETA_IMAGE,edgecolor='b',facecolor='none',linewidth=1)
+                            if not math.isnan(host['z'].values[0]):
+                                fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,
+    4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=1)
                             else:
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
-                                         'z = %.3g'%has_spec.z.values[spec],size=7,color='r',weight='bold')
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
-                                     size=8,color='r',weight='bold')
+                                fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,
+    4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
+                                fg.add_label(host.X_WORLD.values[0],host.Y_WORLD.values[0]+0.00045,'%.3f +/- %.3f'%(host['MAG_AUTO_%s'%b].values[0],host['MAGERR_AUTO_%s'%b].values[0]),
+                                         size=8,color='b',weight='bold')
 
-                        else:
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
-                                         'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
-                                fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
-                                     size=8,color='b',weight='bold')
-                    if counter in [0,2]:
-                        fg.tick_labels.show_y()
-                    if counter in [2,3]:
-                        fg.tick_labels.show_x()
+                        for obj in range(len(ras)):
+
+                            if decs[obj]+0.00045 < sn_dec+w:
+
+
+                                fg.add_label(ras[obj],decs[obj]+0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
+                                         size=7,color='g',weight='bold')
+                            else:
+                                fg.add_label(ras[obj],decs[obj]-0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
+                                         size=7,color='g',weight='bold')
+                        for spec in range(len(has_spec.X_WORLD.values)):
+                            row = has_spec.iloc[spec]
+                            if len(host)>0:
+                                if row['X_WORLD']!=host['X_WORLD'].values[0]:
+                                    fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
+                                             'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
+                                    fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                         size=8,color='b',weight='bold')
+                                    fg.show_ellipses(row.X_WORLD,row.Y_WORLD,4*row.A_IMAGE*pix_arcsec/3600,
+             4*row.B_IMAGE*pix_arcsec/3600,row.THETA_IMAGE,edgecolor='b',facecolor='none',linewidth=1)
+                                else:
+                                    fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
+                                             'z = %.3g'%has_spec.z.values[spec],size=7,color='r',weight='bold')
+                                    fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                         size=8,color='r',weight='bold')
+
+                            else:
+                                    fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
+                                             'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
+                                    fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                         size=8,color='b',weight='bold')
+                        if counter in [0,2]:
+                            fg.tick_labels.show_y()
+                        if counter in [2,3]:
+                            fg.tick_labels.show_x()
+                    except:
+                        pass
                 else:
                     fg = aplpy.FITSFigure('/media/data3/wiseman/des/coadding/config/blank2.fits',figure=fig,subplot=plot_locs[b])
                     fg.axis_labels.hide()

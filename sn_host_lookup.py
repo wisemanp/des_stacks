@@ -160,6 +160,7 @@ def main(args,logger):
                     As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
                     ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values
                     mags,errs = phot_res.MAG_AUTO.values,phot_res.MAGERR_AUTO.values
+                    
                     fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
                     if len(host)>0:
                         if not math.isnan(host['z'].values[0]):

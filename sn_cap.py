@@ -58,7 +58,6 @@ def cap(args,logger):
 
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
-            logger.info("Done SN: %s"%done_sn.SN_NAME.unique())
             logger.info(sn_name)
             if sn_name not in done_sn.SN_NAME.unique():
                 if sn_name not in avoid_list:
@@ -84,4 +83,3 @@ if __name__ == "__main__":
     logger.info("***********************************")
     args = parser()
     cap(args,logger)
-

@@ -258,8 +258,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     bands = ['g','r','i','z']
 
     ra,dec,f,y,chip = get_sn_dat(sn_name)
-    if y == 5:
-        y = 'none'
+    
     logger.info("Found transient in the database SNCAND")
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band

@@ -80,7 +80,7 @@ def main(args,logger):
         logger.info("Season: %s"%y)
         logger.info("Field:  %s"%f)
         logger.info("CCD:    %s"%chip)
-        sn_cap_dir = os.path.join(args.workdir,'stacks','CAP',sn)
+        sn_cap_dir = os.path.join(args.workdir,'5yr_stacks','CAP',sn)
         if not os.path.isdir(sn_cap_dir):
             os.mkdir(sn_cap_dir)
         sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn)

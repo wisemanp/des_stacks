@@ -125,7 +125,7 @@ def main(args,logger):
                     phot_res = phot_res[phot_res['X_WORLD']>sn_ra-(w)]
                     phot_res = phot_res[phot_res['Y_WORLD']<sn_dec+(w)]
                     phot_res = phot_res[phot_res['Y_WORLD']>sn_dec-(w)]
-                    globstr = os.path.join(args.workdir,'stacks','MY%s'%y,f,b,str(chip),'ana','*.qual')
+                    globstr = os.path.join(args.workdir,'5yr_stacks','MY%s'%y,f,b,str(chip),'ana','*.qual')
                     logger.info('Searching for zp file in %s'%globstr)
                     zp = np.loadtxt(glob.glob(globstr)[0],dtype=str)[0]
                     phot_res['MAG_AUTO'] = phot_res['MAG_AUTO']+float(zp)

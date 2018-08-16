@@ -1,3 +1,4 @@
+#!/home/wiseman/anaconda3/bin/python
 import os
 import glob
 import astropy.io.fits as fits

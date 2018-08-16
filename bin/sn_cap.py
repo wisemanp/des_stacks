@@ -1,3 +1,4 @@
+#!/home/wiseman/anaconda3/bin/python
 # -*- coding: utf-8 -*-
 '''Wrapper to do common aperture photometry on DES SN hosts'''
 # exectuable to run through the entire stack process

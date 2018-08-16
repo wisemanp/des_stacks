@@ -1,3 +1,4 @@
+#!/home/wiseman/anaconda3/bin/python
 # -*- coding: utf-8 -*-
 '''Script to find the photometry for a certain supernova'''
 # exectuable to run through the entire stack process

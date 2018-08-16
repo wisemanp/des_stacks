@@ -1,3 +1,4 @@
+#!/home/wiseman/anaconda3/bin/python
 outdir = '/media/data3/wiseman/des/coadding/stacks/'
 years = ['1','2','3','4','none']
 fields = ['E1','E2','S1','S2','C1','C2','C3','X1','X2','X3']

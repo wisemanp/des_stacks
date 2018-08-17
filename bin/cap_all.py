@@ -32,9 +32,9 @@ def main(args):
                     capdir = '/media/data3/wiseman/des/coadding/stacks/MY%s/%s/CAP/%s'%(my,f,ch)
                     done_phot = os.path.isfile(os.path.join(capdir,'spec_phot_galcat_%s_%s_%s.result'%(my,f,ch)))
                     if not args.skipdone:
-                        cap_phot_all(my,f,ch)
+                        cap_phot_all(my,f,ch,autocuts=True)
                     elif not done_phot:
-                        cap_phot_all(my,f,ch)
+                        cap_phot_all(my,f,ch,autocuts=True)
 
 if __name__=="__main__":
     args=parser()

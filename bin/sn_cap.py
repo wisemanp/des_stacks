@@ -32,10 +32,10 @@ def cap(args,logger):
     if args.sn_name:
         logger.info('Have been given a name, doing CAP for just %s'%args.sn_name)
         if not args.savename:
-            cap_phot_sn(args.sn_name,args.workdir,dist_thresh = args.threshold)
+            cap_phot_sn(args.sn_name,args.workdir,dist_thresh = args.threshold,autocuts=True)
         else:
             logger.info('Been given a savename, so doing cap now and saving it to that')
-            cap_phot_sn(args.sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
+            cap_phot_sn(args.sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
         sn_list = np.loadtxt(args.namelist,dtype='str')
@@ -62,13 +62,13 @@ def cap(args,logger):
             logger.info(sn_name)
             if sn_name not in done_sn.SN_NAME.unique():
                 if sn_name not in avoid_list:
-                    cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
+                    cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:
-                        cap_phot_sn(sn_name,args.workdir,dist_thresh = args.threshold)
+                        cap_phot_sn(sn_name,args.workdir,dist_thresh = args.threshold,autocuts=True)
                     else:
-                        cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold)
+                        cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
 if __name__ == "__main__":

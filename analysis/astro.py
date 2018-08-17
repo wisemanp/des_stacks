@@ -469,11 +469,12 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     chip_cent_ra = (this_chip_lims[0][0]+this_chip_lims[2][0])/2
     chip_cent_dec = (this_chip_lims[0][1]+this_chip_lims[1][1])/2
     chip_search_rad = np.abs(this_chip_lims[1][1]-this_chip_lims[0][1])
-    z_gals = get_zs_box(sg,chip_cent_ra,chip_cent_dec,chip_search_rad)
+    gals_with_z,gals_with_z_coords = get_zs_box(sg,chip_cent_ra,chip_cent_dec,chip_search_rad)
     # find the galaxies that OzDES has redshifts for
     cats, limmags = {},{}
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
+        logger.info('Loading in sexcat with name: %s',sexcats[s.band])
         capcat = Table.read(sexcats[s.band]).to_pandas()
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         zp = float(quals[0])
@@ -497,18 +498,15 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     for b in bands:
         main_cat_df['MAG_AUTO_%s'%s.band].fillna(limmags[b])
 
-    catobjs = SkyCoord(ra = test_df['X_WORLD']*u.degree,dec = test_df['Y_WORLD']*u.degree)
+    catobjs = SkyCoord(ra = main_cat_df['X_WORLD']*u.degree,dec = main_cat_df['Y_WORLD']*u.degree)
     # match the cap catalog with the ozdes one
-    idx,d2d,d3d = catobjs.match_to_catalog_sky(gals_with_z_coords)
-    init_good_zgals = gals_with_z.iloc[idx]
-    good_match_inds = np.nonzero(d2d.arcsec < 2.0)[0]
-    init_good_spec_gals = init_good_zgals.iloc[good_match_inds]
-    test_df[['z','z_Err','flag','source']] = pd.DataFrame(init_good_zgals[['z','z_Err','flag','source']].iloc[good_match_inds].values, index=good_phot_gals.index)
-    test_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
+    matched_cat_df = match_gals(gals_with_z_coords,cat_objs,gals_with_z,main_cat_df,dist_thresh=1.5)
+
+    matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
 
 
 
-    return test_df
+    return matched_cat_df
 
 
 

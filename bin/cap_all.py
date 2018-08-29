@@ -29,8 +29,8 @@ def main(args):
                         if category in [i for i in args.avoid.split(',')]:
                             n_bad+=1
                 if n_bad<2:
-                    capdir = '/media/data3/wiseman/des/coadding/stacks/MY%s/%s/CAP/%s'%(my,f,ch)
-                    done_phot = os.path.isfile(os.path.join(capdir,'spec_phot_galcat_%s_%s_%s.result'%(my,f,ch)))
+                    capdir = '/media/data3/wiseman/des/coadding/5yr_stacks/MY%s/%s/CAP/%s'%(my,f,ch)
+                    done_phot = os.path.isfile(os.path.join(capdir,'%s_%s_%s_obj_deep.cat'%(my,f,ch)))
                     if not args.skipdone:
                         cap_phot_all(my,f,ch,autocuts=True)
                     elif not done_phot:

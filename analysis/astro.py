@@ -500,7 +500,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
 
     catobjs = SkyCoord(ra = main_cat_df['X_WORLD']*u.degree,dec = main_cat_df['Y_WORLD']*u.degree)
     # match the cap catalog with the ozdes one
-    matched_cat_df = match_gals(gals_with_z_coords,cat_objs,gals_with_z,main_cat_df,dist_thresh=1.5)
+    matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)
 
     matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
 

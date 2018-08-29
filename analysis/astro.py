@@ -258,7 +258,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     bands = ['g','r','i','z']
 
     ra,dec,f,y,chip = get_sn_dat(sn_name)
-    
+
     logger.info("Found transient in the database SNCAND")
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band
@@ -494,7 +494,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
 
     main_cat_df = cats['g']
     for counter, b in enumerate(bands[:3]):
-        main_cat_df = main_cat_df.merge(cats[bands[counter+1]],left_index=True,right_index=True,how='outer',on=['X_WORLD','Y_WORLD','KRON_RADIUS','ELONGATION'],suffixes=('_%s'%b,'_%s'%bands[counter+1]))
+        main_cat_df = main_cat_df.merge(cats[bands[counter+1]],left_index=True,right_index=True,how='outer',on=['X_WORLD','Y_WORLD','KRON_RADIUS','ELONGATION','A_IMAGE','B_IMAGE','THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE'],suffixes=('_%s'%b,'_%s'%bands[counter+1]))
     for b in bands:
         main_cat_df['MAG_AUTO_%s'%s.band].fillna(limmags[b])
 

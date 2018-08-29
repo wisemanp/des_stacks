@@ -335,28 +335,23 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
 
             init_lim_array = np.array([sn_name,ra,dec,limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
-            init_lim_cols = ['SN_NAME','X_WORLD', 'Y_WORLD',
-                   'MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
-                   'FWHM_WORLD_%s'%s.band,
-                   'ELONGATION_%s'%s.band,
-                   'KRON_RADIUS_%s'%s.band,
-                   'CLASS_STAR_%s'%s.band,
-                   'LIMMAG_%s'%s.band,
-                   'FLUX_RADIUS_%s'%s.band,
-                   'DLR_%s'%s.band]
+            init_lim_cols = [
+            'MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,
+            'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
+            'CLASS_STAR_%s'%s.band,
+            'LIMMAG_%s'%s.band,
+            ]
             if s.band =='g':
                 res_df=pd.DataFrame([init_lim_array],
                 columns=init_lim_cols)
             else:
 
-                lim_cols = ['MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
-                   'FWHM_WORLD_%s'%s.band,
-                   'ELONGATION_%s'%s.band,
-                   'KRON_RADIUS_%s'%s.band,
-                   'CLASS_STAR_%s'%s.band,
-                   'LIMMAG_%s'%s.band,
-                   'FLUX_RADIUS_%s'%s.band,
-                   'DLR_%s'%s.band]
+                lim_cols = [
+                'MAG_AUTO_%s'%s.band, 'MAGERR_AUTO_%s'%s.band,
+                'MAG_APER_%s'%s.band, 'MAGERR_APER_%s'%s.band,
+                'CLASS_STAR_%s'%s.band,
+                'LIMMAG_%s'%s.band,
+                ]
                 lim_array = np.array([limmag,-1,limmag,-1,-1,-1,-1,-1,limmag,-1,-1])
                 for counter,c in enumerate(lim_cols):
                     res_df[c] = ''
@@ -508,7 +503,123 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
 
     return matched_cat_df
 
+def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
+    '''get aperture photometry for a single sn host'''
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    '''if zp_cut>0:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:'''
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
+    logger.info("Entered 'cap_phot.py' to do common aperture photometry for the host of %s"%sn_name)
+    logger.info("Will search a radius of %s arcseconds around the SN location"%dist_thresh)
+    # first let's get to the right directory and set up a stack class object for each band_dir
+    bands = ['g','r','i','z']
+
+    ra,dec,f,y,chip = get_sn_dat(sn_name)
+    my = 'MY'+str(y)
+    logger.info("Found transient in the database SNCAND")
+    logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
+    # Make a Stack instance for each band
+    logger.info("Setting up Stack instances for each band")
+    '''if autocuts:
+        cuts = [get_cuts(f,b) for b in bands]
+    else:
+        cuts = [{'teff': 0.15, 'psf':None},{'teff': 0.15,'psf':None},{'teff': 0.25,'psf':None},{'teff': 0.25,'psf':None}]
+    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
+    '''
+    capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
+                             f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(y,f,chip))
+    capres = pd.read_csv(capres_fn,index_col = 0)
+    search_rad = dist_thresh
+    capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
+
+    cols = capres.columns.tolist() + [
+        'SN_NAME',
+         'LIMMAG_g',
+         'LIMMAG_r',
+         'LIMMAG_i',
+         'LIMMAG_z',
+         'DLR',
+         'DLR_RANK',
+         'ANGSEP'
+    ]
+    res_df = pd.DataFrame(columns=cols)
+
+
+
+    sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
+    catalog = SkyCoord(ra = capres.X_WORLD*u.deg,dec = capres.Y_WORLD*u.deg)
+    d2d= sncoord.separation(catalog)
+    close_inds = d2d <dist_thresh*u.arcsec
+    dists = d2d[close_inds]
+    match = capres.iloc[close_inds]
+    angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
+
+    limmags = {}
+    for b in bands:
+        with open(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/',my,f,b,str(chip),'ana',
+            '%s_%s_%s_%s_init.result'%(y,f,b,chip)),'r') as resheader:
+            header = [next(resheader) for x in range(8)]
+        limmags[b] = header[-1].split(' ')[-1].strip('\n')
+    logger.info("Found %s galaxies within %s arcseconds"%(len(match),dist_thresh))
+    if len(match)==0:
+
+        logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limit of %s in %s band"%(limmag,s.band))
+
+        init_lim_array = np.array([sn_name,ra,dec,limmag,limmag,limmag,limmag])
+        init_lim_cols = [
+                'SN_NAME','X_WORLD','Y_WORLD'
+                'LIMMAG_g',
+                'LIMMAG_r',
+                'LIMMAG_i',
+                'LIMMAG_z',
+                ]
+
+        res_df=pd.DataFrame([init_lim_array],
+        columns=init_lim_cols)
+
+    else:
+
+
+        res_df = res_df.append(match)
+        res_df['SN_NAME']=sn_name
+        dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
+
+        res_df['ANGSEP'] = angsep
+
+        res_df['DLR'] = np.array(dlr)
+        rank = res_df['DLR'].rank().astype(int)
+
+        for counter, r in enumerate(res_df['DLR'].values):
+            if r >4:
+                rank.iloc[counter]*=-1
+        res_df['DLR_RANK']=rank
+
+        for b in bands:
+            res_df['LIMMAG_%s'%b]= limmags[b]
+
+        res_df = res_df[res_df['DLR']<30]
+        # make region files for ds9
+
+    all_sn_fn = os.path.join('/media/data3/wiseman/des/coadding/results/',savename)
+    if os.path.isfile(all_sn_fn):
+        all_sn = pd.read_csv(all_sn_fn,index_col=0)
+    else:
+        all_sn = pd.DataFrame(columns = cols)
+    all_sn = all_sn.append(res_df.reset_index(drop=True)).reset_index(drop=True)
+    print ('Saving result to %s'%all_sn_fn)
+    all_sn.to_csv(all_sn_fn)
+
+    logger.info("Done doing CAP for %s"%sn_name)
+    return res_df
 
 def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
     # inputs are arrays

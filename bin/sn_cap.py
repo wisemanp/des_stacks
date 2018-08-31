@@ -62,6 +62,7 @@ def cap(args,logger):
             logger.info(sn_name)
 
             if sn_name not in done_sn.SN_NAME.unique():
+                logger.info('Got this far')
                 if sn_name not in avoid_list:
                     if args.version==1:
                         logger.info('Going to old CAP')

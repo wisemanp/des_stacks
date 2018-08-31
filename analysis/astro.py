@@ -570,7 +570,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
         init_lim_array = np.array([sn_name,ra,dec,limmags['g'],limmags['r'],limmags['i'],limmags['z']])
         init_lim_cols = [
-                'SN_NAME','X_WORLD','Y_WORLD'
+                'SN_NAME','X_WORLD','Y_WORLD',
                 'LIMMAG_g',
                 'LIMMAG_r',
                 'LIMMAG_i',

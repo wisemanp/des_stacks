@@ -568,7 +568,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
         logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limits of %s "%limmags)
 
-        init_lim_array = np.array([sn_name,ra,dec,limmag['g'],limmag['r'],limmag['i'],limmag['z']])
+        init_lim_array = np.array([sn_name,ra,dec,limmags['g'],limmags['r'],limmags['i'],limmags['z']])
         init_lim_cols = [
                 'SN_NAME','X_WORLD','Y_WORLD'
                 'LIMMAG_g',

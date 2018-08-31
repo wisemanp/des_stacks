@@ -9,7 +9,7 @@ import pandas as pd
 from time import gmtime, strftime
 #Note: import this first else it crashes importing sub-modules
 from des_stacks import des_stack as stack
-from des_stacks.analysis.astro import cap_phot_sn
+from des_stacks.analysis.astro import cap_phot_sn,cap_sn_lookup
 import os
 def parser():
     parser = argparse.ArgumentParser()
@@ -63,10 +63,11 @@ def cap(args,logger):
             if sn_name not in done_sn.SN_NAME.unique():
                 if sn_name not in avoid_list:
                     if args.version==1:
+                        
                         cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
                     elif args.version==2:
                         cap_sn_lookup(sn_name,wd=args.workdir,savename = args.savename,dist_thresh =  args.threshold,autocuts=True)
-        
+
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:

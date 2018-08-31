@@ -20,7 +20,7 @@ def parser():
     parser.add_argument('-sf','--savename',help='Filename to save results to',default=None)
     parser.add_argument('-ow','--overwrite',help='Overwrite existing results?',action = 'store_true')
     parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=15)
-
+    parser.add_argument('-v','--version',help='Way of getting photometry. 1 = Do own CAP; 2 = Go into chip results file',default=2)
     return parser.parse_args()
 
 def cap(args,logger):
@@ -66,9 +66,15 @@ def cap(args,logger):
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:
-                        cap_phot_sn(sn_name,args.workdir,dist_thresh = args.threshold,autocuts=True)
+                        if args.version==1:
+                            cap_phot_sn(sn_name,args.workdir,dist_thresh = args.threshold,autocuts=True)
+                        elif args.version==2:
+                            cap_sn_lookup(sn_name,wd=args.workdir,dist_thresh =  args.threshold,autocuts=True)
                     else:
-                        cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
+                        if args.version==1:
+                            cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
+                        elif args.version==2:
+                            cap_sn_lookup(sn_name,wd=args.workdir,savename = args.savename,dist_thresh =  args.threshold,autocuts=True)
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
 if __name__ == "__main__":

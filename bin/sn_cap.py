@@ -25,6 +25,7 @@ def parser():
 
 def cap(args,logger):
     avoid_list = []
+    args.version = int(args.version)
     if args.avoid:
         avoid_list = [i for i in args.avoid.split(',')]
     else:
@@ -62,7 +63,7 @@ def cap(args,logger):
             logger.info(sn_name)
 
             if sn_name not in done_sn.SN_NAME.unique():
-                
+
 
                 if sn_name not in avoid_list:
                     logger.info('Got THIS far')

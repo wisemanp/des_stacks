@@ -62,8 +62,11 @@ def cap(args,logger):
             logger.info(sn_name)
 
             if sn_name not in done_sn.SN_NAME.unique():
-                logger.info('Got this far')
+                
+
                 if sn_name not in avoid_list:
+                    logger.info('Got THIS far')
+                    logger.info(args.version)
                     if args.version==1:
                         logger.info('Going to old CAP')
                         cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)

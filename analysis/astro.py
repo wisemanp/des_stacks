@@ -528,13 +528,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger.info("Found transient in the database SNCAND")
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band
-    logger.info("Setting up Stack instances for each band")
-    '''if autocuts:
-        cuts = [get_cuts(f,b) for b in bands]
-    else:
-        cuts = [{'teff': 0.15, 'psf':None},{'teff': 0.15,'psf':None},{'teff': 0.25,'psf':None},{'teff': 0.25,'psf':None}]
-    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
-    '''
+
     capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
                              f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(y,f,chip))
     capres = pd.read_csv(capres_fn,index_col = 0)
@@ -618,7 +612,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     print ('Saving result to %s'%all_sn_fn)
     all_sn.to_csv(all_sn_fn)
 
-    logger.info("Done doing CAP for %s"%sn_name)
+    logger.info("Done finding CAP for %s"%sn_name)
     return res_df
 
 def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):

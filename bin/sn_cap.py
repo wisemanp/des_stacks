@@ -62,7 +62,11 @@ def cap(args,logger):
             logger.info(sn_name)
             if sn_name not in done_sn.SN_NAME.unique():
                 if sn_name not in avoid_list:
-                    cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
+                    if args.version==1:
+                        cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
+                    elif args.version==2:
+                        cap_sn_lookup(sn_name,wd=args.workdir,savename = args.savename,dist_thresh =  args.threshold,autocuts=True)
+        
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:

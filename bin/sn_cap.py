@@ -60,12 +60,14 @@ def cap(args,logger):
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
             logger.info(sn_name)
+
             if sn_name not in done_sn.SN_NAME.unique():
                 if sn_name not in avoid_list:
                     if args.version==1:
-                        
+                        logger.info('Going to old CAP')
                         cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
                     elif args.version==2:
+                        logger.info('Going to new CAP')
                         cap_sn_lookup(sn_name,wd=args.workdir,savename = args.savename,dist_thresh =  args.threshold,autocuts=True)
 
             elif args.overwrite == True:

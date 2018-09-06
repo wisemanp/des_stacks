@@ -45,6 +45,7 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     cmap = {'PSF':'red','AUTO':'green','cat':'blue','APER':'purple'}
     y3a1_fn = os.path.join(s.cat_dir,'y3a1_%s_%s.csv'%(s.field[3],s.band))
     y3a1 = pd.DataFrame.from_csv(y3a1_fn)
+    logger.info("Reading in sexcat: %s"sexcat)
     sexdat = fits.getdata(sexcat,ext=1)
     logger.info("Successfully read in catalog: %s" %y3a1_fn)
     Band = s.band.capitalize()

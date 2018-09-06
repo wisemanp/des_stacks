@@ -60,7 +60,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     info = info[info['BAND']==band]
     logger.info(cuts)
 
-    if cuts['zp']!= 'None':
+    if cuts['zp']!= 'None' and cuts['zp']!= None:
         logger.warning('Gone to do ZP residuals, not sure you want this.')
         logger.info(cuts['zp'])
         info['ZP_EXPRES']=''

@@ -120,7 +120,7 @@ def sex_for_cat(s,chip,cuts = None):
     if not cuts:
         sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s.sexcat' %(s.my,s.field,s.band,chip))
     else:
-        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%s_sci.sexcat' %(s.my,s.field,s.band,chip,s.cutstring))
+        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%s_debug.sexcat' %(s.my,s.field,s.band,chip,s.cutstring))
 
     try:
         zp_cut,psf_cut = cuts['zp'],cuts['psf']
@@ -156,12 +156,12 @@ def sex_for_cat(s,chip,cuts = None):
 def get_sn_dat(sn):
     f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
     chiplims = cpickle.load(f)
-    
+
     sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
     gap = ' '
     ngaps = (11-len(sn))*gap
     dat = sncand[sncand['TRANSIENT_NAME']==sn+ngaps]
-    
+
     ra,dec =dat[['RA','DEC']].iloc[0].values
     y = dat['SEASON'].values[0]
 

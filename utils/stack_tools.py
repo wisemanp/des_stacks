@@ -267,8 +267,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         else:
             if nofiles ==0:
                 cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
-                '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE',
-                'CLIPPED','-RESAMPLE','N','-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
+                '@%s'%resamplist_name,'-c','default.swarp','-RESAMPLE','N','-WEIGHOUT_NAME','%s'%weightout_name],fn_out)
             else:
                 cmd_list[j]=(False,False)
 
@@ -709,5 +708,5 @@ def get_cuts(f,b):
         cuts['psf']=float(cuts['psf'])
     except:
         pass
-    
+
     return cuts

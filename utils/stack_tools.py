@@ -249,9 +249,9 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
             fn_out = os.path.join(s.out_dir,'MY%s'%MY,field,band)+\
             '/ccd_%s_%s_%s_%s_temp.fits'%(chip,band,s.cutstring,j)
 
-        #weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
-        #resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
-        #weightout_name = fn_out[:-4]+'wgt.fits'
+        weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
+        resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
+        weightout_name = fn_out[:-4]+'wgt.fits'
         nofiles = 0
         if not os.path.isfile(resamplist_name):
             logger.info("%s, %s band, chip %s: Going to do resampling!"%(field,band,chip))

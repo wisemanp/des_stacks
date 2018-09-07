@@ -253,7 +253,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         #resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
         #weightout_name = fn_out[:-4]+'wgt.fits'
         nofiles = 0
-        '''if not os.path.isfile(resamplist_name):
+        if not os.path.isfile(resamplist_name):
             logger.info("%s, %s band, chip %s: Going to do resampling!"%(field,band,chip))
             try:
                 weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
@@ -261,13 +261,13 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
                 logger.info("No files in list: %s" %fn_list)
                 nofiles = 1
         else:
-            logger.info("Resamplist exists: %s"%resamplist_name)'''
+            logger.info("Resamplist exists: %s"%resamplist_name)
         if os.path.isfile(fn_out):
             cmd_list[j] = (False,fn_out)
         else:
             if nofiles ==0:
                 cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
-                '@%s'%fn_list,'-c','default.swarp','-COMBINE_TYPE','WEIGHTED'],fn_out)
+                '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE','WEIGHTED'],fn_out)
             else:
                 cmd_list[j]=(False,False)
 
@@ -486,11 +486,11 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
                 weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
 
-            swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
+            swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','N','-BACK_SIZE','256','-c','default.swarp']
 
     except TypeError:
         img = str(img_list)
-        swarp_cmd = ['swarp','%s'%img,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
+        swarp_cmd = ['swarp','%s'%img,'-COMBINE','N','-RESAMPLE','N','-BACK_SIZE','256','-c','default.swarp']
         imgname = os.path.split(img)[-1]
         imgroot = imgname[:-5]
         if imgroot[-2:]=='fi':

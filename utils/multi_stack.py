@@ -69,7 +69,7 @@ def stack_worker(arg_pair):
     staged_listname = os.path.join(s.temp_dir,'%s_%s_%s_%s_%s_staged.lst'%(y,field,band,chip,s.cutstring))
     np.savetxt(staged_listname,staged_list,fmt='%s')
     imgout_name = staged_list[0][:-7]+'_sci.fits'
-    resamp_cmd =['swarp','@%s'%staged_listname,'-IMAGEOUT_NAME',imgout_name]
+    resamp_cmd =['swarp','@%s'%staged_listname,'-IMAGEOUT_NAME',imgout_name,'COMBINE_TYPE','AVERAGE']
     os.chdir(s.band_dir)
     #s.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
     print ('Resampling and weighting intermediate images')

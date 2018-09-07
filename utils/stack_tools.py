@@ -267,7 +267,7 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
         else:
             if nofiles ==0:
                 cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
-                '@%s'%fn_list,'-c','default.swarp'],fn_out)
+                '@%s'%fn_list,'-c','default.swarp','COMBINE_TYPE','AVERAGE'],fn_out)
             else:
                 cmd_list[j]=(False,False)
 

@@ -192,7 +192,7 @@ def init_phot(s,chip,cat,pl='n'):
     s.logger.info("%s sigma limiting magnitude based on matched objects: %.3f\n"%(limsig,kr_lim2))
     s.logger.info("%s sigma limiting magnitude using zeropoint %.3f: %.3f\n "%(thresh,zp,skylim))
 
-    resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip)),'w')
+    resfile = open(os.path.join(ana_dir,'%s_%s_%s_%s_init_wgtd.result'%(s.my,s.field,s.band,chip)),'w')
     cat['FWHM_WORLD'] = cat['FWHM_WORLD']*3600
     for i in range(len(cat['FWHM_WORLD'].values)):
         cat['FWHM_WORLD'].values[i] = float(cat['FWHM_WORLD'].values[i])

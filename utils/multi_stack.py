@@ -49,6 +49,8 @@ def stack_worker(arg_pair):
             try:
 
                 print ('Stacking chip %s, part %s'%(chip,key))
+                print ('Current dir: %s'%os.curdir)
+                print ('This command: %s'%cmd)
                 starttime=float(time.time())
                 p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 outs,errs = p.communicate()

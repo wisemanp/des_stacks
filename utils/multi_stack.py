@@ -68,7 +68,8 @@ def stack_worker(arg_pair):
     print(staged_list)
     staged_listname = os.path.join(s.temp_dir,'%s_%s_%s_%s_%s_staged.lst'%(y,field,band,chip,s.cutstring))
     np.savetxt(staged_listname,staged_list,fmt='%s')
-    resamp_cmd =['swarp','@%s'%staged_listname,'-COMBINE','N','-RESAMPLE','Y','-c','default.swarp']
+    imgout_name = staged_list[0][:-7]+'_sci.fits'
+    resamp_cmd =['swarp','@%s'%staged_listname,'-IMAGEOUT_NAME',imgout_name]
     os.chdir(s.band_dir)
     #s.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
     print ('Resampling and weighting intermediate images')
@@ -78,7 +79,7 @@ def stack_worker(arg_pair):
     res_end = float(time.time())
     print ('Done resampling intermediate images on chip %s in %.3f seconds'%(chip,(res_end-res_start)))
     #s.logger.info('Done resampling intermediate stacks, took %.3f seconds'%(res_end-res_start))
-    resamplist = []
+    '''resamplist = []
     weightlist = []
     for img in staged_list:
         imgname = os.path.split(img)[-1]
@@ -99,9 +100,9 @@ def stack_worker(arg_pair):
     f_out,f_errs = pf.communicate()
     final_end = float(time.time())
 
-    print("Done combining mini-stacks, took %.3f seconds"%(final_end -final_start))
+    print("Done combining mini-stacks, took %.3f seconds"%(final_end -final_start))'''
     print("Saved final science frame at %s"%imgout_name)
-    print("And final weightmap at %s"%weightout_name)
+    #print("And final weightmap at %s"%weightout_name)
     t_tot = float(time.time()) - started
     return t_tot
 

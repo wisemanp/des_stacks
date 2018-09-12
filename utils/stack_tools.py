@@ -511,7 +511,7 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2060)
         weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
         resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
 
-
+    logger.info('Resampling with command: %s'%swarp_cmd)
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())

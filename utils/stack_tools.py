@@ -475,10 +475,11 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2060)
     weightlist = []
     resamplist = []
     os.chdir(s.temp_dir)
+    pixel_scale = 3600.0*abs(fits.getheader(img_list[0])['CD1_1'])
+    ra_cent,dec_cent = get_chip_vals(s.field,chip)
     try:
         if len(img_list)>1:
-            pixel_scale = 3600.0*abs(fits.getheader(img_list[0])['CD1_1'])
-            ra_cent,dec_cent = get_chip_vals(s.field,chip)
+
             for img in img_list:
                 imgname = os.path.split(img)[-1]
                 imgroot = imgname[:-5]

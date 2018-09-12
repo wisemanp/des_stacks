@@ -463,7 +463,7 @@ def get_y3a1():
         dat = conn.query_to_pandas(q)
         dat.to_csv('/home/wiseman/y3a1_%s_summary.csv'%f)
 
-def make_weightmap(s,lst,y,chip,cuts,j,logger):
+def make_weightmap(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2060):
 
     img_list = np.loadtxt(lst,dtype='str')
     if len(img_list)==0:
@@ -477,7 +477,8 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
     os.chdir(s.temp_dir)
     try:
         if len(img_list)>1:
-
+            pixel_scale = 3600.0*abs(fits.getheader(img_list[0])['CD1_1'])
+            ra_cent,dec_cent = get_chip_vals(s.field,chip)
             for img in img_list:
                 imgname = os.path.split(img)[-1]
                 imgroot = imgname[:-5]
@@ -485,8 +486,16 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger):
                     imgroot = imgroot[:-3]
                 weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
-
-            swarp_cmd = ['swarp','@%s'%lst,'-COMBINE','N','-RESAMPLE','Y','-BACK_SIZE','256','-c','default.swarp']
+            swarp_cmd = ['swarp',
+            '-COMBINE','N',
+            '-RESAMPLE','Y',
+            '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
+            '-CENTER_TYPE','MANUAL',
+            '-CENTER','%f,%f'%(ra_cent,dec_cent),
+            '-PIXELSCALE_TYPE','MANUAL',
+            '-PIXEL_SCALE','%.03f'%pixel_scale,
+            '-BACK_SIZE','512',
+            '@%s'%lst]
 
     except TypeError:
         img = str(img_list)

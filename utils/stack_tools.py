@@ -479,7 +479,7 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2060)
         pixel_scale = 3600.0*abs(fits.getheader(img_list[0])['CD1_1'])
     except:
         pixel_scale = 3600.0*abs(fits.getheader(img_list[0][:-3])['CD1_1'])
-    ra_cent,dec_cent = get_chip_vals(s.field,chip)
+    ra_cent,dec_cent = get_chip_vals(s.field,int(chip))
     try:
         if len(img_list)>1:
 

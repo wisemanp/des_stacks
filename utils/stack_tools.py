@@ -264,7 +264,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
                 nofiles = 1
         else:
             logger.info("Header list exists: %s, \n Going to make initial stack."%headerlist_name)
-        if os.path.isfile(fn_out):
+        if os.path.isfile(fn_out.replac('clipped','weighted')):
             cmd_list[j] = (False,fn_out)
         else:
             if nofiles ==0:

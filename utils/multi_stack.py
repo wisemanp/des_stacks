@@ -84,7 +84,7 @@ def stack_worker(arg_pair):
         for p in params.keys():
             maskconf.write('%s  = %s     ;\n'%(p,params[p]))
         maskconf.close()
-        maskmap_cmd = ['/home/wiseman/software/cliputils/MaskMap','<',maskconf_name]
+        maskmap_cmd = ['/home/wiseman/software/cliputils/MaskMap',maskconf_name]
         try:
             print ('Making mask for chip %s, part %s'%(chip,key))
             print ('Current dir: %s'%os.curdir)

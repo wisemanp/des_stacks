@@ -798,7 +798,7 @@ def combine_mask_weight(s,chip,j):
         maskweight = np.multiply(wd,m)
         w[0].data = maskweight
         #print ('Weight size',w[0].header['NAXIS1'],w[0].header['NAXIS2'])
-        w.writeto(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')))
+        w.writeto(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')),overwrite=True)
         maskweightlist.append(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')))
     np.savetxt(resamplist_name.resplace('resamp','maskweight'),np.array(maskweightlist),fmt='%s')
     return maskweightlist

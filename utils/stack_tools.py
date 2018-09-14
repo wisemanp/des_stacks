@@ -519,7 +519,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
                     h = fits.getheader(img)
                 except:
                     h = fits.getheader(img)
-                header_name = os.path.join(s.temp_dir,imgroot+'.head')
+                header_name = os.path.join(s.temp_dir,imgroot+'.resamp.head')
                 if os.path.isfile(header_name):
                     os.remove(header_name)
                 h.totextfile(header_name)

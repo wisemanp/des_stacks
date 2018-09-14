@@ -62,7 +62,7 @@ def stack_worker(arg_pair):
             except (OSError, IOError):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('Swarp failed for some reason in chip %s'%chip)
-        
+
         maskconf_name = os.path.join(s.temp_dir,'cliptabs',outname.replace('.fits','_mask.config'))
         maskconf = open(maskconf_name, 'w')
         stackhead = fits.getheader(outname)
@@ -84,7 +84,7 @@ def stack_worker(arg_pair):
         for p in params.keys():
             maskconf.write('%s  = %s     ;\n'%(p,params[p]))
         maskconf.close()
-        maskmap_cmd = ['MaskMap','<',maskconf_name]
+        maskmap_cmd = ['/home/wiseman/software/cliputils/MaskMap','<',maskconf_name]
         try:
             print ('Making mask for chip %s, part %s'%(chip,key))
             print ('Current dir: %s'%os.curdir)

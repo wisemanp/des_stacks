@@ -5,7 +5,7 @@ import multiprocessing
 from multiprocessing import Process
 import os
 import subprocess
-from des_stacks.utils.stack_tools import make_swarp_cmd
+from des_stacks.utils.stack_tools import make_swarp_cmd, combine_mask_weight
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import time
 import numpy as np
@@ -35,12 +35,12 @@ def stack_worker(arg_pair):
     staged_imgs = []
     for key,value in cmd_list.items():
 
-        cmd,outname = value
+        clip_cmd,wgt_cmd,outname = value
         if outname:
 
-            staged_imgs.append(outname)
-        if cmd == False:
-            print ('Already stacked this chip with these cuts, going straight to the next chip')
+            staged_imgs.append(outname.replace('clipped','weighted'))
+        if clip_cmd == False:
+            print ('Already stacked chip %s, part %s with these cuts, going straight to the next chip'%(chip,key))
             #logger.info("Already stacked this chip with these cuts, going straight to astrometry")
             pass
         else:
@@ -48,25 +48,72 @@ def stack_worker(arg_pair):
             os.chdir(s.temp_dir)
             try:
 
-                print ('Stacking chip %s, part %s'%(chip,key))
+                print ('Stacking chip %s, part %s, clipped'%(chip,key))
                 print ('Current dir: %s'%os.curdir)
-                print ('This command: %s'%cmd)
+                print ('This command: %s'%clip_cmd)
                 starttime=float(time.time())
-                p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                outs,errs = p.communicate()
+                pcli = subprocess.Popen(clip_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                outs,errs = pcli.communicate()
                 endtime=float(time.time())
+                print('Finished doing chip %s, part %s, clipped. Took %.3f seconds' %(chip,key,endtime-starttime))
+            except (OSError, IOError):
+                #s.logger.warn("Swarp failed.", exc_info=1)
+                print ('Swarp failed for some reason in chip %s'%chip)
+            maskconf_name = os.path.join(s.temp_dir,'cliptabs',outname.replace('.fits','_mask.conf')
+            maskconf = open(maskconf_name, 'w')
+            stackhead = fits.getheader(outname)
+            stackhead_name = outname.replace('.fits','.head')
+            try:
+                stackhead.totextfile(stackhead_name)
+            except:
+                pass
 
+            params = {
+            'outliers': os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key)),
+            'stackhead': stackhead_name,
+            'headlist': os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,field,band,chip,s.cutstring,key)),
+            'mask':maskconf_name,
+            'masksuffix':'.mask.fits',
+            'xsize':'4100',
+            'ysize':'2100'
+            }
+            for p in params.keys():
+                maskconf.write('%s  = %s     ;\n'%(p,params[p]))
+            maskconf.close()
+            maskmap_cmd = ['MaskMap','<',maskconf_name]
+            try:
+                print ('Making mask for chip %s, part %s'%(chip,key))
+                print ('Current dir: %s'%os.curdir)
+                print ('This command: %s'%maskmap_cmd)
+                starttime=float(time.time())
+                maskp = subprocess.Popen(maskmap_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                outs,errs = maskp.communicate()
+                endtime=float(time.time())
+                print('Finished masking chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
+            except (OSError, IOError):
+                #s.logger.warn("Swarp failed.", exc_info=1)
+                print ('MaskMap failed for some reason in chip %s'%chip)
+            print ('Combining masks with weightmaps for chip %s, part %s'%(chip,key))
+            combine_mask_weight(s,chip,key)
+
+            try:
+                print ('Stacking chip %s, part %s, weighted'%(chip,key))
+                print ('Current dir: %s'%os.curdir)
+                print ('This command: %s'%wgt_cmd)
+                starttime=float(time.time())
+                pwgt = subprocess.Popen(wgt_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                outs,errs = pwgt.communicate()
+                endtime=float(time.time())
+                print('Finished doing chip %s, part %s, weighted. Took %.3f seconds' %(chip,key,endtime-starttime))
             except (OSError, IOError):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('Swarp failed for some reason in chip %s'%chip)
 
+        print('Added %s to list of images to make final stack' %outname.replace('clipped','weighted'))
 
-            print('Finished doing chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
-        print('Added %s to list of images to make final stack' %outname)
-    print ("Finished first SWarp")
-    print('Now combining mini-stacks into final science frame')
+    print('Now combining mini-stacks into final science frame for chip %s'%chip)
     staged_list = np.array(staged_imgs)
-    print('Combining these frames:')
+    print('Combining these frames for chip %s:'%chip)
     print(staged_list)
     staged_listname = os.path.join(s.temp_dir,'%s_%s_%s_%s_%s_staged.lst'%(y,field,band,chip,s.cutstring))
     np.savetxt(staged_listname,staged_list,fmt='%s')
@@ -74,12 +121,12 @@ def stack_worker(arg_pair):
     resamp_cmd =['swarp','@%s'%staged_listname,'-IMAGEOUT_NAME',imgout_name,'-COMBINE_TYPE','AVERAGE']
     os.chdir(s.band_dir)
     #s.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
-    print ('Resampling and weighting intermediate images')
+    print ('Combining intermediate images')
     res_start = float(time.time())
     rf = subprocess.Popen(resamp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     r_out,r_errs = rf.communicate()
     res_end = float(time.time())
-    print ('Done resampling intermediate images on chip %s in %.3f seconds'%(chip,(res_end-res_start)))
+    print ('Done combining intermediate images on chip %s in %.3f seconds'%(chip,(res_end-res_start)))
     #s.logger.info('Done resampling intermediate stacks, took %.3f seconds'%(res_end-res_start))
     '''resamplist = []
     weightlist = []

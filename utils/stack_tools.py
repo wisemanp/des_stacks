@@ -185,7 +185,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     good_table.write(good_fn)
     return good_frame
 
-def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
+def make_first_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
     if not os.path.isdir(os.path.join(s.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(s.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)
@@ -244,32 +244,51 @@ def make_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':Non
 
         if final == True:
             fn_out = os.path.join(s.out_dir,'MY%s'%MY,field,band)+\
-            '/ccd_%s_%s_%s_%s.fits'%(chip,band,s.cutstring,j)
+            '/ccd_%s_%s_%s_%s_clipped.fits'%(chip,band,s.cutstring,j)
         else:
             fn_out = os.path.join(s.out_dir,'MY%s'%MY,field,band)+\
-            '/ccd_%s_%s_%s_%s_temp.fits'%(chip,band,s.cutstring,j)
+            '/ccd_%s_%s_%s_%s_temp_clipped.fits'%(chip,band,s.cutstring,j)
 
         weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
         resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
+        headerlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(MY,s.field,s.band,chip,s.cutstring,j))
+
         weightout_name = fn_out[:-4]+'wgt.fits'
         nofiles = 0
-        if not os.path.isfile(resamplist_name):
+        if not os.path.isfile(headerlist_name):
             logger.info("%s, %s band, chip %s: Going to do resampling!"%(field,band,chip))
             try:
-                weightlist_name,resamplist_name = make_weightmap(s,fn_list,MY,chip,cuts,j,logger)
+                weightlist_name,resamplist_name,headerlist_name = resample(s,fn_list,MY,chip,cuts,j,logger)
             except TypeError:
                 logger.info("No files in list: %s" %fn_list)
                 nofiles = 1
         else:
-            logger.info("Resamplist exists: %s"%resamplist_name)
+            logger.info("Header list exists: %s, \n Going to make initial stack."%headerlist_name)
         if os.path.isfile(fn_out):
             cmd_list[j] = (False,fn_out)
         else:
             if nofiles ==0:
-                cmd_list[j]=(['swarp','-IMAGEOUT_NAME','{0}'.format(fn_out),
-                '@%s'%resamplist_name,'-c','default.swarp','-COMBINE_TYPE','WEIGHTED', '-WEIGHT_IMAGE','@%s'%weightlist_name],fn_out)
+                cliptab_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(MY,s.field,s.band,chip,s.cutstring,j))
+
+                swarp_clip = [
+                'swarp',
+                '@%s'%resamplist_name,
+                '-IMAGEOUT_NAME',fn_out,
+                '-CLIP_LOGNAME',cliptab_name,
+                ]
+
+                swarp_weight = [
+                'swarp',
+                '@%s'%resamplist_name,
+                '-RESAMPLE', 'N',
+                '-COMBINE_TYPE', 'WEIGHTED',
+                '-WEIGHT_TYPE', 'MAP_RMS',
+                '-WEIGHT_IMAGE', '@nu_maskweights.lst',
+                '-IMAGEOUT_NAME', fn_out.replace('clipped.fits','weighted.fits')
+                ]
+                cmd_list[j]=(swarp_clip,swarp_weight,fn_out)
             else:
-                cmd_list[j]=(False,False)
+                cmd_list[j]=(False,False,False)
 
     #logger.info(cmd_list)
     return cmd_list
@@ -463,7 +482,7 @@ def get_y3a1():
         dat = conn.query_to_pandas(q)
         dat.to_csv('/home/wiseman/y3a1_%s_summary.csv'%f)
 
-def make_weightmap(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
+def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
 
     img_list = np.loadtxt(lst,dtype='str')
     if len(img_list)==0:
@@ -472,13 +491,12 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100)
 
     starttime=float(time.time())
     logger.info('Creating weightmaps for individual input exposures in %s, %s band, chip %s'%(s.field,s.band,chip))
-    weightlist = []
-    resamplist = []
+    weightlist,resamplist,headerlist,masklist  = [],[],[],[]
     os.chdir(s.temp_dir)
-    try:
-        pixel_scale = 3600.0*abs(fits.getheader(img_list[0])['CD1_1'])
-    except:
-        pixel_scale = 3600.0*abs(fits.getheader(img_list[0][:-3])['CD1_1'])
+    #try:
+    #    pixel_scale = 3600.0*abs(fits.getheader(img_list[0])['CD1_1'])
+    #except:
+        #pixel_scale = 3600.0*abs(fits.getheader(img_list[0][:-3])['CD1_1'])
     ra_cent,dec_cent = get_chip_vals(s.field,int(chip))
     try:
         if len(img_list)>1:
@@ -490,7 +508,14 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100)
                     imgroot = imgroot[:-3]
                 weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
-            swarp_cmd = ['swarp',
+                headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.head'))
+                headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.mask.fits'))
+
+                h = fits.getheader(img)
+                h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))
+
+            swarp_cmd = [
+            'swarp',
             '@%s'%lst,
             '-COMBINE','N',
             '-RESAMPLE','Y',
@@ -504,26 +529,41 @@ def make_weightmap(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100)
 
     except TypeError:
         img = str(img_list)
-        swarp_cmd = ['swarp','%s'%img,'-COMBINE','N','-RESAMPLE','N','-BACK_SIZE','256','-c','default.swarp']
+        swarp_cmd = [
+        'swarp','%s'%img,
+        '-COMBINE','N',
+        '-RESAMPLE','Y',
+        '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
+        '-CENTER_TYPE','MANUAL',
+        '-CENTER','%f,%f'%(ra_cent,dec_cent),
+        '-PIXELSCALE_TYPE','MANUAL',
+        '-PIXEL_SCALE','0.2363',#'%.03f'%pixel_scale,
+        '-BACK_SIZE','256',
+        ]
         imgname = os.path.split(img)[-1]
         imgroot = imgname[:-5]
         if imgroot[-2:]=='fi':
             imgroot = imgroot[:-3]
         weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
         resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
-
+        headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.head'))
+        h = fits.getheader(img)
+        h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))
     logger.info('Resampling with command: %s'%swarp_cmd)
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())
     logger.info('Finished creating weightmaps for %s, %s band, chip %s; took %.3f seconds'%(s.field,s.band,chip,endtime-starttime))
+
     weightlist = np.array(weightlist)
     weightlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.wgt.lst'%(y,s.field,s.band,chip,s.cutstring,j))
     np.savetxt(weightlist_name,weightlist,fmt='%s')
     resamplist = np.array(resamplist)
     resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(y,s.field,s.band,chip,s.cutstring,j))
     np.savetxt(resamplist_name,resamplist,fmt='%s')
-    return (weightlist_name,resamplist_name)
+    headerlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,s.field,s.band,chip,s.cutstring,j))
+    np.savetxt(headerlist_name,headerlist,fmt='%s')
+    return (weightlist_name,resamplist_name,headerlist)
 
 def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4000,stamp_sizey=2000):
     logger = logging.getLogger(__name__)
@@ -724,3 +764,23 @@ def get_cuts(f,b):
         pass
 
     return cuts
+
+def combine_mask_weight(s,chip,j):
+    maskweightlist = []
+    resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(s.my,s.field,s.band,chip,s.cutstring,j))
+    for f in np.loadtxt(resamplist_name,dtype='str'):
+        if f[-3:]=='[0]':
+            f = f[:-3]
+        wn = os.path.join(s.temp_dir,f.replace('fits','weight.fits'))
+        mn = os.path.join(s.temp_dir,f.replace('fits','head.mask.fits'))
+        masknames.append(mn)
+        w = fits.open(wn)
+        wd = w[0].data
+        m = fits.getdata(mn)
+        maskweight = np.multiply(wd,m)
+        w[0].data = maskweight
+        #print ('Weight size',w[0].header['NAXIS1'],w[0].header['NAXIS2'])
+        w.writeto(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')))
+        maskweightlist.append(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')))
+    np.savetxt(resamplist_name.resplace('resamp','maskweight'),np.array(maskweightlist),fmt='%s')
+    return maskweightlist

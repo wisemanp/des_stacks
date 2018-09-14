@@ -515,6 +515,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
                     h = fits.getheader(img)
                 except:
                     h = fits.getheader(img)
+                os.remove(os.path.join(s.temp_dir,imgroot+'.head'))
                 h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))
 
             swarp_cmd = [

@@ -59,7 +59,7 @@ def stack_worker(arg_pair):
             except (OSError, IOError):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('Swarp failed for some reason in chip %s'%chip)
-            maskconf_name = os.path.join(s.temp_dir,'cliptabs',outname.replace('.fits','_mask.conf')
+            maskconf_name = os.path.join(s.temp_dir,'cliptabs',outname.replace('.fits','_mask.conf'))
             maskconf = open(maskconf_name, 'w')
             stackhead = fits.getheader(outname)
             stackhead_name = outname.replace('.fits','.head')

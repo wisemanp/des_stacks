@@ -5,14 +5,17 @@ import multiprocessing
 from multiprocessing import Process
 import os
 import subprocess
-from des_stacks.utils.stack_tools import make_swarp_cmds, combine_mask_weight
-from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import time
 import numpy as np
 import os
 import logging
-from des_stacks.analysis.astro import init_phot, init_calib
 import pandas as pd
+import astropy.io.fits as fits
+
+from des_stacks.utils.stack_tools import make_swarp_cmds, combine_mask_weight
+from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
+from des_stacks.analysis.astro import init_phot, init_calib
+
 def stack_worker(arg_pair):
     logger = logging.getLogger(__name__)
     logger.handlers =[]

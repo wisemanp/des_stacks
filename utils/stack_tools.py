@@ -776,14 +776,14 @@ def get_cuts(f,b):
     return cuts
 
 def combine_mask_weight(s,chip,j):
-    maskweightlist = []
+    maskweightlist,masklist = []
     resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(s.my,s.field,s.band,chip,s.cutstring,j))
     for f in np.loadtxt(resamplist_name,dtype='str'):
         if f[-3:]=='[0]':
             f = f[:-3]
         wn = os.path.join(s.temp_dir,f.replace('fits','weight.fits'))
         mn = os.path.join(s.temp_dir,f.replace('fits','head.mask.fits'))
-        masknames.append(mn)
+        masklist.append(mn)
         w = fits.open(wn)
         wd = w[0].data
         m = fits.getdata(mn)

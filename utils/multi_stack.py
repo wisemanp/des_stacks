@@ -62,44 +62,42 @@ def stack_worker(arg_pair):
             except (OSError, IOError):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('Swarp failed for some reason in chip %s'%chip)
-        if os.path.isfile(os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key))):
-            print ('Already clipped on chip %s, part %s, going to masking'%(chip,key))
-        else:
-            maskconf_name = os.path.join(s.temp_dir,'cliptabs',outname.replace('.fits','_mask.config'))
-            maskconf = open(maskconf_name, 'w')
-            stackhead = fits.getheader(outname)
-            stackhead_name = outname.replace('.fits','.head')
-            try:
-                stackhead.totextfile(stackhead_name)
-            except:
-                pass
+        
+        maskconf_name = os.path.join(s.temp_dir,'cliptabs',outname.replace('.fits','_mask.config'))
+        maskconf = open(maskconf_name, 'w')
+        stackhead = fits.getheader(outname)
+        stackhead_name = outname.replace('.fits','.head')
+        try:
+            stackhead.totextfile(stackhead_name)
+        except:
+            pass
 
-            params = {
-            'outliers': os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key)),
-            'stackhead': stackhead_name,
-            'headlist': os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,field,band,chip,s.cutstring,key)),
-            'mask':'mask.conf',
-            'masksuffix':'.mask.fits',
-            'xsize':'4100',
-            'ysize':'2100'
-            }
-            for p in params.keys():
-                maskconf.write('%s  = %s     ;\n'%(p,params[p]))
-            maskconf.close()
-            maskmap_cmd = ['MaskMap','<',maskconf_name]
-            try:
-                print ('Making mask for chip %s, part %s'%(chip,key))
-                print ('Current dir: %s'%os.curdir)
-                print ('This command: %s'%maskmap_cmd)
-                starttime=float(time.time())
-                maskp = subprocess.Popen(maskmap_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                outs,errs = maskp.communicate()
-                endtime=float(time.time())
-                print('Finished masking chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
-            except (OSError, IOError):
-                #s.logger.warn("Swarp failed.", exc_info=1)
-                print ('MaskMap failed for some reason in chip %s'%chip)
-            print ('Combining masks with weightmaps for chip %s, part %s'%(chip,key))
+        params = {
+        'outliers': os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key)),
+        'stackhead': stackhead_name,
+        'headlist': os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,field,band,chip,s.cutstring,key)),
+        'mask':'mask.conf',
+        'masksuffix':'.mask.fits',
+        'xsize':'4100',
+        'ysize':'2100'
+        }
+        for p in params.keys():
+            maskconf.write('%s  = %s     ;\n'%(p,params[p]))
+        maskconf.close()
+        maskmap_cmd = ['MaskMap','<',maskconf_name]
+        try:
+            print ('Making mask for chip %s, part %s'%(chip,key))
+            print ('Current dir: %s'%os.curdir)
+            print ('This command: %s'%maskmap_cmd)
+            starttime=float(time.time())
+            maskp = subprocess.Popen(maskmap_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            outs,errs = maskp.communicate()
+            endtime=float(time.time())
+            print('Finished masking chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
+        except (OSError, IOError):
+            #s.logger.warn("Swarp failed.", exc_info=1)
+            print ('MaskMap failed for some reason in chip %s'%chip)
+        print ('Combining masks with weightmaps for chip %s, part %s'%(chip,key))
         combine_mask_weight(s,chip,key)
         if wgt_cmd==False:
             print ('Already done the weighted stack of chip %s, part %s, going to the next, or the combination'%(chip,key))

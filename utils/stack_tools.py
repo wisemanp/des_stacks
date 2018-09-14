@@ -286,7 +286,11 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
                 '-WEIGHT_IMAGE', '@nu_maskweights.lst',
                 '-IMAGEOUT_NAME', fn_out.replace('clipped.fits','weighted.fits')
                 ]
-                cmd_list[j]=(swarp_clip,swarp_weight,fn_out)
+                if os.path.isfile(fn_out):
+                    cmd_list[j] = (False,swarp_weight,fn_out)
+                else:
+
+                    cmd_list[j]=(swarp_clip,swarp_weight,fn_out)
             else:
                 cmd_list[j]=(False,False,False)
 

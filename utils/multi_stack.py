@@ -62,6 +62,9 @@ def stack_worker(arg_pair):
             except (OSError, IOError):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('Swarp failed for some reason in chip %s'%chip)
+        if os.path.isfile(os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key))):
+            print ('Already clipped on chip %s, part %s, going to masking'%(chip,key))
+        else:
             maskconf_name = os.path.join(s.temp_dir,'cliptabs',outname.replace('.fits','_mask.config'))
             maskconf = open(maskconf_name, 'w')
             stackhead = fits.getheader(outname)
@@ -97,8 +100,10 @@ def stack_worker(arg_pair):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('MaskMap failed for some reason in chip %s'%chip)
             print ('Combining masks with weightmaps for chip %s, part %s'%(chip,key))
-            combine_mask_weight(s,chip,key)
-
+        combine_mask_weight(s,chip,key)
+        if wgt_cmd==False:
+            print ('Already done the weighted stack of chip %s, part %s, going to the next, or the combination'%(chip,key))
+        else:
             try:
                 print ('Stacking chip %s, part %s, weighted'%(chip,key))
                 print ('Current dir: %s'%os.curdir)

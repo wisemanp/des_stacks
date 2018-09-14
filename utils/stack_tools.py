@@ -513,7 +513,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
                 weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
                 headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.head'))
-                headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.mask.fits'))
+                masklist.append(os.path.join(s.temp_dir,imgroot+'.resamp.mask.fits'))
 
 
             swarp_cmd = [
@@ -549,6 +549,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
         weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
         resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
         headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.head'))
+        masklist.append(os.path.join(s.temp_dir,imgroot+'.resamp.mask.fits'))
 
     logger.info('Resampling with command: %s'%swarp_cmd)
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)

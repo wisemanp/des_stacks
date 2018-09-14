@@ -30,7 +30,7 @@ def stack_worker(arg_pair):
     s,y,field,band,cuts,final,logger2= [args[i]for i in range(len(args))]
     started = float(time.time())
     #logger.info('Stacking chip %s; starting by creating mini-stacks to save time'%chip)
-    cmd_list = make_swarp_cmd(s,y,field,chip,band,s.logger,cuts,final)
+    cmd_list = make_swarp_cmds(s,y,field,chip,band,s.logger,cuts,final)
     #logger.info("Pulled commands list")
     staged_imgs = []
     for key,value in cmd_list.items():

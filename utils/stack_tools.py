@@ -510,8 +510,11 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
                 resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
                 headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.head'))
                 headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.mask.fits'))
-
-                h = fits.getheader(img)
+                try:
+                    img = img[:-3]
+                    h = fits.getheader(img)
+                except:
+                    h = fits.getheader(img)
                 h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))
 
             swarp_cmd = [

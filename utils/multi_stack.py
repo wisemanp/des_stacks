@@ -5,7 +5,7 @@ import multiprocessing
 from multiprocessing import Process
 import os
 import subprocess
-from des_stacks.utils.stack_tools import make_swarp_cmd, combine_mask_weight
+from des_stacks.utils.stack_tools import make_swarp_cmds, combine_mask_weight
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import time
 import numpy as np

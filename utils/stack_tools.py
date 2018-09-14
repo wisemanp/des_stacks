@@ -185,7 +185,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     good_table.write(good_fn)
     return good_frame
 
-def make_first_swarp_cmd(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
+def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
     if not os.path.isdir(os.path.join(s.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(s.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)

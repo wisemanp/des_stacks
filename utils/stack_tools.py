@@ -568,6 +568,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
 
     try:
         for img in img_list:
+            imgname = os.path.split(img)[-1]
             imgroot = imgname[:-5]
             if imgroot[-2:]=='fi':
                 imgroot = imgroot[:-3]

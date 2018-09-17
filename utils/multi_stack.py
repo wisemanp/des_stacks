@@ -96,6 +96,8 @@ def stack_worker(arg_pair):
             maskp = subprocess.Popen(maskmap_cmd,stdin=config_file,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             outs,errs = maskp.communicate()
             endtime=float(time.time())
+            print (outs)
+            print (errs)
             print('Finished masking chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
         except (OSError, IOError):
             #s.logger.warn("Swarp failed.", exc_info=1)

@@ -90,6 +90,7 @@ def stack_worker(arg_pair):
             print ('Current dir: %s'%os.curdir)
             print ('This command: %s'%maskmap_cmd)
             config_file = open(mm_conf_name)
+            print ('Stdin: %s'%mm_conf_name)
             starttime=float(time.time())
             maskp = subprocess.Popen(maskmap_cmd,stdin=config_file,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             outs,errs = maskp.communicate()

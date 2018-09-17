@@ -265,7 +265,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
         else:
             logger.info("Header list exists: %s, \n Going to make initial stack."%headerlist_name)
         if os.path.isfile(fn_out.replace('clipped','weighted')):
-            cmd_list[j] = (False,fn_out)
+            cmd_list[j] = (False,False,fn_out)
         else:
             if nofiles ==0:
                 cliptab_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(MY,s.field,s.band,chip,s.cutstring,j))

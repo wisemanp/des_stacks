@@ -64,7 +64,7 @@ def stack_worker(arg_pair):
                 print ('Swarp failed for some reason in chip %s'%chip)
         print ('outname')
         print (outname)
-        mm_conf_name = os.path.join(s.temp_dir,'cliptabs',outname.replace('.fits','_mm.config'))
+        mm_conf_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_mm.config'%(y,field,band,chip,s.cutstring,key))
         mm_conf = open(mm_conf_name, 'w')
         stackhead = fits.getheader(outname)
         stackhead_name = outname.replace('.fits','.head')

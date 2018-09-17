@@ -566,22 +566,22 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
     headerlist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,s.field,s.band,chip,s.cutstring,j))
     np.savetxt(headerlist_name,headerlist,fmt='%s')
 
-    try:
-        for img in img_list:
-            try:
-                img = img[:-3]
-                h = fits.getheader(img)
-            except:
-                h = fits.getheader(img)
-            header_name = os.path.join(s.temp_dir,imgroot+'.resamp.head')
-            if os.path.isfile(header_name):
-                os.remove(header_name)
-            h.totextfile(header_name)
-            logger.info('Saved header: %s'%header_name)
-    except TypeError:
+    #try:
+    for img in img_list:
+        try:
+            img = img[:-3]
+            h = fits.getheader(img)
+        except:
+            h = fits.getheader(img)
+        header_name = os.path.join(s.temp_dir,imgroot+'.resamp.head')
+        if os.path.isfile(header_name):
+            os.remove(header_name)
+        h.totextfile(header_name)
+        logger.info('Saved header: %s'%header_name)
+    '''except TypeError:
         img = str(img_list)
         h = fits.getheader(img)
-        h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))
+        h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))'''
     return (weightlist_name,resamplist_name,headerlist)
 
 def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4000,stamp_sizey=2000):

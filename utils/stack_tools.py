@@ -276,14 +276,14 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
                 '-IMAGEOUT_NAME',fn_out,
                 '-CLIP_LOGNAME',cliptab_name,
                 ]
-
+                maskweightlist_name = resamplist_name.replace('resamp','maskweight')
                 swarp_weight = [
                 'swarp',
                 '@%s'%resamplist_name,
                 '-RESAMPLE', 'N',
                 '-COMBINE_TYPE', 'WEIGHTED',
                 '-WEIGHT_TYPE', 'MAP_RMS',
-                '-WEIGHT_IMAGE', '@nu_maskweights.lst',
+                '-WEIGHT_IMAGE', '@%s'%maskweightlist_name,
                 '-IMAGEOUT_NAME', fn_out.replace('clipped.fits','weighted.fits')
                 ]
                 if os.path.isfile(fn_out):

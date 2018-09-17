@@ -101,7 +101,10 @@ def stack_worker(arg_pair):
             #s.logger.warn("Swarp failed.", exc_info=1)
             print ('MaskMap failed for some reason in chip %s'%chip)
         print ('Combining masks with weightmaps for chip %s, part %s'%(chip,key))
+        starttime=float(time.time())
         combine_mask_weight(s,chip,key)
+        endtime=float(time.time())
+        print('Finished creating masked weightmaps for chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
         if wgt_cmd==False:
             print ('Already done the weighted stack of chip %s, part %s, going to the next, or the combination'%(chip,key))
         else:

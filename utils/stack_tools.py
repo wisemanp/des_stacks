@@ -567,7 +567,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
     np.savetxt(headerlist_name,headerlist,fmt='%s')
 
     try:
-        for img in img_list:
+        for img in resamplist:
             imgname = os.path.split(img)[-1]
             imgroot = imgname[:-5]
             if imgroot[-2:]=='fi':
@@ -581,7 +581,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
             if os.path.isfile(header_name):
                 os.remove(header_name)
             h.totextfile(header_name)
-            
+
     except TypeError:
         img = str(img_list)
         h = fits.getheader(img)

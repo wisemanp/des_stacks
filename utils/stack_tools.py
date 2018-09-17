@@ -570,6 +570,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
         for img in resamplist:
             imgname = os.path.split(img)[-1]
             imgroot = imgname[:-5]
+            logger.info(img)
             if imgroot[-2:]=='fi':
                 imgroot = imgroot[:-3]
             try:

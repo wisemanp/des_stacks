@@ -789,16 +789,22 @@ def combine_mask_weight(s,chip,j):
     for f in np.loadtxt(resamplist_name,dtype='str'):
         if f[-3:]=='[0]':
             f = f[:-3]
-        wn = os.path.join(s.temp_dir,f.replace('fits','weight.fits'))
-        mn = os.path.join(s.temp_dir,f.replace('fits','head.mask.fits'))
-        masklist.append(mn)
-        w = fits.open(wn)
-        wd = w[0].data
-        m = fits.getdata(mn)
-        maskweight = np.multiply(wd,m)
-        w[0].data = maskweight
-        #print ('Weight size',w[0].header['NAXIS1'],w[0].header['NAXIS2'])
-        w.writeto(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')),overwrite=True)
-        maskweightlist.append(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')))
+        try:
+            wn = os.path.join(s.temp_dir,f.replace('fits','weight.fits'))
+            mn = os.path.join(s.temp_dir,f.replace('fits','head.mask.fits'))
+            masklist.append(mn)
+            w = fits.open(wn)
+            wd = w[0].data
+            m = fits.getdata(mn)
+            maskweight = np.multiply(wd,m)
+            w[0].data = maskweight
+            #print ('Weight size',w[0].header['NAXIS1'],w[0].header['NAXIS2'])
+            w.writeto(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')),overwrite=True)
+            maskweightlist.append(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')))
+        except:
+            wn = os.path.join(s.temp_dir,f.replace('fits','weight.fits'))
+            w = fits.open(wn)
+            w.writeto(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')),overwrite=True)
+            maskweightlist.append(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')))
     np.savetxt(resamplist_name.replace('resamp','maskweight'),np.array(maskweightlist),fmt='%s')
     return maskweightlist

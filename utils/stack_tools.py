@@ -574,8 +574,8 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
             if imgroot[-2:]=='fi':
                 imgroot = imgroot[:-3]
             try:
-                img = img[:-3]
-                h = fits.getheader(img)
+                imgn = img[:-3]
+                h = fits.getheader(imgn)
             except:
                 h = fits.getheader(img)
             header_name = os.path.join(s.temp_dir,imgroot+'.resamp.head')

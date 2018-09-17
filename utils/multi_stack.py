@@ -92,8 +92,8 @@ def stack_worker(arg_pair):
             print ('Current dir: %s'%os.curdir)
             print ('This command: %s'%maskmap_cmd)
             starttime=float(time.time())
-            maskp = subprocess.Popen(maskmap_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            outs,errs = maskp.communicate()
+            maskp = subprocess.Popen(maskmap_cmd)#,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            #outs,errs = maskp.communicate()
             endtime=float(time.time())
             print('Finished masking chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
         except (OSError, IOError):

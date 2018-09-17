@@ -86,13 +86,14 @@ def stack_worker(arg_pair):
             mm_conf.write('%s  = %s     ;\n'%(p,params[p]))
         mm_conf.close()
         print ('Hopefully saved params: \n %s \n to %s '%(params,mm_conf_name))
-        maskmap_cmd = ['/home/wiseman/software/cliputils/MaskMap','<',mm_conf_name]
+        maskmap_cmd = ['/home/wiseman/software/cliputils/MaskMap']
         try:
             print ('Making mask for chip %s, part %s'%(chip,key))
             print ('Current dir: %s'%os.curdir)
             print ('This command: %s'%maskmap_cmd)
+            config_file = open(mm_conf_name)
             starttime=float(time.time())
-            maskp = subprocess.Popen(maskmap_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            maskp = subprocess.Popen(maskmap_cmd,stdin=config_file,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             outs,errs = maskp.communicate()
             endtime=float(time.time())
             print('Finished masking chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))

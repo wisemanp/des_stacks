@@ -97,14 +97,14 @@ def init_phot(s,chip,cat,pl='n'):
     if not s.cuts:
 
         if final ==True:
-            imgname = os.path.join(s.band_dir,'ccd_%s_sci.fits'%chip)
+            imgname = os.path.join(s.band_dir,'ccd_%s_clipweighted_sci.fits'%chip)
         else:
             imgname = s.band_dir+'/ccd_%s_temp.fits'%chip
 
 
     else:
         if final ==True:
-            imgname = os.path.join(s.band_dir,'ccd_%s_%s_%s_sci.fits'%(chip,s.band,s.cutstring))
+            imgname = os.path.join(s.band_dir,'ccd_%s_%s_%s_clipweighted_sci.fits'%(chip,s.band,s.cutstring))
         else:
             imgname = s.band_dir+'/ccd_%s_%s_%s_temp.fits'%(chip,s.band,s.cutstring)
     cuts = imgname.split('_')

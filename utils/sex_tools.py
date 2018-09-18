@@ -45,7 +45,7 @@ def sex_for_psfex(s,chip,cuts=None):
         if not cuts:
             img = band_dir+'/ccd_%s.fits'%chip
         else:
-            img = os.path.join(band_dir,'ccd_%s_%s_%s_sci.fits'%(chip,s.band,s.cutstring))
+            img = os.path.join(band_dir,'ccd_%s_%s_%s_clipweighted_sci.fits'%(chip,s.band,s.cutstring))
     os.chdir(os.path.join(band_dir,chip,'psf'))
     #run SExtractor
     logger.info('Got as far as starting SExtractor')
@@ -136,7 +136,7 @@ def sex_for_cat(s,chip,cuts = None):
         if not cuts:
             img = band_dir+'/ccd_%s.fits'%chip
         else:
-            img = os.path.join(band_dir,'ccd_%s_%s_%s_sci.fits'%(chip,s.band,s.cutstring))
+            img = os.path.join(band_dir,'ccd_%s_%s_%s_clipweighted_sci.fits'%(chip,s.band,s.cutstring))
     logger.info("Starting source extraction using the modelled PSF")
     start = float(time.time())
     sex_cmd = ['sex','-CATALOG_NAME',sexcat,img]

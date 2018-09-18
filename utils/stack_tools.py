@@ -269,14 +269,28 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
         else:
             if nofiles ==0:
                 cliptab_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(MY,s.field,s.band,chip,s.cutstring,j))
-
+                clip_sigs = {
+                'SN-X1':15,
+                'SN-X2':15,
+                'SN-C1':15,
+                'SN-C2':15,
+                'SN-S1':15,
+                'SN-S2':15,
+                'SN-E1':15,
+                'SN-E2':15,
+                'SN-X3':10,
+                'SN-C3':10,
+                }
                 swarp_clip = [
                 'swarp',
                 '@%s'%resamplist_name,
                 '-IMAGEOUT_NAME',fn_out,
                 '-CLIP_LOGNAME',cliptab_name,
+                '-CLIP_SIGMA',clip_sigs[s.field]
                 ]
                 maskweightlist_name = resamplist_name.replace('resamp','maskweight')
+
+
                 swarp_weight = [
                 'swarp',
                 '@%s'%resamplist_name,
@@ -570,7 +584,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
         for img in resamplist:
             imgname = os.path.split(img)[-1]
             imgroot = imgname[:-5]
-            
+
             if imgroot[-2:]=='fi':
                 imgroot = imgroot[:-3]
             try:

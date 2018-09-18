@@ -286,7 +286,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
                 '@%s'%resamplist_name,
                 '-IMAGEOUT_NAME',fn_out,
                 '-CLIP_LOGNAME',cliptab_name,
-                '-CLIP_SIGMA',clip_sigs[s.field]
+                '-CLIP_SIGMA',str(clip_sigs[s.field])
                 ]
                 maskweightlist_name = resamplist_name.replace('resamp','maskweight')
 

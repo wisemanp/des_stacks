@@ -75,7 +75,7 @@ def stack_worker(arg_pair):
         'outliers': os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key)),
         'stackhead': stackhead_name,
         'headlist': os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,field,band,chip,s.cutstring,key)),
-        'mask':os.path.join(s.temp_dir,'mask.conf'),
+        'mask':os.path.join(s.temp_dir,'mask_%s.conf'%field),
         'masksuffix':'.mask.fits',
         'xsize':'4100',
         'ysize':'2100'

@@ -15,7 +15,7 @@ import multiprocessing
 import logging
 from shutil import copyfile
 import time
-from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmds, get_dessn_obs, get_des_obs_year,resample 
+from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmds, get_dessn_obs, get_des_obs_year,resample
 from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
 import des_stacks.utils.multi_stack as multi_stack
 from des_stacks.analysis.astro import init_phot, init_calib
@@ -263,6 +263,7 @@ class Stack():
             ana_dir = os.path.join(chip_dir,'ana')
             os.chdir(ana_dir)
             sexcat = self.sexcats[counter]
+            self.logger.info('Going to init_phot to do photometry on %s'%sexcat)
             cat = Table.read(sexcat).to_pandas()
             limmags[chip]=init_phot(self,chip,cat)
         return limmags

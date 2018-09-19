@@ -63,49 +63,52 @@ def stack_worker(arg_pair):
             except (OSError, IOError):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('Swarp failed for some reason in chip %s'%chip)
-        mm_conf_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_mm.config'%(y,field,band,chip,s.cutstring,key))
-        mm_conf = open(mm_conf_name, 'w')
-        stackhead = fits.getheader(outname)
-        stackhead_name = outname.replace('.fits','.head')
-        try:
-            stackhead.totextfile(stackhead_name)
-        except:
-            pass
+        if outname==False:
+            print ('No outname - assume you are skipping this for a reason')
+        else:
+            mm_conf_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_mm.config'%(y,field,band,chip,s.cutstring,key))
+            mm_conf = open(mm_conf_name, 'w')
+            stackhead = fits.getheader(outname)
+            stackhead_name = outname.replace('.fits','.head')
+            try:
+                stackhead.totextfile(stackhead_name)
+            except:
+                pass
 
-        params = {
-        'outliers': os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key)),
-        'stackhead': stackhead_name,
-        'headlist': os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,field,band,chip,s.cutstring,key)),
-        'mask':os.path.join(s.temp_dir,'mask.conf'),
-        'masksuffix':'.mask.fits',
-        'xsize':'4100',
-        'ysize':'2100'
-        }
-        for p in params.keys():
-            mm_conf.write('%s  = %s     ;\n'%(p,params[p]))
-        mm_conf.close()
+            params = {
+            'outliers': os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key)),
+            'stackhead': stackhead_name,
+            'headlist': os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,field,band,chip,s.cutstring,key)),
+            'mask':os.path.join(s.temp_dir,'mask.conf'),
+            'masksuffix':'.mask.fits',
+            'xsize':'4100',
+            'ysize':'2100'
+            }
+            for p in params.keys():
+                mm_conf.write('%s  = %s     ;\n'%(p,params[p]))
+            mm_conf.close()
 
-        maskmap_cmd = ['/home/wiseman/software/cliputils/MaskMap']
-        try:
-            print ('Making mask for chip %s, part %s'%(chip,key))
-            print ('Current dir: %s'%os.curdir)
-            print ('This command: %s'%maskmap_cmd)
-            config_file = open(mm_conf_name)
-            print ('Stdin: %s'%mm_conf_name)
+            maskmap_cmd = ['/home/wiseman/software/cliputils/MaskMap']
+            try:
+                print ('Making mask for chip %s, part %s'%(chip,key))
+                print ('Current dir: %s'%os.curdir)
+                print ('This command: %s'%maskmap_cmd)
+                config_file = open(mm_conf_name)
+                print ('Stdin: %s'%mm_conf_name)
+                starttime=float(time.time())
+                maskp = subprocess.Popen(maskmap_cmd,stdin=config_file,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                outs,errs = maskp.communicate()
+                endtime=float(time.time())
+
+                print('Finished masking chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
+            except (OSError, IOError):
+                #s.logger.warn("Swarp failed.", exc_info=1)
+                print ('MaskMap failed for some reason in chip %s'%chip)
+            print ('Combining masks with weightmaps for chip %s, part %s'%(chip,key))
             starttime=float(time.time())
-            maskp = subprocess.Popen(maskmap_cmd,stdin=config_file,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            outs,errs = maskp.communicate()
+            combine_mask_weight(s,chip,key)
             endtime=float(time.time())
-
-            print('Finished masking chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
-        except (OSError, IOError):
-            #s.logger.warn("Swarp failed.", exc_info=1)
-            print ('MaskMap failed for some reason in chip %s'%chip)
-        print ('Combining masks with weightmaps for chip %s, part %s'%(chip,key))
-        starttime=float(time.time())
-        combine_mask_weight(s,chip,key)
-        endtime=float(time.time())
-        print('Finished creating masked weightmaps for chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
+            print('Finished creating masked weightmaps for chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
         if wgt_cmd==False:
             print ('Already done the weighted stack of chip %s, part %s, going to the next, or the combination'%(chip,key))
         else:
@@ -122,7 +125,8 @@ def stack_worker(arg_pair):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('Swarp failed for some reason in chip %s'%chip)
 
-        print('Added %s to list of images to make final stack' %outname.replace('clipped','weighted'))
+        if outname!=False:
+            print('Added %s to list of images to make final stack' %outname.replace('clipped','weighted'))
 
     print('Now combining mini-stacks into final science frame for chip %s'%chip)
     staged_list = np.array(staged_imgs)

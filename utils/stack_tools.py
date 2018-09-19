@@ -413,7 +413,7 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
             else:
                 curr_obs_dir = os.path.join(curr_obs_dir,obs_subdir_list[0])
         except:
-            logger.info('No files in %s'%curr_obs_dir)
+            logger.warning('No files in %s'%curr_obs_dir)
             return None
 
 

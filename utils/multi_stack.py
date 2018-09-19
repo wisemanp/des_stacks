@@ -39,6 +39,7 @@ def stack_worker(arg_pair):
     for key,value in cmd_list.items():
 
         clip_cmd,wgt_cmd,outname = value
+        print (clip_cmd,wgt_cmd,outname)
         if outname:
 
             staged_imgs.append(outname.replace('clipped','weighted'))

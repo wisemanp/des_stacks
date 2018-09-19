@@ -210,14 +210,14 @@ class optimiser():
         #Performs the actual stack for a given set of cuts, and returns the limiting magnitudes and psf
         print ('Making stack of',f,b,y,ch,wd,cuts)
         s = stack.Stack(f,b,y,ch,wd,cuts,db=True)
-        scifile = os.path.join(s.band_dir,'ccd_%s_%s_%s_%s_sci.fits'%(ch[0],b,cuts['teff'],cuts['psf']))
+        scifile = os.path.join(s.band_dir,'ccd_%s_%s_%s_%s_clipweighted_sci.fits'%(ch[0],b,cuts['teff'],cuts['psf']))
         if not os.path.isfile(scifile):
             print ('Did not find a file for these cuts; doing stack')
             s.do_my_stack(cuts=cuts,final=True)
         else:
             print ('Found a stacked file for these cuts; going to sex')
         s.ana_dir = os.path.join(s.band_dir,ch[0],'ana')
-        sexname = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%s_%s_sci.sexcat' %(y,f,b,ch[0],cuts['teff'],cuts['psf']))
+        sexname = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%s_%s_clipweighted_sci.sexcat' %(y,f,b,ch[0],cuts['teff'],cuts['psf']))
         print ('Looking for file under the name: %s'%sexname)
         if os.path.isfile(sexname):
             print ('Found a sexcat for these cuts at: %s'%sexname)
@@ -248,7 +248,7 @@ def main():
 
                     print ('Sending chip %s to optimize'%ch)
                     best = o.optimise(f,b,y,ch)
-                    
+
                     best_teff_df = best_teff_df.append(pd.DataFrame([[f,b,ch,best['depth'][0],best['depth'][1]]],columns=best_teff_df.columns))
                     best_psf_df = best_psf_df.append(pd.DataFrame([[f,b,ch,best['psf'][0],best['psf'][1]]],columns=best_psf_df.columns))
     best_teff_df.to_csv('/media/data3/wiseman/des/coadding/optimise/best_teff.csv',index=False)

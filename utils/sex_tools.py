@@ -120,7 +120,7 @@ def sex_for_cat(s,chip,cuts = None):
     if not cuts:
         sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s.sexcat' %(s.my,s.field,s.band,chip))
     else:
-        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%s_debug.sexcat' %(s.my,s.field,s.band,chip,s.cutstring))
+        sexcat = os.path.join(ana_dir,'MY%s_%s_%s_%s_%s_clipweighted_sci.sexcat' %(s.my,s.field,s.band,chip,s.cutstring))
 
     try:
         zp_cut,psf_cut = cuts['zp'],cuts['psf']

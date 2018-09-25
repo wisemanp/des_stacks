@@ -181,4 +181,5 @@ def main(args):
         print (res)
 
 if __name__=="__main__":
-    main()
+    args = parser()
+    main(args)

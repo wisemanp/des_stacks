@@ -49,7 +49,7 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     sexdat = fits.getdata(sexcat,ext=1)
     logger.info("Successfully read in catalog: %s" %y3a1_fn)
     Band = s.band.capitalize()
-    star_inds = (((y3a1['MAG_AUTO_%s'%Band]<18) & (y3a1['CLASS_STAR_%s'%Band]>0.3) |((y3a1['SPREAD_MODEL_%s'%Band] + 3*y3a1['SPREADERR_MODEL_%s'%Band])<0.003)) & ((y3a1['MAG_AUTO_%s'%Band]>19.5)&(y3a1['MAG_AUTO_%s'%Band]<23.5)))
+    star_inds = ((((y3a1['SPREAD_MODEL_%s'%Band] + 3*y3a1['SPREADERR_MODEL_%s'%Band])<0.003)) & ((y3a1['MAG_AUTO_%s'%Band]>19.5)&(y3a1['MAG_AUTO_%s'%Band]<23.5)))
 
     y3a1_stars = y3a1[star_inds]
 

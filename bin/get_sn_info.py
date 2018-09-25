@@ -1,9 +1,20 @@
+#!/usr/bin/env python
+"""get_sn_info.py: Python script to get information on hosts for single SN or a list of SN names."""
+"""Simply type get_sn_info -n DESYYFFabc, where YY = year, FF = field, abc = name."""
+ 
+__author__      = "Phil Wiseman"
+__email__       = "P.S.Wiseman@soton.ac.uk"
+__version__     = "0.9"
+__date__        = "25/09/2018"
+
+
 import numpy as np
 import pandas as pd
 import _pickle as cpickle
 import os
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+
 
 def parser():
     parser = argparse.ArgumentParser()

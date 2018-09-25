@@ -12,8 +12,10 @@ import numpy as np
 import pandas as pd
 import _pickle as cpickle
 import os
+import argparse
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+from astropy.table import Table
 
 
 def parser():
@@ -22,7 +24,7 @@ def parser():
     parser.add_argument('-l','--namelist',help='List of SN names as a .txt or .csv file',default = None)
     parser.add_argument('-av','--avoid',help='Avoid these SN, if it is in the list given by l. e.g. [DES16C2nm]',default=None)
     parser.add_argument('-sf','--savename',help='Filename to save results to',default=None)
-    parser.add_argument('-ow','--overwrite',help='Overwrite existing results for SN that already have results?',action = 'store_true')
+    parser.add_argument('-ow','--overwrite',help='When given, I will overwrite existing results for SN that already have results in the named results file',action = 'store_true')
     parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=15)
     return parser.parse_args()
 
@@ -56,9 +58,10 @@ def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
     return [d_DLR, A_ARCSEC, B_ARCSEC, rPHI]
 
 class sn():
-    def __init__(sn_name,args):
+    def __init__(self,sn_name,args):
         self.sn_name = sn_name
         self.args = args
+
     def get_sn_dat(self):
 
         f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
@@ -66,14 +69,17 @@ class sn():
 
         sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
         gap = ' '
-        ngaps = (11-len(sn))*gap
+        ngaps = (11-len(self.sn_name))*gap
         dat = sncand[sncand['TRANSIENT_NAME']==self.sn_name+ngaps]
 
-        ra,dec =dat[['RA','DEC']].iloc[0].values
+        try:
+            ra,dec =dat[['RA','DEC']].iloc[0].values
+        except IndexError:
+            print ('WARNING: it looks like this transient does not exist in SNCAND. Programme will crash')
         y = dat['SEASON'].values[0]
         self.ra,self.dec,self.y = ra,dec,y
         #################
-        obj_field = sn[5:7]
+        obj_field = self.sn_name[5:7]
         self.field=obj_field
         the_field = chiplims[obj_field]
         for ccd in the_field.keys():
@@ -93,8 +99,8 @@ class sn():
             if len(sn_res_row['SN_NAME'])==0:
                 return None
             else:
-                print ('Here are the results for %s'%self.sn_name)
-                print (sn_res_row)
+                print ('Found the results in the main transient results file, /media/data3/wiseman/des/coadding/results/all_transients.result')
+                
                 return (sn_res_row)
 
     def check_chip_cap(self):
@@ -104,12 +110,12 @@ class sn():
         cap_res_coords = SkyCoord(ra=chip_cap_res['X_WORLD'].values*u.deg,dec = chip_cap_res['Y_WORLD'].values*u.deg)
         sn_coords = SkyCoord(ra=self.ra*u.deg,dec =self.dec*u.deg)
         d2d= sn_coords.separation(cap_res_coords)
-        close_inds = d2d <self.args.threshold*u.arcsec
+        close_inds = d2d <float(self.args.threshold)*u.arcsec
         dists = d2d[close_inds]
         match = chip_cap_res.iloc[close_inds]
         angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
         match['ANGSEP'] = angsep
-        dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
+        dlr = get_DLR_ABT(self.ra,self.dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
         match['DLR'] = np.array(dlr)
         print ('Went into the Common Aperture Photometry and found galaxies with \n the following angular separations and DLRs')
         print (match[['ANGSEP','DLR']])
@@ -119,7 +125,7 @@ def get_results(sn_name,args):
     s = sn(sn_name,args)
     s.get_sn_dat()
     is_res = s.check_res()
-    if not is_res:
+    if not isinstance(is_res,pd.DataFrame):
         res = s.check_chip_cap()
     else:
         res = is_res
@@ -127,7 +133,6 @@ def get_results(sn_name,args):
 
 def main(args):
     avoid_list = []
-    args.version = int(args.version)
     if args.avoid:
         avoid_list = [i for i in args.avoid.split(',')]
     else:
@@ -135,7 +140,7 @@ def main(args):
     res = pd.DataFrame()
     if args.sn_name:
         print('Have been given a name, looking for photometry for %s only'%args.sn_name)
-        res = res.append(get_results(sn_name,args))
+        res = res.append(get_results(args.sn_name,args))
 
     else:
 

@@ -87,7 +87,7 @@ def main(args,logger):
         if not os.path.isfile(sn_res_fn):
             from des_stacks import des_stack as stack
             from des_stacks.analysis.astro import cap_phot_sn
-            cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=True)
+            cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False)
         if not os.path.isfile(sn_res_fn):
             os.rename(os.path.join('/media/data3/wiseman/des/coadding/results',
             '%s.result'%sn),os.path.join(sn_cap_dir,'%s.result'%sn))

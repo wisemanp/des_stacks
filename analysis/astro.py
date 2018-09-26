@@ -310,7 +310,11 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
 
-        quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        if autocuts:
+            quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        else:
+            qualfiles = glob.glob(os.path.join(s.band_dir,str(chip),'ana','*_ana.qual'))
+            quals =np.loadtxt(qualfiles[-1])
         zp = float(quals[0])
         av_fwhm = float(quals[2])
         capcat_fn = os.path.join(sg.out_dir,'CAP',sn_name,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))

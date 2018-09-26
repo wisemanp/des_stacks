@@ -42,6 +42,9 @@ def parser():
     parser.add_argument('-ss','--size',help='Stamp size (arcsec)',default=30,type=float)
     parser.add_argument('-sh','--show',help='Show image now', action ='store_true')
     parser.add_argument('-p','--path',help='Full path to output image if you are making a stamp',default = 'sn_dir')
+    parser.add_argyment('-vm','--vmin',help='vmin for greyscale',default=-0.8)
+    parser.add_argyment('-vx','--vmax',help='vmax for greyscale',default=15.0)
+
     return parser.parse_args()
 
 def get_sn_dat(sn):
@@ -139,7 +142,7 @@ def main(args,logger):
                         logger.info('Could not recenter to outside the frame')
 
                     fg.show_lines([ver_line,hor_line],color='r',linewidth=.8)
-                    fg.show_grayscale(vmin=-0.8,vmax=15.)
+                    fg.show_grayscale(vmin=float(args.vmin),vmax=float(args.vmax))
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
                     fg.set_theme('publication')

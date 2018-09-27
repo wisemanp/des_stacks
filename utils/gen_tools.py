@@ -1,5 +1,20 @@
 """gen_tools.py: A collection of generic functions to assist with processing and analysing stack data"""
 
+import numpy as np
+###################
+### DES stuff ###
+def get_des_bands():
+    return ['g','r','i','z']
+
+def get_good_des_chips():
+    good_des_chips = []
+    for c in range(1,63):
+        if c not in [2,31,61]:
+            good_des_chips.append(c)
+    return good_des_chips
+###################
+# stats
+
 def mc_robust_median(dist,
                      return_sigma = False,
                      return_indices = False,

@@ -100,7 +100,7 @@ class sn():
                 return None
             else:
                 print ('Found the results in the main transient results file, /media/data3/wiseman/des/coadding/results/all_transients.result')
-                
+
                 return (sn_res_row)
 
     def check_chip_cap(self):

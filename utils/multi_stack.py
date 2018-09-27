@@ -185,9 +185,9 @@ def sex_worker(arg_pair):
 
     sexcat = sex_for_cat(s,chip,cuts)
 
-    zp,sex_fwhm = init_calib(s,chip,sexcat)
+    zp,zp_sig,sex_fwhm,sex_fwhm_sig = init_calib(s,chip,sexcat)
 
-    qual = np.array([zp,model_fwhm,sex_fwhm])
+    qual = np.array([zp,zp_sig,model_fwhm,sex_fwhm,sex_fwhm_sig])
     qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
     np.savetxt(qual_fn,qual)
 

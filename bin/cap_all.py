@@ -5,24 +5,33 @@ import argparse
 import os
 from des_stacks import des_stack as stack
 from des_stacks.analysis.astro import cap_phot_all
-
+from des_stacks.utils.gen_tools import get_good_des_chips
 fields = ['X1','X2','X3','C1','C2','C3','E1','E2','S1','S2']
 mys = ['1','2','3','4','5','none']
-good_des_chips = []
-for c in range(1,63):
-    if c not in [2,31,61]:
-        good_des_chips.append(c)
+
+chips = get_good_des_chips()
 
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-a','--avoid',default=None)
     parser.add_argument('-s','--skipdone',action='store_true')
+    parser.add_argument('-f','--field',default = 'all')
+    parser.add_argument('-my','--year',default='all')
+    parser.add_argument('-ch','--chip',default='all')
     return parser.parse_args()
+
 def main(args):
+    if args.year !='all':
+        mys = args.year
+    if args.field != 'all':
+        fields = args.field
+    if args.chip !='all':
+        chips = args.chip
     for my in mys:
+
         for f in fields:
             f = 'SN-'+f
-            for ch in good_des_chips:
+            for ch in chips:
                 n_bad = 0
                 for category in [my,f,ch]:
                     if args.avoid:

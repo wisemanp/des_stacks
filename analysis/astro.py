@@ -22,6 +22,7 @@ from scipy.interpolate import UnivariateSpline as spln
 from des_stacks import des_stack as stack
 from des_stacks.utils.stack_tools import make_cap_stamps, resample_chip_for_cap, get_chip_vals, get_cuts
 from des_stacks.utils.sex_tools import cap_sex_sn, cap_sex_chip, get_sn_dat
+from des_stacks.utils.gen_tools import mc_robust_median as r_median
 
 sns.set_palette('Dark2')
 sns.set_color_codes(palette='colorblind')
@@ -79,10 +80,11 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     good_cat_mag = init_match_cat_mag.iloc[good_inds]
     good_cat_magerr = init_match_cat_magerr.iloc[good_inds]
     # subtract to get the frame ZP
-    zp = np.median(good_cat_mag.values - good_new_mag.values)
-    psf = np.median(new['FWHM_WORLD']*3600)
+    diffs = good_cat_mag.values - good_new_mag.values
+    zp,zp_sig = r_median(diffs,return_sigma=True)
+    psf,psf_sig = r_median(new['FWHM_WORLD']*3600,return_sigma=True)
     logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(s.field,s.my,s.band,chip))
-    return zp,psf
+    return zp,zp_sig,psf,psf_sig
 
 def init_phot(s,chip,cat,pl='n'):
     s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
@@ -110,7 +112,8 @@ def init_phot(s,chip,cat,pl='n'):
     cuts = imgname.split('_')
     quals= np.loadtxt(os.path.join(ana_dir,'%s_ana.qual'%s.cutstring))
     zp = float(quals[0])
-    av_fwhm = float(quals[1])
+    zp_sig = float(quals[1])
+    av_fwhm = float(quals[3])
     cat = cat.sort_values(by='X_WORLD')
     cat['MAG_AUTO']=cat['MAG_AUTO']+zp
     try:
@@ -219,6 +222,7 @@ def init_phot(s,chip,cat,pl='n'):
     reshead +='# CCD Number: %s\n' % chip
     reshead +='# Total exposure time: %s s\n' %exptime
     reshead +='# Zeropoint based on AUTO photometry: %s \n'%zp
+    reshead +='# 1 sigma error on the zeropoint: %s \n'%zp_sig
     reshead +='# Limiting Kron magnitude based on matched objects: %.3f\n'% kr_lim
     reshead +='# %s sigma limiting magnitude based on matched objects: %.3f\n'%(limsig,kr_lim2)
     reshead +='# %s sigma limiting magnitude using zeropoint %.3f: %.3f\n' %(thresh,zp,skylim)
@@ -332,7 +336,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
         with open(os.path.join(s.band_dir,str(chip),'ana',
             '%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as resheader:
-            header = [next(resheader) for x in range(8)]
+            header = [next(resheader) for x in range(9)]
         limmag = header[-1].split(' ')[-1].strip('\n')
         logger.info("Found %s galaxies within %s arcseconds in %s band"%(len(match),dist_thresh,s.band))
         if len(match)==0:
@@ -488,7 +492,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat = capcat.iloc[truth.values]
         cats[s.band] = capcat
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
-                header = [next(res) for x in range(8)]
+                header = [next(res) for x in range(9)]
         limmag = header[-1].split(' ')[-1].strip('\n')
         limmags[s.band] = limmag
 

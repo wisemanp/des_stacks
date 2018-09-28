@@ -27,6 +27,7 @@ class Stack():
         self.my =my
         self.chips=chips
         self.coadding_dir =working_dir
+        self.new = new
         if cuts=={'none':None}:
             if self.band in ['g','r']:
                 cuts ={'teff':0.15, 'zp':None,'psf':None}
@@ -65,7 +66,7 @@ class Stack():
         self.res_dir = os.path.join(self.coadding_dir,'results')
         if not os.path.isdir(self.res_dir):
             os.mkdir(self.res_dir)
-        if new ==True:
+        if self.new ==True:
             self.out_dir = os.path.join(self.coadding_dir,'5yr_stacks')
         else:
             self.out_dir = os.path.join(self.coadding_dir,'stacks')

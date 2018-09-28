@@ -513,7 +513,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]
         limmag = header[-1].split(' ')[-1].strip('\n')
-        limflux = 10**(-2.5*(limmag-zp))
+        limflux = 10**(-2.5*(float(limmag)-zp))
         limmags[s.band] = limmag
         limfluxes[s.band] = limflux
 

@@ -213,8 +213,8 @@ def cap_sex_chip(sg,sr,si,sz,chip):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -240,13 +240,14 @@ def cap_sex_chip(sg,sr,si,sz,chip):
             check_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_check_aper.fits'%(s.my,s.field,chip,s.band))
             sex_cmd = [
             'sex',
+            '-MAG_ZEROPOINT',zp,
             '-CATALOG_NAME',sexcat,
             '-CHECKIMAGE_TYPE','APERTURES',
             '-CHECKIMAGE_NAME',check_name,
-            '-MAG_ZEROPOINT',zp,
             '%s,%s'%(white_name,resamp_name)
             ]
             logger.info('Running SExtractor in dual image mode in order to get common aperture photometry in the %s band'%s.band)
+            logger.debug(sex_cmd)
             sex_process = subprocess.Popen(sex_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             out,errs = sex_process.communicate()
             logger.info('Dual image SExtractor complete in the %s band: you now have common aperture photometry on chip %s!'%(s.band,chip))

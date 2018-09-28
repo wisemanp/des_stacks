@@ -44,7 +44,7 @@ def parser():
     parser.add_argument('-p','--path',help='Full path to output image if you are making a stamp',default = 'sn_dir')
     parser.add_argument('-vm','--vmin',help='vmin for greyscale',default=-0.8)
     parser.add_argument('-vx','--vmax',help='vmax for greyscale',default=15.0)
-    parser.add_argument('-n','--new',help = 'Use new stacks?',action=store_true )
+    parser.add_argument('-n','--new',help = 'Use new stacks?',action='store_true' )
 
     return parser.parse_args()
 

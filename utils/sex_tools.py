@@ -240,7 +240,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
             check_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_check_aper.fits'%(s.my,s.field,chip,s.band))
             sex_cmd = [
             'sex',
-            '-MAG_ZEROPOINT',zp,
+            '-MAG_ZEROPOINT',str(zp),
             '-CATALOG_NAME',sexcat,
             '-CHECKIMAGE_TYPE','APERTURES',
             '-CHECKIMAGE_NAME',check_name,

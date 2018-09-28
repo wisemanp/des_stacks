@@ -228,6 +228,8 @@ def cap_sex_chip(sg,sr,si,sz,chip):
         copyfile(os.path.join(sg.config_dir,'cap','default.%s'%ext),os.path.join(cap_chip_dir,'default.%s'%ext))
     sexcats ={}
     for s in [sg,sr,si,sz]:
+        quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        zp = float(quals[0])
         white_name = '%s_%s_%s_white.fits'%(s.my,s.field,chip)
         sexcat = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sexcat'%(s.my,s.field,chip,s.band))
         if os.path.isfile(sexcat):
@@ -241,6 +243,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
             '-CATALOG_NAME',sexcat,
             '-CHECKIMAGE_TYPE','APERTURES',
             '-CHECKIMAGE_NAME',check_name,
+            '-MAG_ZEROPOINT',zp,
             '%s,%s'%(white_name,resamp_name)
             ]
             logger.info('Running SExtractor in dual image mode in order to get common aperture photometry in the %s band'%s.band)

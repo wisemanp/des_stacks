@@ -242,7 +242,7 @@ def init_phot(s,chip,cat,pl='n'):
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
 #####################################################################################################
-def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
+def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False,new=True):
     '''get aperture photometry for a single sn host'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -272,7 +272,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         cuts = [get_cuts(f,b) for b in bands]
     else:
         cuts = [{'teff': 0.15, 'psf':None},{'teff': 0.15,'psf':None},{'teff': 0.25,'psf':None},{'teff': 0.25,'psf':None}]
-    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
+    sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter],new=new) for counter,b in enumerate(bands)]
 
     # if there is no white image, make ones
     det_name = os.path.join(sg.out_dir,'CAP',sn_name,'%s_white_stamp.fits'%(sn_name))
@@ -443,7 +443,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     if autocuts:
         cuts = [get_cuts(f,b) for b in bands]
     else:
-        cuts = [{'teff': 0.15, 'psf':None},{'teff': 0.15,'psf':None},{'teff': 0.25,'psf':None},{'teff': 0.25,'psf':None}]
+        cuts = [{'teff': 0.15, 'psf':2.2},{'teff': 0.2,'psf':2.2},{'teff': 0.24,'psf':2.4},{'teff': 0.4,'psf':2.6}]
     sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
 
     # if there is no white image, make one
@@ -454,6 +454,12 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     # do common aperture photometry
     logger.info("Going to cap_sex to do CAP on each band")
     sexcats =cap_sex_chip(sg,sr,si,sz,chip)
+    '''for s in [sg,sr,si,sz]:
+        sexcat = sexcats[s.band]
+        zp,zp_sig,sex_fwhm,sex_fwhm_sig = init_calib(s,chip,sexcat)
+        qual = np.array([zp,zp_sig,sex_fwhm,sex_fwhm_sig])
+        qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
+        np.savetxt(qual_fn,qual)'''
     # set up an empty results dataframe
     rescols= ['X_WORLD', 'Y_WORLD','X_IMAGE','Y_IMAGE',
                'A_IMAGE','B_IMAGE','THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE',
@@ -461,6 +467,10 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
                            'MAG_AUTO_r', 'MAGERR_AUTO_r','MAG_APER_r', 'MAGERR_APER_r',
                            'MAG_AUTO_i', 'MAGERR_AUTO_i','MAG_APER_i', 'MAGERR_APER_i',
                            'MAG_AUTO_z', 'MAGERR_AUTO_z','MAG_APER_z', 'MAGERR_APER_z',
+                           'FLUX_AUTO_g', 'FLUXERR_AUTO_g','FLUX_APER_g', 'FLUXERR_APER_g',
+                           'FLUX_AUTO_r', 'FLUXERR_AUTO_r','FLUX_APER_r', 'FLUXERR_APER_r',
+                           'FLUX_AUTO_i', 'FLUXERR_AUTO_i','FLUX_APER_i', 'FLUXERR_APER_i',
+                           'FLUX_AUTO_z', 'FLUXERR_AUTO_z','FLUX_APER_z', 'FLUXERR_APER_z',
                            'FWHM_WORLD_g','FWHM_WORLD_r','FWHM_WORLD_i','FWHM_WORLD_z',
                            'ELONGATION',
                            'KRON_RADIUS',
@@ -475,40 +485,52 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     chip_search_rad = np.abs(this_chip_lims[1][1]-this_chip_lims[0][1])
     gals_with_z,gals_with_z_coords = get_zs_box(sg,chip_cent_ra,chip_cent_dec,chip_search_rad)
     # find the galaxies that OzDES has redshifts for
-    cats, limmags = {},{}
+    cats, limmags, limfluxes = {},{},{}
     for s in [sg,sr,si,sz]:
         # load in the photometry from sextractor
         logger.info('Loading in sexcat with name: %s',sexcats[s.band])
         capcat = Table.read(sexcats[s.band]).to_pandas()
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
-        zp = float(quals[0])
-        av_fwhm = float(quals[2])
+        zp,zp_sig,av_fwhm = (float(quals[i]) for i in [0,1,2])
+
         capcat = capcat.sort_values(by='X_WORLD')
         logger.info("Calibrating in %s band using zeropoint from result file: %.3f"%(s.band,zp))
-        capcat['MAG_APER']=capcat['MAG_APER']+zp
-        capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
+
         # get rid of clearly wrong values
         truth =capcat['MAG_AUTO']<35
         capcat = capcat.iloc[truth.values]
+        capcat['MAGERR_SYST_AUTO'] = zp_sig
+        capcat['MAGERR_SYST_APER'] = zp_sig
+        capcat['MAGERR_STATSYST_AUTO'] = (zp_sig**2 + capcat['MAGERR_AUTO'].values**2)**0.5
+        capcat['MAGERR_STATSYST_APER'] = (zp_sig**2 + capcat['MAGERR_APER'].values**2)**0.5
+        auto_lower_than_inds = capcat['MAGERR_STATSYST_AUTO']<zp_sig
+        capcat['MAGERR_STATSYST_AUTO'][auto_lower_than_inds]=zp_sig
+        aper_lower_than_inds = capcat['MAGERR_STATSYST_APER']<zp_sig
+        capcat['MAGERR_STATSYST_APER'][aper_lower_than_inds]=zp_sig
+        capcat['MAG_ZEROPOINT'] = zp
+        capcat['MAG_ZEROPOINT_ERR'] = zp_sig
         cats[s.band] = capcat
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]
         limmag = header[-1].split(' ')[-1].strip('\n')
+        limflux = 10**(-2.5*(limmag-zp))
         limmags[s.band] = limmag
+        limfluxes[s.band] = limflux
 
     main_cat_df = cats['g']
     for counter, b in enumerate(bands[:3]):
         main_cat_df = main_cat_df.merge(cats[bands[counter+1]],left_index=True,right_index=True,how='outer',on=['X_WORLD','Y_WORLD','KRON_RADIUS','ELONGATION','A_IMAGE','B_IMAGE','THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE'],suffixes=('_%s'%b,'_%s'%bands[counter+1]))
     for b in bands:
-        main_cat_df['MAG_AUTO_%s'%s.band].fillna(limmags[b])
+        logger.info('Filling nanas in %s band with %s'%(b,limmags[b]))
+        main_cat_df['MAG_AUTO_%s'%b].fillna(limmags[b],inplace=True)
+        main_cat_df['MAG_APER_%s'%b].fillna(limmags[b],inplace=True)
+        main_cat_df['FLUX_AUTO_%s'%b].fillna(limfluxes[b],inplace=True)
+        main_cat_df['FLUX_APER_%s'%b].fillna(limfluxes[b],inplace=True)
 
     catobjs = SkyCoord(ra = main_cat_df['X_WORLD']*u.degree,dec = main_cat_df['Y_WORLD']*u.degree)
     # match the cap catalog with the ozdes one
     matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)
-
     matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
-
-
 
     return matched_cat_df
 

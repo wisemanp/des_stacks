@@ -44,6 +44,7 @@ def parser():
     parser.add_argument('-p','--path',help='Full path to output image if you are making a stamp',default = 'sn_dir')
     parser.add_argument('-vm','--vmin',help='vmin for greyscale',default=-0.8)
     parser.add_argument('-vx','--vmax',help='vmax for greyscale',default=15.0)
+    parser.add_argument('-n','--new',help = 'Use new stacks?',action=store_true )
 
     return parser.parse_args()
 
@@ -83,14 +84,22 @@ def main(args,logger):
         logger.info("Season: %s"%y)
         logger.info("Field:  %s"%f)
         logger.info("CCD:    %s"%chip)
-        sn_cap_dir = os.path.join(args.workdir,'5yr_stacks','CAP',sn)
+        if args.new:
+            sn_cap_dir = os.path.join(args.workdir,'5yr_stacks','CAP',sn)
+        else:
+            sn_cap_dir = os.path.join(args.workdir,'stacks','CAP',sn)
+
         if not os.path.isdir(sn_cap_dir):
             os.mkdir(sn_cap_dir)
         sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn)
         if not os.path.isfile(sn_res_fn):
             from des_stacks import des_stack as stack
             from des_stacks.analysis.astro import cap_phot_sn
-            cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False)
+            if args.new:
+                cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False)
+            else:
+                cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False,new=False)
+
         if not os.path.isfile(sn_res_fn):
             os.rename(os.path.join('/media/data3/wiseman/des/coadding/results',
             '%s.result'%sn),os.path.join(sn_cap_dir,'%s.result'%sn))

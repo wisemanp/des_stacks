@@ -21,7 +21,7 @@ import des_stacks.utils.multi_stack as multi_stack
 from des_stacks.analysis.astro import init_phot, init_calib
 
 class Stack():
-    def __init__(self, field, band, my, chips ,working_dir,cuts={'none':None},db = False):
+    def __init__(self, field, band, my, chips ,working_dir,cuts={'none':None},db = False,new=True):
         self.field = field
         self.band = band
         self.my =my
@@ -65,7 +65,10 @@ class Stack():
         self.res_dir = os.path.join(self.coadding_dir,'results')
         if not os.path.isdir(self.res_dir):
             os.mkdir(self.res_dir)
-        self.out_dir = os.path.join(self.coadding_dir,'5yr_stacks')
+        if new ==True:
+            self.out_dir = os.path.join(self.coadding_dir,'5yr_stacks')
+        else:
+            self.out_dir = os.path.join(self.coadding_dir,'stacks')
         if not os.path.isdir(self.out_dir):
             os.mkdir(self.out_dir)
         self.temp_dir = os.path.join(self.coadding_dir,'temp')

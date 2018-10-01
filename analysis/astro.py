@@ -513,7 +513,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]
         limmag = header[-1].split(' ')[-1].strip('\n')
-        limflux = 10**(-2.5*(float(limmag)-zp))
+        limflux = 10**((float(limmag)-zp)/-2.5)
         limmags[s.band] = limmag
         limfluxes[s.band] = limflux
 
@@ -524,9 +524,12 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         logger.info('Filling nanas in %s band with %s'%(b,limmags[b]))
         main_cat_df['MAG_AUTO_%s'%b].fillna(limmags[b],inplace=True)
         main_cat_df['MAG_APER_%s'%b].fillna(limmags[b],inplace=True)
+        main_cat_df['MAGERR_AUTO_%s'%b].fillna(-9999,inplace=True)
+        main_cat_df['MAGERR_APER_%s'%b].fillna(-9999,inplace=True)
         main_cat_df['FLUX_AUTO_%s'%b].fillna(limfluxes[b],inplace=True)
         main_cat_df['FLUX_APER_%s'%b].fillna(limfluxes[b],inplace=True)
-
+        main_cat_df['FLUXERR_AUTO_%s'%b].fillna(-9999,inplace=True)
+        main_cat_df['FLUXERR_APER_%s'%b].fillna(-9999,inplace=True)
     catobjs = SkyCoord(ra = main_cat_df['X_WORLD']*u.degree,dec = main_cat_df['Y_WORLD']*u.degree)
     # match the cap catalog with the ozdes one
     matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)

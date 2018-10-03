@@ -51,15 +51,15 @@ def parser():
 def get_sn_dat(sn):
     f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
     chiplims = cpickle.load(f)
-    conn = ea.connect(section='desoper')
-    q = 'select ra,dec,field,season,z_spec,z_spec_err from SNCAND \
-    where transient_name = \'%s\''%sn
-    dat = conn.query_to_pandas(q)
+    sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
+    gap = ' '
+    ngaps = (11-len(sn))*gap
+    dat = sncand[sncand['TRANSIENT_NAME']==sn+ngaps]
+
     ra,dec =dat[['RA','DEC']].iloc[0].values
     y = dat['SEASON'].values[0]
-    if y ==5:
-        y = 'none'
 
+    #################
     obj_field = sn[5:7]
     the_field = chiplims[obj_field]
     for ccd in the_field.keys():

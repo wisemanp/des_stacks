@@ -263,7 +263,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     bands = ['g','r','i','z']
 
     ra,dec,f,y,chip = get_sn_dat(sn_name)
-    if not args.new:
+    if not new:
         if y ==5:
             y='none'
     logger.info("Found transient in the database SNCAND")

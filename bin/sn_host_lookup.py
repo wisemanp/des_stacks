@@ -84,6 +84,9 @@ def main(args,logger):
         logger.info("Season: %s"%y)
         logger.info("Field:  %s"%f)
         logger.info("CCD:    %s"%chip)
+        if not args.ne:
+            if y ==5:
+                y='none'
         if args.new:
             sn_cap_dir = os.path.join(args.workdir,'5yr_stacks','CAP',sn)
         else:

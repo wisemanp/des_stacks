@@ -222,12 +222,13 @@ def main(args,logger):
                                                  'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
                                         fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
                                              size=8,color='b',weight='bold')
-                            if counter in [0,2]:
-                                fg.tick_labels.show_y()
-                            if counter in [2,3]:
-                                fg.tick_labels.show_x()
+
                         except:
                             pass
+                    if counter in [0,2]:
+                        fg.tick_labels.show_y()
+                    if counter in [2,3]:
+                        fg.tick_labels.show_x()
                 else:
                     fg = aplpy.FITSFigure('/media/data3/wiseman/des/coadding/config/blank2.fits',figure=fig,subplot=plot_locs[b])
                     fg.axis_labels.hide()

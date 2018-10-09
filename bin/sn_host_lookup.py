@@ -174,7 +174,7 @@ def main(args,logger):
                     except:
                         pass
 
-                    if not args.fc:
+                    if not args.finder:
                         try:
                             As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
                             ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values

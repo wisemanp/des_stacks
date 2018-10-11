@@ -24,7 +24,15 @@ def main(args):
     if args.year !='all':
         mys = args.year
     if args.field != 'all':
-        fields = [args.field]
+        try:
+            fields = args.field.split(',')
+
+        except:
+            try:
+                fields = args.field[0].split(' ')
+            except:
+                fields =args.field
+        
     if args.chip !='all':
         chips = args.chip
     for my in mys:

@@ -6,10 +6,7 @@ import os
 from des_stacks import des_stack as stack
 from des_stacks.analysis.astro import cap_phot_all
 from des_stacks.utils.gen_tools import get_good_des_chips
-fields = ['X1','X2','X3','C1','C2','C3','E1','E2','S1','S2']
-mys = ['1','2','3','4','5','none']
 
-chips = get_good_des_chips()
 
 def parser():
     parser = argparse.ArgumentParser()
@@ -21,6 +18,9 @@ def parser():
     return parser.parse_args()
 
 def main(args):
+    fields = ['X1','X2','X3','C1','C2','C3','E1','E2','S1','S2']
+    mys = ['1','2','3','4','5','none']
+    chips = get_good_des_chips()
     if args.year !='all':
         mys = args.year
     if args.field != 'all':

@@ -499,7 +499,10 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         if len(quals)!=4:
             s.run_stack_sex(cuts=cuts[counter],final=True)
+            quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+
         zp,zp_sig,av_fwhm = (float(quals[i]) for i in [0,1,2])
+        logger.info('Reading in zeropoint from %s' %os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
 
         capcat = capcat.sort_values(by='X_WORLD')
         logger.info("Calibrating in %s band using zeropoint from result file: %.3f"%(s.band,zp))

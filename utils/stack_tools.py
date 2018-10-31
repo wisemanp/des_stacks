@@ -775,6 +775,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4100,stamp_sizey=2100):
     '-IMAGEOUT_NAME','%s_%s_%s_riz.fits'%(sg.my,sg.field,chip),
     resamp_frame_str]
     logger.info("Making a detection image for MY%s, %s, chip %s for CAP"%(sg.my,sg.field,chip))
+    logger.info("Using this command: %s"%riz_cmd)
     starttime=float(time.time())
     p = subprocess.Popen(riz_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()

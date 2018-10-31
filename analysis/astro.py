@@ -26,7 +26,7 @@ from des_stacks.utils.gen_tools import mc_robust_median as r_median
 
 sns.set_palette('Dark2')
 sns.set_color_codes(palette='colorblind')
-
+hashes = "#" *15
 def init_calib(s,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
     logger = logging.getLogger(__name__)
@@ -492,11 +492,13 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     gals_with_z,gals_with_z_coords = get_zs_box(sg,chip_cent_ra,chip_cent_dec,chip_search_rad)
     # find the galaxies that OzDES has redshifts for
     cats, limmags, limfluxes = {},{},{}
-    for s in [sg,sr,si,sz]:
+    for counter,s in enumerate([sg,sr,si,sz]):
         # load in the photometry from sextractor
         logger.info('Loading in sexcat with name: %s',sexcats[s.band])
         capcat = Table.read(sexcats[s.band]).to_pandas()
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        if len(quals)!=4:
+            s.run_stack_sex(cuts=cuts[counter],final=True)
         zp,zp_sig,av_fwhm = (float(quals[i]) for i in [0,1,2])
 
         capcat = capcat.sort_values(by='X_WORLD')
@@ -531,6 +533,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     for counter, b in enumerate(bands[:3]):
         main_cat_df = main_cat_df.merge(cats[bands[counter+1]],left_index=True,right_index=True,how='outer',
         on=['X_WORLD','Y_WORLD',
+        'X_IMAGE','Y_IMAGE',
         'KRON_RADIUS','ELONGATION',
         'A_IMAGE','B_IMAGE',
         'THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE',
@@ -554,7 +557,9 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
 
 
     matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
+    logger.info("Done CAP on %s, MY%s, CCD %s. Saved result to %s "%(f,y,chip,os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip))))
 
+    logger.info(hashes)
     return matched_cat_df
 
 def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
@@ -591,10 +596,6 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
     cols = capres.columns.tolist() + [
         'SN_NAME',
-         'LIMMAG_g',
-         'LIMMAG_r',
-         'LIMMAG_i',
-         'LIMMAG_z',
          'DLR',
          'DLR_RANK',
          'ANGSEP'
@@ -610,13 +611,6 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     dists = d2d[close_inds]
     match = capres.iloc[close_inds]
     angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
-
-    limmags = {}
-    for b in bands:
-        with open(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/',my,f,b,str(chip),'ana',
-            '%s_%s_%s_%s_init.result'%(y,f,b,chip)),'r') as resheader:
-            header = [next(resheader) for x in range(8)]
-        limmags[b] = header[-1].split(' ')[-1].strip('\n')
     logger.info("Found %s galaxies within %s arcseconds"%(len(match),dist_thresh))
     if len(match)==0:
 

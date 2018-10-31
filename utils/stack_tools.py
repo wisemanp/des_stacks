@@ -760,7 +760,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4100,stamp_sizey=2100):
     # Now resample the  image
     resamp_frames = []
     for s in [sg,sr,si,sz]:
-        glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
+        glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_clipweighted*.resamp.fits'%(str(chip),s.band))
         glob_list = glob.glob(glob_string)
         resamp_frames.append(glob_list[0])
     resamp_frame_str = resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]

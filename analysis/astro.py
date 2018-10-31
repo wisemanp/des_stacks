@@ -476,6 +476,10 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
                            'FWHM_WORLD_g','FWHM_WORLD_r','FWHM_WORLD_i','FWHM_WORLD_z',
                            'ELONGATION',
                            'KRON_RADIUS',
+                           'MY',
+                           'FIELD'
+                           'CCDNUM',
+                           'PHOTOZ','PHOTOZ_ERR',
                            'CLASS_STAR_g','CLASS_STAR_r','CLASS_STAR_i','CLASS_STAR_z',
                            'LIMMAG_g','LIMMAG_r','LIMMAG_i','LIMMAG_z',
                            'FLUX_RADIUS_g','FLUX_RADIUS_r','FLUX_RADIUS_i','FLUX_RADIUS_z']
@@ -511,6 +515,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['MAGERR_STATSYST_APER'][aper_lower_than_inds]=zp_sig
         capcat['MAG_ZEROPOINT'] = zp
         capcat['MAG_ZEROPOINT_ERR'] = zp_sig
+        capcat['CCDNUM'] = chip
+        capcat['FIELD'] = f
         cats[s.band] = capcat
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]
@@ -521,7 +527,15 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
 
     main_cat_df = cats['g']
     for counter, b in enumerate(bands[:3]):
-        main_cat_df = main_cat_df.merge(cats[bands[counter+1]],left_index=True,right_index=True,how='outer',on=['X_WORLD','Y_WORLD','KRON_RADIUS','ELONGATION','A_IMAGE','B_IMAGE','THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE'],suffixes=('_%s'%b,'_%s'%bands[counter+1]))
+        main_cat_df = main_cat_df.merge(cats[bands[counter+1]],left_index=True,right_index=True,how='outer',
+        on=['X_WORLD','Y_WORLD',
+        'KRON_RADIUS','ELONGATION',
+        'A_IMAGE','B_IMAGE',
+        'THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE',
+        'MY',
+        'FIELD',
+        'CCDNUM',
+        'PHOTOZ','PHOTOZ_ERR'],suffixes=('_%s'%b,'_%s'%bands[counter+1]))
     for b in bands:
         logger.info('Filling nanas in %s band with %s'%(b,limmags[b]))
         main_cat_df['MAG_AUTO_%s'%b].fillna(limmags[b],inplace=True)
@@ -535,6 +549,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     catobjs = SkyCoord(ra = main_cat_df['X_WORLD']*u.degree,dec = main_cat_df['Y_WORLD']*u.degree)
     # match the cap catalog with the ozdes one
     matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)
+    matched_cat_df['PHOTOZ'],matched_cat_df['PHOTOZ_ERR']= '',''
+    matched_cat_df['MY'] = y
     matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
 
     return matched_cat_df

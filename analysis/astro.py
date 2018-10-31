@@ -449,9 +449,9 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     sg,sr,si,sz = [stack.Stack(f, b, y, chip ,wd,cuts[counter]) for counter,b in enumerate(bands)]
 
     # if there is no white image, make one
-    det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_white.fits'%(y,f,chip))
+    det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_riz.fits'%(y,f,chip))
     if not os.path.isfile(det_name):
-        logger.info("Couldn't find a detection image, so going to resample each band plus white to the same pixels")
+        logger.info("Couldn't find a detection image, so going to resample each band plus a riz combo to the same pixels")
         det_name = resample_chip_for_cap(sg,sr,si,sz,chip)
     # do common aperture photometry
     logger.info("Going to cap_sex to do CAP on each band")

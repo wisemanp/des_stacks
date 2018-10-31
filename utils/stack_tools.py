@@ -603,7 +603,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
         h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))
     return (weightlist_name,resamplist_name,headerlist)
 
-def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4000,stamp_sizey=2000):
+def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4100,stamp_sizey=2100):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -703,7 +703,7 @@ def get_chip_vals(f,chip,vals = 'center'):
     elif vals == 'lims':
         return this_chip_lims
 
-def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
+def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4100,stamp_sizey=2100):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -719,13 +719,13 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
     for s in [sg,sr,si,sz]:
         bd = s.band_dir
         # assume we don't have multiple versions of the science frame
-        glob_string = os.path.join(bd,'ccd_%s_%s_*_sci.fits'%(str(chip),s.band))
+        glob_string = os.path.join(bd,'ccd_%s_%s_*_clipweighted*.fits'%(str(chip),s.band))
         logger.info("Looking for things that look like: '%s'"%glob_string)
         glob_list = glob.glob(glob_string)
         sci_frames.append(glob_list[0])
         logger.info("Found the correct coadd, exists at: '%s'"%glob_list[0])
     pixel_scale = 3600.0*abs(fits.getheader(sci_frames[0])['CD1_1'])
-    sci_frame_str = sci_frames[0]+' '+sci_frames[1]+' '+sci_frames[2]+' '+sci_frames[3]
+    sci_frame_str = sci_frames[0]+' ' +sci_frames[1]+' '+sci_frames[2]+' '+sci_frames[3]
 
     # set up the directory if it doesn't already exist
     cap_dir = os.path.join(sg.out_dir,'MY%s'%sg.my,sg.field,'CAP')
@@ -739,7 +739,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
     ra_cent,dec_cent = get_chip_vals(sg.field,chip)
 
 
-    # make a white stamp as a det image
+    # make a riz stamp as a det image
     logger.info('Resampling all bands in MY%s, %s, chip %s'%(sg.my,sg.field,chip))
     resamp_cmd = ['swarp',
     '-COMBINE','N',
@@ -763,24 +763,24 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4000,stamp_sizey=2000):
         glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
         glob_list = glob.glob(glob_string)
         resamp_frames.append(glob_list[0])
-    resamp_frame_str = resamp_frames[0]+' '+resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
+    resamp_frame_str = resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
 
-    white_cmd = ['swarp',
+    riz_cmd = ['swarp',
     '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
     '-CENTER_TYPE','MANUAL',
     '-CENTER','%f,%f'%(ra_cent,dec_cent),
     '-PIXELSCALE_TYPE','MANUAL',
     '-PIXEL_SCALE','%.03f'%pixel_scale,
     '-BACK_SIZE','512',
-    '-IMAGEOUT_NAME','%s_%s_%s_white.fits'%(sg.my,sg.field,chip),
+    '-IMAGEOUT_NAME','%s_%s_%s_riz.fits'%(sg.my,sg.field,chip),
     resamp_frame_str]
     logger.info("Making a detection image for MY%s, %s, chip %s for CAP"%(sg.my,sg.field,chip))
     starttime=float(time.time())
-    p = subprocess.Popen(white_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    p = subprocess.Popen(riz_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     outs,errs = p.communicate()
     endtime=float(time.time())
     logger.info('Done making detection image for for MY%s, %s, chip %s, took %.3f seconds'%(sg.my,sg.field,chip,endtime-starttime))
-    return '%s_%s_%s_white.fits'%(sg.my,sg.field,chip)
+    return '%s_%s_%s_riz.fits'%(sg.my,sg.field,chip)
 
 def get_cuts(f,b):
     cp=configparser.ConfigParser()

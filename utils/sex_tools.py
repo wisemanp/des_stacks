@@ -230,12 +230,12 @@ def cap_sex_chip(sg,sr,si,sz,chip):
     for s in [sg,sr,si,sz]:
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         zp = float(quals[0])
-        white_name = '%s_%s_%s_white.fits'%(s.my,s.field,chip)
+        riz_name = '%s_%s_%s_riz.fits'%(s.my,s.field,chip)
         sexcat = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sexcat'%(s.my,s.field,chip,s.band))
         if os.path.isfile(sexcat):
             logger.info("Already done the photometry in the %s band!"%s.band)
         else:
-            glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
+            glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_clipweighted*.resamp.fits'%(str(chip),s.band))
             resamp_name = glob.glob(glob_string)[0]
             check_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_check_aper.fits'%(s.my,s.field,chip,s.band))
             sex_cmd = [
@@ -244,7 +244,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
             '-CATALOG_NAME',sexcat,
             '-CHECKIMAGE_TYPE','APERTURES',
             '-CHECKIMAGE_NAME',check_name,
-            '%s,%s'%(white_name,resamp_name)
+            '%s,%s'%(riz_name,resamp_name)
             ]
             logger.info('Running SExtractor in dual image mode in order to get common aperture photometry in the %s band'%s.band)
             logger.debug(sex_cmd)

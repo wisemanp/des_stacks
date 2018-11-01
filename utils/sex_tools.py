@@ -232,8 +232,16 @@ def cap_sex_chip(sg,sr,si,sz,chip):
         zp = float(quals[0])
         riz_name = '%s_%s_%s_riz.fits'%(s.my,s.field,chip)
         sexcat = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sexcat'%(s.my,s.field,chip,s.band))
+        redo = False
         if os.path.isfile(sexcat):
             logger.info("Already done the photometry in the %s band!"%s.band)
+            test_cat = Table.read(sexcat).to_pandas()
+            if 'FLUX_AUTO' in test_cat.columns:
+                pass
+            else:
+                redo = True
+        if os.path.isfile(sexcat) and redo ==False:
+            pass
         else:
             glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_clipweighted*.resamp.fits'%(str(chip),s.band))
             resamp_name = glob.glob(glob_string)[0]

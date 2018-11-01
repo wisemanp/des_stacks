@@ -240,6 +240,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
                 pass
             else:
                 redo = True
+                logger.info("There was a .sexcat file, but it didn't have the right parameters, so running SExtractor again")
         if os.path.isfile(sexcat) and redo ==False:
             pass
         else:

@@ -42,7 +42,7 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     logger.info(hashes)
-    logger.info("Entered init_calib to match objects in MY%s, %s, %s, %s, find the zeropoint, \n and give them magnitudes" %(s.my,s.field,s.chip,s.band))
+    logger.info("Entered init_calib to match objects in MY%s, %s, %s, %s, find the zeropoint, \n and give them magnitudes" %(s.my,s.field,chip,s.band))
     logger.info(hashes)
     logger.info("Reading in catalog in order to do photometry")
     cmap = {'PSF':'red','AUTO':'green','cat':'blue','APER':'purple'}
@@ -91,7 +91,7 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
 
 def init_phot(s,chip,cat,pl='n'):
     s.logger.info(hashes)
-    s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry, provide limiting magnitudes, and write out the results file for \n MY%s, %s, %s, %s" %(s.my,s.field,s.chip,s.band))
+    s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry, provide limiting magnitudes, and write out the results file for \n MY%s, %s, %s, %s" %(s.my,s.field,chip,s.band))
     s.logger.info(hashes)
     ana_dir = os.path.join(s.band_dir,chip,'ana')
     try:

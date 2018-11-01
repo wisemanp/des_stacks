@@ -26,7 +26,7 @@ from des_stacks.utils.gen_tools import mc_robust_median as r_median
 
 sns.set_palette('Dark2')
 sns.set_color_codes(palette='colorblind')
-hashes = "#" *15
+hashes = "#" *45
 def init_calib(s,chip,sexcat,phot_type='AUTO'):
     '''Load in the existing DES and the newly SExtracted catalogs'''
     logger = logging.getLogger(__name__)
@@ -41,7 +41,9 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-
+    logger.info(hashes)
+    logger.info("Entered init_calib to match objects in MY%s, %s, %s, %s, find the zeropoint, \n and give them magnitudes" %(s.my,s.field,s.chip,s.band))
+    logger.info(hashes)
     logger.info("Reading in catalog in order to do photometry")
     cmap = {'PSF':'red','AUTO':'green','cat':'blue','APER':'purple'}
     y3a1_fn = os.path.join(s.cat_dir,'y3a1_%s_%s.csv'%(s.field[3],s.band))
@@ -84,11 +86,13 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     zp,zp_sig = r_median(diffs,return_sigma=True)
     psf,psf_sig = r_median(new['FWHM_WORLD']*3600,return_sigma=True)
     logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(s.field,s.my,s.band,chip))
+    logger.info(hashes)
     return zp,zp_sig,psf,psf_sig
 
 def init_phot(s,chip,cat,pl='n'):
-    s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry and provide limiting magnitudes")
-
+    s.logger.info(hashes)
+    s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry, provide limiting magnitudes, and write out the results file for \n MY%s, %s, %s, %s" %(s.my,s.field,s.chip,s.band))
+    s.logger.info(hashes)
     ana_dir = os.path.join(s.band_dir,chip,'ana')
     try:
         final = s.final
@@ -239,6 +243,7 @@ def init_phot(s,chip,cat,pl='n'):
     resfile.write(psfstring)
     savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip))
     s.logger.info("Saved result file to: %s"%savestring)
+    s.logger.info(hashes)
     return (kr_lim,kr_lim2,skylim,np.mean([kr_lim,kr_lim2,skylim]))
 
 #####################################################################################################
@@ -438,8 +443,9 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-
+    logger.info(hashes)
     logger.info("Entered 'cap_phot_all' to do common aperture photometry for MY%s, %s, chip %s"%(y,f,chip))
+    logger.info(hashes)
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
     if autocuts:

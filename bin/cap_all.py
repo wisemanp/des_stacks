@@ -40,6 +40,7 @@ def main(args):
         for f in fields:
             f = 'SN-'+f
             for ch in chips:
+                ch = int(ch)
                 n_bad = 0
                 for category in [my,f,ch]:
                     if args.avoid:

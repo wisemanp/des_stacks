@@ -258,11 +258,6 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'default.nnw'),os.path.join(ana_dir,'default.nnw'))
 
         self.sexcats = multi_stack.multitask(self,self.my,self.field,self.band,self.cuts,self.final,w='sex')
-
-            # Compare new catalog to old one, get the ZP and FWHM out
-
-
-
     def init_phot(self,pl='n'):
         limmags = {}
         for counter,chip in enumerate(self.chips):

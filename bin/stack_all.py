@@ -161,11 +161,7 @@ def simple_stack(logger,parsed):
     bands = parsed['bands']
     mys = parsed['mys']
     chips = parsed['chips']
-    logger.info('Chips: ')
-    logger.info(chips)
     workdir = parsed['workdir']
-
-
     cuts={'zp':parsed['zcut'],'psf':parsed['pcut'],'teff':parsed['tcut']}
     logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for f in fields:
@@ -176,22 +172,12 @@ def simple_stack(logger,parsed):
             except:
                 pass
             for my in mys:
-                logger.info('Here be cuts: ')
+                logger.info('Found the following cuts: ')
                 logger.info(cuts)
-                logger.info('There were cuts')
                 s = stack.Stack(f,b,my,chips,workdir,cuts=cuts,db=True)
                 s.do_my_stack(cuts=cuts,final=True)
                 s.run_stack_sex(cuts=cuts,final=True)
                 s.init_phot()
-                #if parsed['tidy']in [1,True]:
-                    #for temp_fn in glob.glob(os.path.join(s.temp_dir,'*resamp*')):
-                        #if not os.path.isdir(temp_fn):
-                            #os.remove(temp_fn)
-
-                    #for temp_fn in glob.glob(s.band_dir):
-                        #if temp_fn not in glob.glob(os.path.join(s.band_dir,'*sci*'))+glob.glob(os.path.join(s.band_dir,'*wgt*')):
-                           # if not os.path.isdir(temp_fn):
-                                #os.remove(temp_fn)
 def looped_stack(logger,parsed):
     fields = parsed['fields']
     bands = parsed['bands']

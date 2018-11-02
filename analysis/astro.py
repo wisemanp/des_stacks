@@ -531,7 +531,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['MY'] = y
         capcat['PHOTOZ'],capcat['PHOTOZ_ERR']= '',''
         cats[s.band] = capcat
-        with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init.result'%(y,f,s.band,chip)),'r') as res:
+        with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init_wgtd.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]
         limmag = header[-1].split(' ')[-1].strip('\n')
         limflux = 10**((float(limmag)-zp)/-2.5)

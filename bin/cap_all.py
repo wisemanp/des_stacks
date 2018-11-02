@@ -32,9 +32,9 @@ def main(args):
                 fields = args.field[0].split(' ')
             except:
                 fields =args.field
-        
+
     if args.chip !='all':
-        chips = args.chip
+        chips = [args.chip.split(',')]
     for my in mys:
 
         for f in fields:

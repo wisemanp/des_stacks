@@ -7,6 +7,10 @@ __email__       = "P.S.Wiseman@soton.ac.uk"
 __version__     = "0.9"
 __date__        = "25/09/2018"
 
+# CHANGELOG:
+#   V 0.9: 2018-09-25, PW: initial version
+#   V 0.91: 2018-11-05, PW: changed name from get_sn_info to sn_host_phot
+
 
 import numpy as np
 import pandas as pd

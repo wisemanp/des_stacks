@@ -256,7 +256,7 @@ if __name__ == "__main__":
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     logger.info("***********************************")
-    logger.info("Initialising *** sn_host_lookup.py *** at %s UT" % strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+    logger.info("Initialising *** sn_host_stamp.py *** at %s UT" % strftime("%Y-%m-%d %H:%M:%S", gmtime()))
     logger.info("***********************************")
     args = parser()
     main(args,logger)

@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import logging
 import argparse
-import easyaccess as ea
 from time import gmtime, strftime
 from astropy.coordinates import SkyCoord
 from astropy import units as u

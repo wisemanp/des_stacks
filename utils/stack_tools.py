@@ -619,7 +619,7 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4100,stamp_sizey
     for s in [sg,sr,si,sz]:
         bd = s.band_dir
         # assume we don't have multiple versions of the science frame
-        glob_string = os.path.join(bd,'ccd_%s_%s_*_sci.fits'%(str(chip),s.band))
+        glob_string = os.path.join(bd,'ccd_%s_%s_*clipweighted_sci.fits'%(str(chip),s.band))
         logger.info("Looking for things that look like: '%s'"%glob_string)
         glob_list = glob.glob(glob_string)
         sci_frames.append(glob_list[0])

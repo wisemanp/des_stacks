@@ -538,7 +538,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['LIMMAG'] = limmag
         capcat['LIMFLUX'] = limflux
         cats[s.band] = capcat
-        
+
 
     main_cat_df = cats['g']
     for counter, b in enumerate(bands[:3]):
@@ -626,8 +626,32 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     if len(match)==0:
 
         logger.info("Didn't detect a galaxy within %s arcsec of the SN; reporting limits only"%dist_thresh)
-
-        res_df['SN_NAME']=sn_name
+        res_df = res_df.append(capres.iloc[0])
+        res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
+       'MAGERR_AUTO_g', 'MAG_APER_g', 'MAGERR_APER_g', 'FLUX_AUTO_g',
+       'FLUXERR_AUTO_g', 'FLUX_APER_g', 'FLUXERR_APER_g', 'FWHM_WORLD_g',
+       'ELONGATION', 'KRON_RADIUS', 'CLASS_STAR_g', 'FLUX_RADIUS_g', 'A_IMAGE',
+       'B_IMAGE', 'THETA_IMAGE', 'CXX_IMAGE', 'CYY_IMAGE', 'CXY_IMAGE',
+       'MAGERR_SYST_AUTO_g', 'MAGERR_SYST_APER_g', 'MAGERR_STATSYST_AUTO_g',
+       'MAGERR_STATSYST_APER_g', 'MAG_ZEROPOINT_g', 'MAG_ZEROPOINT_ERR_g',
+       'CCDNUM', 'FIELD', 'MY', 'PHOTOZ', 'PHOTOZ_ERR', 'MAG_AUTO_r',
+       'MAGERR_AUTO_r', 'MAG_APER_r', 'MAGERR_APER_r', 'FLUX_AUTO_r',
+       'FLUXERR_AUTO_r', 'FLUX_APER_r', 'FLUXERR_APER_r', 'FWHM_WORLD_r',
+       'CLASS_STAR_r', 'FLUX_RADIUS_r', 'MAGERR_SYST_AUTO_r',
+       'MAGERR_SYST_APER_r', 'MAGERR_STATSYST_AUTO_r',
+       'MAGERR_STATSYST_APER_r', 'MAG_ZEROPOINT_r', 'MAG_ZEROPOINT_ERR_r',
+       'MAG_AUTO_i', 'MAGERR_AUTO_i', 'MAG_APER_i', 'MAGERR_APER_i',
+       'FLUX_AUTO_i', 'FLUXERR_AUTO_i', 'FLUX_APER_i', 'FLUXERR_APER_i',
+       'FWHM_WORLD_i', 'CLASS_STAR_i', 'FLUX_RADIUS_i', 'MAGERR_SYST_AUTO_i',
+       'MAGERR_SYST_APER_i', 'MAGERR_STATSYST_AUTO_i',
+       'MAGERR_STATSYST_APER_i', 'MAG_ZEROPOINT_i', 'MAG_ZEROPOINT_ERR_i',
+       'MAG_AUTO_z', 'MAGERR_AUTO_z', 'MAG_APER_z', 'MAGERR_APER_z',
+       'FLUX_AUTO_z', 'FLUXERR_AUTO_z', 'FLUX_APER_z', 'FLUXERR_APER_z',
+       'FWHM_WORLD_z', 'CLASS_STAR_z', 'FLUX_RADIUS_z', 'MAGERR_SYST_AUTO_z',
+       'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
+       'MAGERR_STATSYST_APER_z', 'MAG_ZEROPOINT_z', 'MAG_ZEROPOINT_ERR_z','DLR', 'DLR_RANK',
+       'ANGSEP']] = np.NaN
+       res_df.SN_NAME = sn_name
 
     else:
 

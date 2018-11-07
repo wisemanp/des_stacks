@@ -651,7 +651,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
        'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
        'MAGERR_STATSYST_APER_z', 'MAG_ZEROPOINT_z', 'MAG_ZEROPOINT_ERR_z','DLR', 'DLR_RANK',
        'ANGSEP']] = np.NaN
-       res_df.SN_NAME = sn_name
+        res_df.SN_NAME = sn_name
 
     else:
 

@@ -488,6 +488,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
                            'PHOTOZ','PHOTOZ_ERR',
                            'CLASS_STAR_g','CLASS_STAR_r','CLASS_STAR_i','CLASS_STAR_z',
                            'LIMMAG_g','LIMMAG_r','LIMMAG_i','LIMMAG_z',
+                           'LIMFLUX_g','LIMFLUX_r','LIMFLUX_i','LIMFLUX_z',
                            'FLUX_RADIUS_g','FLUX_RADIUS_r','FLUX_RADIUS_i','FLUX_RADIUS_z']
 
     res_df = pd.DataFrame(columns=rescols)
@@ -530,13 +531,14 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['FIELD'] = f
         capcat['MY'] = y
         capcat['PHOTOZ'],capcat['PHOTOZ_ERR']= '',''
-        cats[s.band] = capcat
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init_wgtd.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]
         limmag = header[-1].split(' ')[-1].strip('\n')
         limflux = 10**((float(limmag)-zp)/-2.5)
-        limmags[s.band] = limmag
-        limfluxes[s.band] = limflux
+        capcat['LIMMAG'] = limmag
+        capcat['LIMFLUX'] = limflux
+        cats[s.band] = capcat
+        
 
     main_cat_df = cats['g']
     for counter, b in enumerate(bands[:3]):

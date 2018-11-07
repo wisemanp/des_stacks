@@ -33,7 +33,10 @@ def main():
         for f in fields:
             f = 'SN-'+f
             for chip in good_des_chips:
-                add_lim(y,f,chip)
+                try:
+                    add_lim(y,f,chip)
+                except:
+                    pass
 
 if __name__ == '__main__':
     main()

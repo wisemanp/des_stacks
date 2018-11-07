@@ -623,19 +623,9 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger.info("Found %s galaxies within %s arcseconds"%(len(match),dist_thresh))
     if len(match)==0:
 
-        logger.info("Didn't detect a galaxy within 2 arcsec of the SN; reporting limits of %s "%limmags)
+        logger.info("Didn't detect a galaxy within %s arcsec of the SN; reporting limits only"%dist_thresh)
 
-        init_lim_array = np.array([sn_name,ra,dec,limmags['g'],limmags['r'],limmags['i'],limmags['z']])
-        init_lim_cols = [
-                'SN_NAME','X_WORLD','Y_WORLD',
-                'LIMMAG_g',
-                'LIMMAG_r',
-                'LIMMAG_i',
-                'LIMMAG_z',
-                ]
-
-        res_df=pd.DataFrame([init_lim_array],
-        columns=init_lim_cols)
+        res_df['SN_NAME']=sn_name
 
     else:
 
@@ -654,8 +644,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                 rank.iloc[counter]*=-1
         res_df['DLR_RANK']=rank
 
-        for b in bands:
-            res_df['LIMMAG_%s'%b]= limmags[b]
+
 
         res_df = res_df[res_df['DLR']<30]
         # make region files for ds9

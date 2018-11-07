@@ -21,7 +21,7 @@ def add_lim(y,f,chip):
         res_df['LIMMAG_%s'%b] = limmag
         res_df['LIMFLUX_%s'%b] = limflux
     res_df.to_csv(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(y,f,chip)),index_col=0)
-
+    print ('Done',y,f,chip)
 def main():
     good_des_chips = []
     for c in range(1,63):

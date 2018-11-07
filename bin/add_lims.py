@@ -3,7 +3,9 @@ import pandas as pd
 import os
 from des_stacks import des_stack as stack
 from des_stacks.utils.stack_tools import get_cuts
-
+years = ['1','2','3','4','5','none']
+fields = ['X1','X2','X3','C1','C2','C3','E1','E2','S1','S2']
+bands = ['g','r','i','z']
 
 def add_lim(y,f,chip):
     res_df = pd.read_csv(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks','MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(y,f,chip)),index_col=0)
@@ -26,9 +28,7 @@ def main():
         if c not in [2,31,61]:
             good_des_chips.append(c)
 
-    years = ['1','2','3','4','5','none']
-    fields = ['X1','X2','X3','C1','C2','C3','E1','E2','S1','S2']
-    bands = ['g','r','i','z']
+
     for y in years:
         for f in fields:
             f = 'SN-'+f

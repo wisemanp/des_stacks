@@ -759,7 +759,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
             good_redshifts = good_redshifts.append(grc[grc['source']==survey])
     good_in_search_box = (good_redshifts['RA']< search_ra+search_rad)&(good_redshifts['RA']> search_ra-search_rad) & (good_redshifts['DEC']> search_dec-search_rad) & (good_redshifts['DEC']< search_dec+search_rad)
     gals_with_z = good_redshifts[good_in_search_box]
-    z_gals = SkyCoord(ra=gals_with_z['RA']*u.degree,dec = gals_with_z['DEC']*u.degree)
+    z_gals = SkyCoord(ra=gals_with_z['RA'].values*u.degree,dec = gals_with_z['DEC'].values*u.degree)
     return gals_with_z,z_gals
 
 def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):

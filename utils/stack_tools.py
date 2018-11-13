@@ -173,7 +173,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     np.savetxt(txtname,good_exps,fmt='%s')
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
-    except ValueError:
+    except: #valueerror 
 
         good_table = Table.from_pandas(good_frame)
     logger.debug('Here is the good_table, to write to fits format')

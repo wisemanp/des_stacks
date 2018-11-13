@@ -539,7 +539,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['LIMFLUX'] = limflux
         cats[s.band] = capcat
         limmags[s.band] = limmag
-        limfluxes[s.band] = limflux 
+        limfluxes[s.band] = limflux
 
     main_cat_df = cats['g']
     for counter, b in enumerate(bands[:3]):
@@ -563,7 +563,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         main_cat_df['FLUX_APER_%s'%b].fillna(limfluxes[b],inplace=True)
         main_cat_df['FLUXERR_AUTO_%s'%b].fillna(-9999,inplace=True)
         main_cat_df['FLUXERR_APER_%s'%b].fillna(-9999,inplace=True)
-    catobjs = SkyCoord(ra = main_cat_df['X_WORLD']*u.degree,dec = main_cat_df['Y_WORLD']*u.degree)
+    catobjs = SkyCoord(ra = main_cat_df['X_WORLD'].values*u.degree,dec = main_cat_df['Y_WORLD'].values*u.degree)
     # match the cap catalog with the ozdes one
     matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)
 

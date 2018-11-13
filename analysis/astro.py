@@ -538,7 +538,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['LIMMAG'] = limmag
         capcat['LIMFLUX'] = limflux
         cats[s.band] = capcat
-
+        limmags[s.band] = limmag
+        limfluxes[s.band] = limflux 
 
     main_cat_df = cats['g']
     for counter, b in enumerate(bands[:3]):

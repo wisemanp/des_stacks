@@ -613,7 +613,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
          'ANGSEP'
     ]
     res_df = pd.DataFrame(columns=cols)
-
+    logger.info(res_df.columns)
 
 
     sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
@@ -628,7 +628,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
         logger.info("Didn't detect a galaxy within %s arcsec of the SN; reporting limits only"%dist_thresh)
         res_df = res_df.append(capres.iloc[0])
-        logger.info(res_df)
+        logger.info(res_df.columns)
         res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
        'MAGERR_AUTO_g', 'MAG_APER_g', 'MAGERR_APER_g', 'FLUX_AUTO_g',
        'FLUXERR_AUTO_g', 'FLUX_APER_g', 'FLUXERR_APER_g', 'FWHM_WORLD_g',

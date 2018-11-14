@@ -148,7 +148,7 @@ def main(args):
 
     else:
 
-        sn_list = np.loadtxt(args.namelist,dtype='str')
+        sn_list = np.genfromtxt(args.namelist,dtype=str,delimiter='\n')
         print("Looking for photometry on following input list")
         print(sn_list)
         if not args.savename:

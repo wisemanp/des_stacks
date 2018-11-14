@@ -73,7 +73,7 @@ def main(args,logger):
     if sn_name:
         l = [sn_name]
     else:
-        l = np.loadtxt(args.namelist,dtype='str')
+        l = np.genfromtxt(args.namelist,dtype=str,delimiter='\n')
     for sn in l:
         logger.info("Locating result file for %s ..."%sn)
         logger.info("First querying the DES database to get the RA,Dec of %s."%sn)
@@ -143,6 +143,8 @@ def main(args,logger):
                     globstr = os.path.join(args.workdir,'5yr_stacks','MY%s'%y,f,b,str(chip),'ana','*.qual')
                     logger.info('Searching for zp file in %s'%globstr)
                     zp = np.loadtxt(glob.glob(globstr)[0],dtype=str)[0]
+                    logger.info('Here is the Zeropoint:')
+                    logger.info(zp)
                     phot_res['MAG_AUTO'] = phot_res['MAG_AUTO']+float(zp)
 
 

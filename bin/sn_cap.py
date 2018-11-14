@@ -39,7 +39,7 @@ def cap(args,logger):
             cap_phot_sn(args.sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
-        sn_list = np.loadtxt(args.namelist,dtype='str')
+        sn_list = np.genfromtxt(args.namelist,dtype=str,delimiter='\n')
         logger.info("Doing CAP on following input list")
         logger.info(sn_list)
         if not args.savename:

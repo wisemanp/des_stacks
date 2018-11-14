@@ -58,8 +58,8 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
 
     logger.info("Matching objects...")
     new =pd.DataFrame(sexdat)
-    new_obj = SkyCoord(ra=new['X_WORLD']*u.degree,dec =new['Y_WORLD']*u.degree)
-    old_obj = SkyCoord(ra=y3a1_stars['RA']*u.degree,dec =y3a1_stars['DEC']*u.degree)
+    new_obj = SkyCoord(ra=new['X_WORLD'].values*u.degree,dec =new['Y_WORLD'].values*u.degree)
+    old_obj = SkyCoord(ra=y3a1_stars['RA'].values*u.degree,dec =y3a1_stars['DEC'].values*u.degree)
     # match the catalogs
     idx, d2d, d3d = new_obj.match_to_catalog_sky(old_obj)
     match_ids = idx

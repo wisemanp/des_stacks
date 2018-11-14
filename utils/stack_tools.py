@@ -173,7 +173,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     np.savetxt(txtname,good_exps,fmt='%s')
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
-    except: #valueerror 
+    except: #valueerror
 
         good_table = Table.from_pandas(good_frame)
     logger.debug('Here is the good_table, to write to fits format')
@@ -502,7 +502,7 @@ def get_y3a1():
 
 def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
 
-    img_list = np.loadtxt(lst,dtype='str')
+    img_list = np.genfromtxt(lst,dtype='str',delimiter='\n')
     if len(img_list)==0:
         logger.info('Empty list: %s \n %s'%(lst,img_list))
         return False
@@ -807,7 +807,7 @@ def get_cuts(f,b):
 def combine_mask_weight(s,chip,j):
     maskweightlist,masklist = [],[]
     resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(s.my,s.field,s.band,chip,s.cutstring,j))
-    for f in np.loadtxt(resamplist_name,dtype='str'):
+    for f in np.genfromtxt(resamplist_name,dtype='str',delimiter='\n'):
         if f[-3:]=='[0]':
             f = f[:-3]
         try:

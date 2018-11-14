@@ -335,7 +335,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
         capcat['MAG_AUTO']=capcat['MAG_AUTO']+zp
 
         sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
-        catalog = SkyCoord(ra = capcat.X_WORLD*u.deg,dec = capcat.Y_WORLD*u.deg)
+        catalog = SkyCoord(ra = capcat.X_WORLD.values*u.deg,dec = capcat.Y_WORLD.values*u.deg)
         d2d= sncoord.separation(catalog)
         close_inds = d2d <dist_thresh*u.arcsec
         dists = d2d[close_inds]
@@ -617,7 +617,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
 
     sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
-    catalog = SkyCoord(ra = capres.X_WORLD*u.deg,dec = capres.Y_WORLD*u.deg)
+    catalog = SkyCoord(ra = capres.X_WORLD.values*u.deg,dec = capres.Y_WORLD.values*u.deg)
     d2d= sncoord.separation(catalog)
     close_inds = d2d <dist_thresh*u.arcsec
     dists = d2d[close_inds]

@@ -7,8 +7,6 @@ good_des_chips = get_good_des_chips()
 
 def parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a','--avoid',default=None)
-    parser.add_argument('-s','--skipdone',action='store_true')
     parser.add_argument('-f','--field',default = 'all')
     parser.add_argument('-my','--year',default='none')
     parser.add_argument('-ch','--chip',default='all')

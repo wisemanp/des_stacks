@@ -784,9 +784,9 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
 
     stack_gal_zs = init_matches[close_match_inds]
     logger.info('Matched %s galaxies with redshifts'%len(stack_gals_with_z))
-
+    gals[['z','z_Err','flag','source']] = ''
     stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
-    logger.debug(stack_gals_with_z.columns)
+
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
-    logger.debug(gals.columns)
+    logger.debug(gals['z'].nonzero())
     return gals

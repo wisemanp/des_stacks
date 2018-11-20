@@ -566,7 +566,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     catobjs = SkyCoord(ra = main_cat_df['X_WORLD'].values*u.degree,dec = main_cat_df['Y_WORLD'].values*u.degree)
     # match the cap catalog with the ozdes one
     matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)
-
+    logger.debug(matched_cat_df.columns)
 
     matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
     logger.info("Done CAP on %s, MY%s, CCD %s. Saved result to %s "%(f,y,chip,os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip))))
@@ -788,5 +788,5 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
 
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
-
+    logger.debug(gals)
     return gals

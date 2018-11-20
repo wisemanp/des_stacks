@@ -438,8 +438,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.DEBUG)
-    ch.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -769,8 +769,8 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.DEBUG)
-    ch.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)

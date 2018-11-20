@@ -97,11 +97,11 @@ def main(args,logger):
         sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn)
         if not os.path.isfile(sn_res_fn):
             from des_stacks import des_stack as stack
-            from des_stacks.analysis.astro import cap_phot_sn
+            from des_stacks.analysis.astro import cap_sn_lookup
             if args.new:
-                cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False)
+                cap_sn_lookup(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False)
             else:
-                cap_phot_sn(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False,new=False)
+                cap_sn_lookup(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False)
 
         if not os.path.isfile(sn_res_fn):
             os.rename(os.path.join('/media/data3/wiseman/des/coadding/results',
@@ -138,19 +138,11 @@ def main(args,logger):
                 img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
 
                 if os.path.isfile(img_fn):
-                    phot_fn  = glob.glob(os.path.join(sn_cap_dir,'*%s*.sexcat'%b))[0]
-                    phot_res = Table.read(phot_fn).to_pandas()
-                    phot_res = phot_res[phot_res['X_WORLD']<sn_ra+(w)]
-                    phot_res = phot_res[phot_res['X_WORLD']>sn_ra-(w)]
-                    phot_res = phot_res[phot_res['Y_WORLD']<sn_dec+(w)]
-                    phot_res = phot_res[phot_res['Y_WORLD']>sn_dec-(w)]
-                    globstr = os.path.join(args.workdir,'5yr_stacks','MY%s'%y,f,b,str(chip),'ana','*.qual')
-                    logger.info('Searching for zp file in %s'%globstr)
-                    zp = np.loadtxt(glob.glob(globstr)[0],dtype=str)[0]
-                    logger.info('Here is the Zeropoint:')
-                    logger.info(zp)
-                    phot_res['MAG_AUTO'] = phot_res['MAG_AUTO']+float(zp)
 
+                    sn_res = sn_res[sn_res['X_WORLD']<sn_ra+(w)]
+                    sn_res = sn_res[sn_res['X_WORLD']>sn_ra-(w)]
+                    sn_res = sn_res[sn_res['Y_WORLD']<sn_dec+(w)]
+                    sn_res = sn_res[sn_res['Y_WORLD']>sn_dec-(w)]
 
                     img = fits.open(img_fn)
                     fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[b])
@@ -169,21 +161,21 @@ def main(args,logger):
 
                     # now add some region ellipses and axis_labels
                     try:
-                        i = phot_res[(phot_res['X_WORLD']<host['X_WORLD'].values[0]+0.00001)&(phot_res['X_WORLD']>host['X_WORLD'].values[0]-0.00001)].index
-                        phot_res.drop(i,inplace=True)
+                        i = sn_res[(sn_res['X_WORLD']<host['X_WORLD'].values[0]+0.00001)&(sn_res['X_WORLD']>host['X_WORLD'].values[0]-0.00001)].index
+                        sn_res.drop(i,inplace=True)
                     except:
                         pass
                     try:
-                        j = phot_res[(phot_res['X_WORLD']<has_spec['X_WORLD'].values[0]+0.00001)&(phot_res['X_WORLD']>has_spec['X_WORLD'].values[0]-0.00001)].index
-                        phot_res.drop(j,inplace=True)
+                        j = sn_res[(sn_res['X_WORLD']<has_spec['X_WORLD'].values[0]+0.00001)&(sn_res['X_WORLD']>has_spec['X_WORLD'].values[0]-0.00001)].index
+                        sn_res.drop(j,inplace=True)
                     except:
                         pass
 
                     if not args.finder:
                         try:
-                            As,Bs,thetas = phot_res.A_IMAGE.values*pix_arcsec*4/3600,phot_res.B_IMAGE.values*pix_arcsec*4/3600,phot_res.THETA_IMAGE.values
-                            ras,decs = phot_res.X_WORLD.values,phot_res.Y_WORLD.values
-                            mags,errs = phot_res.MAG_AUTO.values,phot_res.MAGERR_AUTO.values
+                            As,Bs,thetas = sn_res.A_IMAGE.values*pix_arcsec*4/3600,sn_res.B_IMAGE.values*pix_arcsec*4/3600,sn_res.THETA_IMAGE.values
+                            ras,decs = sn_res.X_WORLD.values,sn_res.Y_WORLD.values
+                            mags,errs = sn_res['MAG_AUTO_%s'%b].values,sn_res['MAGERR_AUTO_%s'%b].values
 
                             fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
                             if len(host)>0:

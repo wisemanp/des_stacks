@@ -45,7 +45,7 @@ def parser():
     parser.add_argument('-vx','--vmax',help='vmax for greyscale',default=15.0)
     parser.add_argument('-ne','--new',help = 'Use new stacks?',action='store_true' )
     parser.add_argument('-fc','--finder',help = 'Is this a finder chart?',action='store_true')
-
+    parser.add_argument('-re','--resfile',help = 'File to find host phot results for this SN',default = None)
     return parser.parse_args()
 
 def get_sn_dat(sn):
@@ -106,9 +106,13 @@ def main(args,logger):
         if not os.path.isfile(sn_res_fn):
             os.rename(os.path.join('/media/data3/wiseman/des/coadding/results',
             '%s.result'%sn),os.path.join(sn_cap_dir,'%s.result'%sn))
-        sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn)
-
-        sn_res = pd.read_csv(sn_res_fn,index_col=0)
+        if not args.resfile:
+            sn_res_fn = os.path.join(sn_cap_dir,'%s.result'%sn)
+            sn_res = pd.read_csv(sn_res_fn,index_col=0)
+        else:
+            logger.info('Looking up results in %s'%args.resfile)
+            resfile = pd.read_csv(args.resfile,index_col=0)
+            sn_res = resfile[resfile['SN_NAME']==sn]
         has_spec = sn_res.dropna(subset=['z'])
         if len(has_spec)>0:
             loc = has_spec.index

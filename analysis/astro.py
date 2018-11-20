@@ -602,6 +602,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
     capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
                              f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(y,f,chip))
+    logger.info('Searching for object in %s'%capres_fn)
     capres = pd.read_csv(capres_fn,index_col = 0)
     search_rad = dist_thresh
     capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]

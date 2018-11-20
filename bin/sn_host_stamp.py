@@ -98,6 +98,7 @@ def main(args,logger):
         if not os.path.isfile(sn_res_fn):
             from des_stacks import des_stack as stack
             from des_stacks.analysis.astro import cap_sn_lookup
+            logger.info('Gone to find the obj_deep.cat')
             if args.new:
                 cap_sn_lookup(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=False)
             else:

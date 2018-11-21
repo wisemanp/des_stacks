@@ -1,3 +1,6 @@
+'''Script to rename the stacked science frames so they
+are more easily accessible when not in the default file structure'''
+
 import os
 import glob
 

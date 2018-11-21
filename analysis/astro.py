@@ -675,7 +675,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         res_df['DLR_RANK']=rank
         res_df = res_df[res_df['DLR']<30]
         # make region files for ds9
-        res_df['EDGE_FLAG'] = get_edge_flags(x_images,y_images)
+        res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
     all_sn_fn = os.path.join('/media/data3/wiseman/des/coadding/results/',savename)
     if os.path.isfile(all_sn_fn):
         all_sn = pd.read_csv(all_sn_fn,index_col=0)

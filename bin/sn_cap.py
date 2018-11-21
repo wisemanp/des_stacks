@@ -33,10 +33,10 @@ def cap(args,logger):
     if args.sn_name:
         logger.info('Have been given a name, doing CAP for just %s'%args.sn_name)
         if not args.savename:
-            cap_phot_sn(args.sn_name,args.workdir,dist_thresh = args.threshold,autocuts=True)
+            cap_sn_lookup(args.sn_name,wd=args.workdir,dist_thresh =  args.threshold,autocuts=True)
         else:
             logger.info('Been given a savename, so doing cap now and saving it to that')
-            cap_phot_sn(args.sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
+            cap_sn_lookup(args.sn_name,wd=args.workdir,savename = args.savename,dist_thresh =  args.threshold,autocuts=True)
     else:
         logger.info("Pulling list of SN on which to do common aperture photometry")
         sn_list = np.genfromtxt(args.namelist,dtype=str,delimiter='\n')

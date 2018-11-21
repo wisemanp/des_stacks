@@ -611,11 +611,12 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         'SN_NAME',
          'DLR',
          'DLR_RANK',
-         'ANGSEP'
+         'ANGSEP',
+         'EDGE_FLAG'
     ]
     res_df = pd.DataFrame(columns=cols)
+    res_df['EDGE_FLAG'] = 0
     logger.debug(res_df.columns)
-
 
     sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
     catalog = SkyCoord(ra = capres.X_WORLD.values*u.deg,dec = capres.Y_WORLD.values*u.deg)
@@ -672,12 +673,9 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             if r >4:
                 rank.iloc[counter]*=-1
         res_df['DLR_RANK']=rank
-
-
-
         res_df = res_df[res_df['DLR']<30]
         # make region files for ds9
-
+        res_df['EDGE_FLAG'] = get_edge_flags(x_images,y_images)
     all_sn_fn = os.path.join('/media/data3/wiseman/des/coadding/results/',savename)
     if os.path.isfile(all_sn_fn):
         all_sn = pd.read_csv(all_sn_fn,index_col=0)
@@ -794,3 +792,13 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
     logger.debug(gals['z'].nonzero())
     return gals
+
+def get_edge_flags(xs,ys,dist=20):
+    flags = np.zeros_like(xs)
+    for counter,x in enumerate(xs):
+        if x<20 or x>4080:
+            flags[counter]=1
+    for counter,y in enumerate(ys):
+        if y<20 or y>2080:
+            flags[counter]=1
+    return flags

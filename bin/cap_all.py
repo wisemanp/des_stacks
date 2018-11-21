@@ -22,7 +22,7 @@ def main(args):
     mys = ['1','2','3','4','5','none']
     chips = get_good_des_chips()
     if args.year !='all':
-        mys = args.year
+        mys = args.year.split(',')
     if args.field != 'all':
         try:
             fields = args.field.split(',')

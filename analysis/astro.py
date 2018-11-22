@@ -507,7 +507,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         if len(quals)!=4:
             s.run_stack_sex(cuts=cuts[counter],final=True)
             quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
-            s.init_phot()
+
         zp,zp_sig,av_fwhm = (float(quals[i]) for i in [0,1,2])
         logger.info('Reading in zeropoint from %s' %os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
 
@@ -531,6 +531,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['FIELD'] = f
         capcat['MY'] = y
         capcat['PHOTOZ'],capcat['PHOTOZ_ERR']= '',''
+        if not os.path.isfile(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init_wgtd.result'%(y,f,s.band,chip))):
+            s.init_phot()
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init_wgtd.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]
         limmag = header[-1].split(' ')[-1].strip('\n')

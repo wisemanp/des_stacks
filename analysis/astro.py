@@ -501,6 +501,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     cats, limmags, limfluxes = {},{},{}
     for counter,s in enumerate([sg,sr,si,sz]):
         # load in the photometry from sextractor
+        s.cuts = cuts[counter]
         logger.info('Loading in sexcat with name: %s',sexcats[s.band])
         capcat = Table.read(sexcats[s.band]).to_pandas()
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))

@@ -228,7 +228,11 @@ def cap_sex_chip(sg,sr,si,sz,chip):
         copyfile(os.path.join(sg.config_dir,'cap','default.%s'%ext),os.path.join(cap_chip_dir,'default.%s'%ext))
     sexcats ={}
     for s in [sg,sr,si,sz]:
-        quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        try:
+            quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
+        except:
+            s.run_stack_sex(cuts=s.cuts,final=True)
+            quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         zp = float(quals[0])
         riz_name = '%s_%s_%s_riz.fits'%(s.my,s.field,chip)
         sexcat = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sexcat'%(s.my,s.field,chip,s.band))

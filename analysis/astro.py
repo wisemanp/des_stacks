@@ -507,7 +507,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         if len(quals)!=4:
             s.run_stack_sex(cuts=cuts[counter],final=True)
             quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
-
+            s.init_phot()
         zp,zp_sig,av_fwhm = (float(quals[i]) for i in [0,1,2])
         logger.info('Reading in zeropoint from %s' %os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
 

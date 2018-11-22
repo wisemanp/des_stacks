@@ -453,7 +453,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     else:
         cuts = [{'teff': 0.15, 'psf':2.2},{'teff': 0.2,'psf':2.2},{'teff': 0.24,'psf':2.4},{'teff': 0.4,'psf':2.6}]
     sg,sr,si,sz = [stack.Stack(f, b, y, [str(chip)] ,wd,cuts[counter]) for counter,b in enumerate(bands)]
-    for counter,s in [sg,sr,si,sz]:
+    for counter,s in enumerate([sg,sr,si,sz]):
         s.cuts = cuts[counter]
     # if there is no white image, make one
     det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_riz.fits'%(y,f,chip))

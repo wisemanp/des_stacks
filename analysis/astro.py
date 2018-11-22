@@ -532,7 +532,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['MY'] = y
         capcat['PHOTOZ'],capcat['PHOTOZ_ERR']= '',''
         if not os.path.isfile(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init_wgtd.result'%(y,f,s.band,chip))):
-            s.sexcats = sexcats[counter]
+            s.sexcats = [os.path.join(s.band_dir,str(chip),'ana','MY%s_%s_%s_%s_%s_clipweighted_sci.sexcat'%(y,f,s.band,chip,s.cutstring))]
             s.init_phot()
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init_wgtd.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]

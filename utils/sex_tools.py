@@ -170,19 +170,21 @@ def get_sn_dat(sn):
     if len(obj_field)>2:
         obj_field = obj_field.split(',')[0]
     the_field = chiplims[obj_field]
-    for ccd in the_field.keys():
-        if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
-            if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
-                return (ra,dec,'SN-%s'%obj_field,y,ccd)
+    try:
+        for ccd in the_field.keys():
+            if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
+                if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
+                    return (ra,dec,'SN-%s'%obj_field,y,ccd)
 
-    if len(obj_field)>2:
-        obj_field = obj_field.split(',')[1]
-    the_field = chiplims[obj_field]
-    for ccd in the_field.keys():
-        if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
-            if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
-                return (ra,dec,'SN-%s'%obj_field,y,ccd)
-
+        if len(obj_field)>2:
+            obj_field = obj_field.split(',')[1]
+        the_field = chiplims[obj_field]
+        for ccd in the_field.keys():
+            if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
+                if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
+                    return (ra,dec,'SN-%s'%obj_field,y,ccd)
+    except KeyError:
+        return False
 def cap_sex_sn(sg,sr,si,sz,chip,sn_name,leave_if_done = False):
     '''Runs SExtractor in dual image mode to get common aperture photometry'''
     logger = logging.getLogger(__name__)

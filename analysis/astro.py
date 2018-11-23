@@ -599,7 +599,10 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
 
-    ra,dec,f,y,chip = get_sn_dat(sn_name)
+    try:
+        ra,dec,f,y,chip = get_sn_dat(sn_name)
+    except:
+        return None
     my = 'MY'+str(y)
     logger.info("Found transient in the database SNCAND")
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))

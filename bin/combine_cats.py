@@ -44,7 +44,7 @@ def main(args):
                 cap_chip_dir = '/media/data3/wiseman/des/coadding/5yr_stacks/MY%s/%s/CAP/%s'%(my,f,ch)
                 cat = os.path.join(cap_chip_dir,'%s_%s_%s_obj_deep.cat'%(my,f,ch))
                 cat_df = pd.read_csv(cat,index_col=0)
-                print ('Adding cat: %s'%cat)
+                print ('Adding cat: %s'%cat, ' of length ',len(cat_df))
                 main_df = main_df.append(cat_df)
     main_df.to_csv(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
     print ('Saved new file to %s'%os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))

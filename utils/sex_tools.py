@@ -166,7 +166,7 @@ def get_sn_dat(sn):
     y = dat['SEASON'].values[0]
 
     #################
-    obj_field = sn[5:7]
+    obj_field = dat['FIELD'].values[0].strip(' ')
     the_field = chiplims[obj_field]
     for ccd in the_field.keys():
         if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:

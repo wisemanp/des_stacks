@@ -136,7 +136,18 @@ def main(args,logger):
             for counter,b in enumerate(bands):
 
 
-                img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
+                try:
+                    img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
+                except:
+                    
+                    from des_stacks import des_stack as stack
+                    from des_stacks.analysis.astro import cap_phot_sn
+                    cap_phot_sn(sn,wd = 'coadding',savename = 'dump.csv',dist_thresh = 5,autocuts=True,new=True):
+            logger.info('Gone to find the obj_deep.cat')
+            if args.new:
+                cap_sn_lookup(sn,args.workdir,sn_res_fn,dist_thresh=15,autocuts=Fa
+lse)
+
 
                 if os.path.isfile(img_fn):
 

@@ -28,6 +28,7 @@ def worker(img):
         os.remove(img.replace('.fits','.resamp.fits'))
     return
 def multi_fn(lst):
+    pool_size = multiprocessing.cpu_count()*2
     pool = pp.ProcessPool(processes=pool_size,
                                 maxtasksperchild=2,
                                 )

@@ -6,12 +6,24 @@ import numpy as np
 def get_des_bands():
     return ['g','r','i','z']
 
+def get_des_bandpasses(bands =['g','r','i','z']):
+    bandpasses={
+    'g':(4720,1520),
+    'r':(6415,1480),
+    'i':(7835,1470),
+    'z':(9260,1520)
+    }
+    return [bandpasses[i] for i in bands]
+     
+    
 def get_good_des_chips():
     good_des_chips = []
     for c in range(1,63):
         if c not in [2,31,61]:
             good_des_chips.append(c)
     return good_des_chips
+
+
 ###################
 # stats
 

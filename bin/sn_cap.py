@@ -7,10 +7,14 @@ import logging
 import argparse
 import pandas as pd
 from time import gmtime, strftime
+import multiprocessing
+from multiprocessing import Process
+import pathos.pools as pp
 #Note: import this first else it crashes importing sub-modules
 from des_stacks import des_stack as stack
 from des_stacks.analysis.astro import cap_phot_sn,cap_sn_lookup
 import os
+
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n','--sn_name',help='Full DES supernova ID, e.g. DES16C2nm (case sensitive)',default=None)
@@ -23,7 +27,15 @@ def parser():
     parser.add_argument('-v','--version',help='Way of getting photometry. 1 = Do own CAP; 2 = Go into chip results file',default=2)
     return parser.parse_args()
 
-def cap(args,logger):
+
+def cap_worker(arg_pair):
+    args,sn = arg_pair[0],arg_pair[1]
+    wd,dist_thresh,savename = [args[i]for i in range(len(args))]
+
+    cap_sn_lookup(sn, wd = wd,savename = savename, dist_thresh = dist_thresh,autocuts=True)
+
+
+def cap(args,logger): 
     avoid_list = []
     args.version = int(args.version)
     if args.avoid:
@@ -42,6 +54,14 @@ def cap(args,logger):
         sn_list = np.genfromtxt(args.namelist,dtype=str,delimiter='\n')
         logger.info("Doing CAP on following input list")
         logger.info(sn_list)
+        pool_size = multiprocessing.cpu_count()*2
+        act = multiprocessing.active_children()
+        pool = pp.ProcessPool(processes=pool_size,
+                                maxtasksperchild=2,
+                                )
+        pool._clear()
+        pool._serve()
+
         if not args.savename:
 
             try:
@@ -58,6 +78,8 @@ def cap(args,logger):
             except:
                 done_sn = pd.DataFrame(columns=['BAND', 'CLASS_STAR', 'ELONGATION', 'FWHM_WORLD', 'KRON_RADIUS', 'MAGERR_APER', 'MAGERR_AUTO', 'MAG_APER', 'MAG_AUTO', 'SN_NAME', 'X_WORLD', 'Y_WORLD','LIMMAG'])
 
+        all_args = []
+        worker_args = [args.workdir,args.threshold,args.savename]
         for sn_name in sn_list :
             logger.info("Doing common aperture photometry on %s"%sn_name)
             logger.info(sn_name)
@@ -66,28 +88,23 @@ def cap(args,logger):
 
 
                 if sn_name not in avoid_list:
-                    logger.info(args.version)
-                    if args.version==1:
-                        logger.info('Going to old CAP')
-                        cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
-                    elif args.version==2:
-                        logger.info('Going to new CAP')
-                        cap_sn_lookup(sn_name,wd=args.workdir,savename = args.savename,dist_thresh =  args.threshold,autocuts=True)
+                    all_args.append([worker_args,sn_name])
 
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:
-                        if args.version==1:
-                            cap_phot_sn(sn_name,args.workdir,dist_thresh = args.threshold,autocuts=True)
-                        elif args.version==2:
-                            cap_sn_lookup(sn_name,wd=args.workdir,dist_thresh =  args.threshold,autocuts=True)
+                        
+                        all_args.append([worker_args,sn_name])
                     else:
-                        if args.version==1:
-                            cap_phot_sn(sn_name,args.workdir,args.savename,dist_thresh = args.threshold,autocuts=True)
-                        elif args.version==2:
-                            cap_sn_lookup(sn_name,wd=args.workdir,savename = args.savename,dist_thresh =  args.threshold,autocuts=True)
+                        all_args.append([worker_args,sn_name])
+
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
+        results = pool.map(cap_worker,all_args)
+    
+        pool.close()
+        pool.join()
+        return results
 if __name__ == "__main__":
     logger = logging.getLogger('sn_cap.py')
     logger.setLevel(logging.DEBUG)

@@ -135,9 +135,14 @@ def main(args,logger):
             ver_line = np.array([[sn_ra,sn_ra],[sn_dec-0.00027,sn_dec+0.00027]])
             for counter,b in enumerate(bands):
 
-
-                img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
-
+                try:
+                    img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
+                except:
+                    
+                    from des_stacks import des_stack as stack
+                    from des_stacks.analysis.astro import cap_phot_sn
+                    cap_phot_sn(sn,wd = 'coadding',savename = 'dump.csv',dist_thresh = 30,autocuts=True,new=True)
+                    img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
                 if os.path.isfile(img_fn):
 
                     sn_res = sn_res[sn_res['X_WORLD']<sn_ra+(w)]

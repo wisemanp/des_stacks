@@ -635,7 +635,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
         logger.info("Didn't detect a galaxy within %s arcsec of %s; reporting limits only"%(dist_thresh,sn_name))
         res_df = res_df.append(capres.iloc[0])
-        
+
         res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
        'MAGERR_AUTO_g', 'MAG_APER_g', 'MAGERR_APER_g', 'FLUX_AUTO_g',
        'FLUXERR_AUTO_g', 'FLUX_APER_g', 'FLUXERR_APER_g', 'FWHM_WORLD_g',
@@ -663,9 +663,9 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         res_df.SN_NAME = sn_name
 
     else:
-        
+
         res_df = res_df.append(match)
-        
+
         res_df['SN_NAME']=sn_name
         dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
 
@@ -673,7 +673,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
         res_df['DLR'] = np.array(dlr)
         rank = res_df['DLR'].rank().astype(int)
-        
+
         for counter, r in enumerate(res_df['DLR'].values):
             if r >4:
                 rank.iloc[counter]*=-1
@@ -682,7 +682,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             res_df = res_df[res_df['DLR']<30]
         # make region files for ds9
         res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
-    
+
     save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s.result'%(sn_name,sn_name)
     logger.info('Saving result of %s to %s'%(sn_name,save_fn))
     res_df.to_csv(save_fn)
@@ -775,21 +775,37 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-
-
     inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord)
     init_matches = cat.iloc[inds]
-
     close_match_inds = d2d< dist_thresh*u.arcsec
     stack_gals_with_z = gals.iloc[close_match_inds]
-
     stack_gal_zs = init_matches[close_match_inds]
+
     logger.info('Matched %s galaxies with redshifts'%len(stack_gals_with_z))
     gals['z']= ''
     gals['z_Err']= ''
     gals['flag']= ''
     gals['source'] = ''
     stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
+
+    for c,i in enumerate(stack_gals_with_z.index):
+        try:
+            g = stack_gals_with_z.iloc[c:c+1]
+        except:
+            g = stack_gals_with_z.iloc[c:]
+        gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
+        idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,4*u.arcsec)
+        grcres = cat.iloc[idxc]
+        if len(grcres[grcres['source']=='DES_AAOmega'])>1:
+            for row in grcres[grcres['source']=='DES_AAOmega'].index:
+                if grcres['ID'].loc[row][:10] =='SVA1_COADD':
+                    ins = grcres[['z','z_Err','flag','source']].loc[row].values
+                    stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
+        elif len(grcres[grcres['source']=='DES_AAOmega'])==1:
+            logger.info('1 has source DES_AAOmega')
+            if grcres[grcres['source']=='DES_AAOmega']['ID'][:10] =='SVA1_COADD':
+                ins = grcres[grcres['source']=='DES_AAOmega'][['z','z_Err','flag','source']].values
+                stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
     logger.debug(gals['z'].nonzero())

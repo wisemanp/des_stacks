@@ -6,6 +6,7 @@ import glob
 import subprocess
 import pathos.pools as pp
 import multiprocessing
+import astropy.io.fits as fits
 from multiprocessing import Process
 
 from des_stacks.utils.gen_tools import get_good_des_chips, get_des_bands
@@ -29,6 +30,17 @@ def worker(img):
     if os.path.isfile(img.replace('.fits','.resamp.fits')):
         os.remove(img.replace('.fits','.resamp.fits'))
     return
+def worker2(img):
+    fl = fits.open(img)
+    wm = fits.open(img.replace('.fits','.resamp.weight.fits'))
+    wgt = wm[0].data[0])
+    wgtarr = np.ones_like(fl[0].data)*wgt
+    fl[0].data = wgtarr
+    fl[0].header['TYPE'] = 'WGTMAP  ')
+    os.remove(img.replace('.fits','.resamp.weight.fits'))
+    fl.writeto(img.replace('.fits','.resamp.weight.fits'))
+    fl.close()
+    return
 def multi_fn(lst):
     pool_size = multiprocessing.cpu_count()*2
     pool = pp.ProcessPool(processes=pool_size,
@@ -37,7 +49,7 @@ def multi_fn(lst):
     pool._clear()
     pool._serve()
 
-    results = pool.map(worker,lst)
+    results = pool.map(worker2,lst)
 
 def main():
     fields = ['X1','X2','X3','C1','C2','C3','E1','E2','S1','S2']

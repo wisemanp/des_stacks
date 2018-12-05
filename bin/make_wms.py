@@ -17,9 +17,9 @@ def worker(img):
     swarp_cmd = [
     'swarp',
     '%s'%img,
+    '-WEIGHTOUT_NAME','%s'%img.replace('.fits','.wgt.fits'),
     '-COMBINE','N',
     '-RESAMPLE','Y',
-    '-WEIGHTOUT_NAME','%s'%img.replace('.fits','.wgt.fits'),
     '-DELETE_TMPFILES','N',
     '-BACK_SIZE','32'
     ]

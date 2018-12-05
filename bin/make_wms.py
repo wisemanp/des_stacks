@@ -44,6 +44,7 @@ def main():
         for f in fields:
             f = 'SN-'+f
             for b in bands:
+                os.chdir(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/','MY%s'%my,f,b))
                 list_of_scis = glob.glob(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/','MY%s'%my,f,b,'*clipweighted*'))
                 multi_fn(list_of_scis)
 

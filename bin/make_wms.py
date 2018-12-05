@@ -22,7 +22,7 @@ def worker(img):
     outs,errs = p.communicate()
     if os.path.isfile(img.replace('.fits','.resamp.fits')):
         os.remove(img.replace('.fits','.resamp.fits'))
-
+    return
 def multi_fn(lst):
     pool = pp.ProcessPool(processes=pool_size,
                                 maxtasksperchild=2,

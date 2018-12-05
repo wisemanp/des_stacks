@@ -277,5 +277,5 @@ def cap_sex_chip(sg,sr,si,sz,chip):
             out,errs = sex_process.communicate()
             logger.info('Dual image SExtractor complete in the %s band: you now have common aperture photometry on chip %s!'%(s.band,chip))
         sexcats[s.band]=sexcat
-        logger.info('Returning sexcats for %s,%s,%s,%s'%(sg.my,sg.field,sg.chip,sg.band))
+        logger.info('Returning sexcats for %s,%s,%s,%s'%(sg.my,sg.field,chip,sg.band))
     return sexcats

@@ -33,10 +33,10 @@ def worker(img):
 def worker2(img):
     fl = fits.open(img)
     wm = fits.open(img.replace('.fits','.resamp.weight.fits'))
-    wgt = wm[0].data[0])
+    wgt = wm[0].data[0]
     wgtarr = np.ones_like(fl[0].data)*wgt
     fl[0].data = wgtarr
-    fl[0].header['TYPE'] = 'WGTMAP  ')
+    fl[0].header['TYPE'] = 'WGTMAP  '
     os.remove(img.replace('.fits','.resamp.weight.fits'))
     fl.writeto(img.replace('.fits','.resamp.weight.fits'))
     fl.close()

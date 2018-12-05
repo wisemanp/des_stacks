@@ -803,7 +803,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
         elif len(grcres[grcres['source']=='DES_AAOmega'])==1:
             logger.info('1 has source DES_AAOmega')
-            if grcres[grcres['source']=='DES_AAOmega']['ID'][:10] =='SVA1_COADD':
+            if grcres[grcres['source']=='DES_AAOmega'].iloc[0,'ID'][:10] =='SVA1_COADD':
                 ins = grcres[grcres['source']=='DES_AAOmega'][['z','z_Err','flag','source']].values
                 stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 

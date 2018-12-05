@@ -59,7 +59,7 @@ def main():
             f = 'SN-'+f
             for b in bands:
                 os.chdir(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/','MY%s'%my,f,b))
-                list_of_scis = glob.glob(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/','MY%s'%my,f,b,'*clipweighted*'))
+                list_of_scis = glob.glob(os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/','MY%s'%my,f,b,'*clipweighted_sci.fits'))
                 multi_fn(list_of_scis)
 
 if __name__=="__main__":

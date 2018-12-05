@@ -4,6 +4,10 @@ import os
 import argparse
 import glob
 import subprocess
+import pathos.pools as pp
+import multiprocessing
+from multiprocessing import Process
+
 from des_stacks.utils.gen_tools import get_good_des_chips, get_des_bands
 
 good_des_chips = get_good_des_chips()

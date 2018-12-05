@@ -247,7 +247,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
         zp = float(quals[0])
         riz_name = '%s_%s_%s_riz.fits'%(s.my,s.field,chip)
         sexcat = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sexcat'%(s.my,s.field,chip,s.band))
-        '''redo = False
+        redo = False
         if os.path.isfile(sexcat):
             logger.info("Already done the photometry in the %s band!"%s.band)
             test_cat = Table.read(sexcat).to_pandas()
@@ -256,7 +256,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
             else:
                 redo = True
                 logger.info("There was a .sexcat file, but it didn't have the right parameters, so running SExtractor again")
-        redo=False
+        
         if os.path.isfile(sexcat) and redo ==False:
             pass
         else:

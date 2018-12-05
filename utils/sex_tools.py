@@ -250,12 +250,16 @@ def cap_sex_chip(sg,sr,si,sz,chip):
         redo = False
         if os.path.isfile(sexcat):
             logger.info("Already done the photometry in the %s band!"%s.band)
-            test_cat = Table.read(sexcat).to_pandas()
-            if 'FLUX_AUTO' in test_cat.columns:
-                pass
-            else:
+            try:
+                test_cat = Table.read(sexcat).to_pandas()
+                if 'FLUX_AUTO' in test_cat.columns:
+                    pass
+                else:
+                    redo = True
+                    logger.info("There was a .sexcat file, but it didn't have the right parameters, so running SExtractor again")
+            except:
                 redo = True
-                logger.info("There was a .sexcat file, but it didn't have the right parameters, so running SExtractor again")
+                logger.info("There was a .sexcat file, but it was corrupted, so running SExtractor again")
 
         if os.path.isfile(sexcat) and redo ==False:
             pass

@@ -19,7 +19,7 @@ def worker(img):
     '%s'%img,
     '-COMBINE','N',
     '-RESAMPLE','Y',
-    '-WEIGHTOUT_NAME','img'.replace('.fits','wgt.fits')
+    '-WEIGHTOUT_NAME','%s'%img.replace('.fits','wgt.fits')
     ]
     print ('Doing following: \n %s '%swarp_cmd)
     p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)

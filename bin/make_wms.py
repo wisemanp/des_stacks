@@ -4,7 +4,6 @@ import os
 import argparse
 import glob
 import subprocess
-from des_stacks.utils.stack_tools
 from des_stacks.utils.gen_tools import get_good_des_chips, get_des_bands
 
 good_des_chips = get_good_des_chips()

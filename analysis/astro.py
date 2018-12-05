@@ -6,7 +6,6 @@ import astropy.io.fits as fits
 from astropy.table import Table
 from astropy.coordinates import SkyCoord
 from astropy import units as u
-from pyraf import iraf
 import datetime
 import os
 import logging
@@ -588,8 +587,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         logger.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
     else:'''
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -599,15 +598,18 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
 
-    ra,dec,f,y,chip = get_sn_dat(sn_name)
+    try:
+        ra,dec,f,y,chip = get_sn_dat(sn_name)
+    except:
+        return None
     my = 'MY'+str(y)
-    logger.info("Found transient in the database SNCAND")
+    logger.info("Found %s in the database SNCAND"%sn_name)
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band
 
     capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
                              f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(y,f,chip))
-    logger.info('Searching for object in %s'%capres_fn)
+    logger.info('Searching for %s in %s'%(sn_name,capres_fn))
     capres = pd.read_csv(capres_fn,index_col = 0)
     search_rad = dist_thresh
     capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
@@ -621,8 +623,6 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     ]
     res_df = pd.DataFrame(columns=cols)
     res_df['EDGE_FLAG'] = 0
-    logger.debug(res_df.columns)
-
     sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
     catalog = SkyCoord(ra = capres.X_WORLD.values*u.deg,dec = capres.Y_WORLD.values*u.deg)
     d2d= sncoord.separation(catalog)
@@ -630,12 +630,12 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     dists = d2d[close_inds]
     match = capres.iloc[close_inds]
     angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
-    logger.info("Found %s galaxies within %s arcseconds"%(len(match),dist_thresh))
+    logger.info("Found %s galaxies within %s arcseconds of %s"%(len(match),dist_thresh,sn_name))
     if len(match)==0:
 
-        logger.info("Didn't detect a galaxy within %s arcsec of the SN; reporting limits only"%dist_thresh)
+        logger.info("Didn't detect a galaxy within %s arcsec of %s; reporting limits only"%(dist_thresh,sn_name))
         res_df = res_df.append(capres.iloc[0])
-        logger.debug(res_df.columns)
+        
         res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
        'MAGERR_AUTO_g', 'MAG_APER_g', 'MAGERR_APER_g', 'FLUX_AUTO_g',
        'FLUXERR_AUTO_g', 'FLUX_APER_g', 'FLUXERR_APER_g', 'FWHM_WORLD_g',
@@ -663,9 +663,9 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         res_df.SN_NAME = sn_name
 
     else:
-
-
+        
         res_df = res_df.append(match)
+        
         res_df['SN_NAME']=sn_name
         dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
 
@@ -673,22 +673,19 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
         res_df['DLR'] = np.array(dlr)
         rank = res_df['DLR'].rank().astype(int)
-
+        
         for counter, r in enumerate(res_df['DLR'].values):
             if r >4:
                 rank.iloc[counter]*=-1
         res_df['DLR_RANK']=rank
-        res_df = res_df[res_df['DLR']<30]
+        if len(match)>5:
+            res_df = res_df[res_df['DLR']<30]
         # make region files for ds9
         res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
-    all_sn_fn = os.path.join('/media/data3/wiseman/des/coadding/results/',savename)
-    if os.path.isfile(all_sn_fn):
-        all_sn = pd.read_csv(all_sn_fn,index_col=0)
-    else:
-        all_sn = pd.DataFrame(columns = cols)
-    all_sn = all_sn.append(res_df.reset_index(drop=True)).reset_index(drop=True)
-    print ('Saving result to %s'%all_sn_fn)
-    all_sn.to_csv(all_sn_fn)
+    
+    save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s.result'%(sn_name,sn_name)
+    logger.info('Saving result of %s to %s'%(sn_name,save_fn))
+    res_df.to_csv(save_fn)
 
     logger.info("Done finding CAP for %s"%sn_name)
     return res_df

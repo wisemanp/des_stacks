@@ -166,14 +166,25 @@ def get_sn_dat(sn):
     y = dat['SEASON'].values[0]
 
     #################
-    obj_field = sn[5:7]
+    obj_field = dat['FIELD'].values[0].strip(' ')
+    if len(obj_field)>2:
+        obj_field = obj_field.split(',')[0]
     the_field = chiplims[obj_field]
-    for ccd in the_field.keys():
-        if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
-            if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
-                return (ra,dec,'SN-%s'%obj_field,y,ccd)
+    try:
+        for ccd in the_field.keys():
+            if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
+                if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
+                    return (ra,dec,'SN-%s'%obj_field,y,ccd)
 
-
+        if len(obj_field)>2:
+            obj_field = obj_field.split(',')[1]
+        the_field = chiplims[obj_field]
+        for ccd in the_field.keys():
+            if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
+                if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
+                    return (ra,dec,'SN-%s'%obj_field,y,ccd)
+    except KeyError:
+        return False
 def cap_sex_sn(sg,sr,si,sz,chip,sn_name,leave_if_done = False):
     '''Runs SExtractor in dual image mode to get common aperture photometry'''
     logger = logging.getLogger(__name__)
@@ -236,7 +247,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
         zp = float(quals[0])
         riz_name = '%s_%s_%s_riz.fits'%(s.my,s.field,chip)
         sexcat = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sexcat'%(s.my,s.field,chip,s.band))
-        redo = False
+        '''redo = False
         if os.path.isfile(sexcat):
             logger.info("Already done the photometry in the %s band!"%s.band)
             test_cat = Table.read(sexcat).to_pandas()
@@ -244,7 +255,8 @@ def cap_sex_chip(sg,sr,si,sz,chip):
                 pass
             else:
                 redo = True
-                logger.info("There was a .sexcat file, but it didn't have the right parameters, so running SExtractor again")
+                logger.info("There was a .sexcat file, but it didn't have the right parameters, so running SExtractor again")'''
+        redo=True
         if os.path.isfile(sexcat) and redo ==False:
             pass
         else:

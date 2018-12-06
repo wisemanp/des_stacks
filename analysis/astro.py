@@ -682,7 +682,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             res_df = res_df[res_df['DLR']<30]
         # make region files for ds9
         res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
-
+    if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
+        os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
     save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s.result'%(sn_name,sn_name)
     logger.info('Saving result of %s to %s'%(sn_name,save_fn))
     res_df.to_csv(save_fn)
@@ -801,7 +802,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
             if grcres['ID'].loc[row][:10] =='SVA1_COADD':
                 ins = grcres[['z','z_Err','flag','source']].loc[row].values
                 stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
-        
+
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
     logger.debug(gals['z'].nonzero())
     return gals

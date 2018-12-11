@@ -15,6 +15,8 @@ good_des_chips = get_good_des_chips()
 bands = get_des_bands()
 
 def worker(img):
+    if os.path.isfile(img.replace('.fits','.weight.fits')):
+        os.remove(img.replace('.fits','.weight.fits'))
     swarp_cmd = [
     'swarp',
     '%s'%img,
@@ -49,7 +51,7 @@ def multi_fn(lst):
     pool._clear()
     pool._serve()
 
-    results = pool.map(worker2,lst)
+    results = pool.map(worker,lst)
 
 def main():
     fields = ['X1','X2','X3','C1','C2','C3','E1','E2','S1','S2']

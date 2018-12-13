@@ -70,6 +70,7 @@ def get_sn_dat(sn):
 def main(args,logger):
     sn_name = args.sn_name
     match_dist = args.distance
+    sn_cap_dir = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/',sn_name)
     if sn_name:
         l = [sn_name]
     else:

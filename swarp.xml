@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="file:///usr/local/share/swarp/swarp.xsl"?>
+<VOTABLE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ivoa.net/xml/VOTable/v1.1">
+<DESCRIPTION>produced by SWarp</DESCRIPTION>
+<!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
+<RESOURCE ID="SWarp" name="coadd.fits">
+ <DESCRIPTION>Data related to SWarp</DESCRIPTION>
+ <INFO name="QUERY_STATUS" value="OK" />
+ <COOSYS ID="J2000" equinox="J2000" epoch="J2000" system="ICRS"/>
+ <RESOURCE ID="MetaData" name="MetaData">
+  <DESCRIPTION>SWarp meta-data</DESCRIPTION>
+  <INFO name="QUERY_STATUS" value="OK" />
+  <PARAM name="Software" datatype="char" arraysize="*" ucd="meta.title;meta.software" value="SWarp"/>
+  <PARAM name="Version" datatype="char" arraysize="*" ucd="meta.version;meta.software" value="2.38.0"/>
+  <PARAM name="Soft_URL" datatype="char" arraysize="*" ucd="meta.ref.url;meta.software" value="http://astromatic.net/software/swarp/"/>
+  <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
+  <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2002ASPC..281..228B"/>
+  <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="32"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2018-12-05"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="13:11:45"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="3.42" unit="s"/>
+  <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="wiseman"/>
+  <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
+  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/wiseman/code/des_stacks"/>
+  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="coadd.fits"/>
+  <PARAM name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="img"/>
+  <PARAM name="NOverlap_Max" datatype="int" ucd="meta.number;stat.max;obs.image" value="0"/>
+  <PARAM name="ExpTime_Max" datatype="float" ucd="time.expo;stat.max;obs.image" value="0" unit="s"/>
+  <PARAM name="Gain_Max" datatype="float" ucd="instr.calib;stat.max;obs.image" value="0" unit="photon/ADU"/>
+  <TABLE ID="Input_Image_Data" name="Input_Image_Data">
+   <DESCRIPTION>Data gathered by SWarp for every FITS input image</DESCRIPTION>
+   <!-- NFrames may be 0 if an error occurred early in the processing -->
+   <PARAM name="NFrames" datatype="int" ucd="meta.number;meta.dataset" value="1"/>
+   <!-- CurrFrame may differ from NFrames if an error occurred -->
+   <PARAM name="CurrFrame" datatype="int" ucd="meta.number;meta.dataset" value="1"/>
+   <FIELD name="Frame_Index" datatype="int" ucd="meta.record"/>
+   <FIELD name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits"/>
+   <FIELD name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits"/>
+   <FIELD name="External_Header" datatype="boolean" ucd="meta.code;obs.param"/>
+   <FIELD name="Image_Ident" datatype="char" arraysize="*" ucd="meta.id;obs"/>
+   <FIELD name="Extension" datatype="int" ucd="meta.record"/>
+   <FIELD name="Date" datatype="char" arraysize="*" ucd="meta.record;time.event.end"/>
+   <FIELD name="Time" datatype="char" arraysize="*" ucd="meta.record;time.event.end"/>
+   <FIELD name="Duration" datatype="float" ucd="meta.record;time.event.end" unit="s"/>
+   <FIELD name="Background_Mean" datatype="float" ucd="instr.skyLevel;obs.image;stat.median" unit="adu"/>
+   <FIELD name="Background_StDev" datatype="float" ucd="stat.stdev;obs.image;stat.median" unit="adu"/>
+   <FIELD name="Subtract_Back" datatype="boolean" ucd="meta.code;obs.param"/>
+   <FIELD name="Back_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param"/>
+   <FIELD name="Back_Size" datatype="int" ucd="obs.param" unit="pix"/>
+   <FIELD name="Back_FilterSize" datatype="int" ucd="obs.param" unit="pix"/>
+   <FIELD name="Back_Default" datatype="float" ucd="obs.param" unit="adu"/>
+   <FIELD name="Weight_Type" datatype="boolean" arraysize="*" ucd="stat.weight;meta.code"/>
+   <FIELD name="Rescale_Weights" datatype="char" arraysize="*" ucd="stat.weight;meta.code"/>
+   <FIELD name="Weight_Thresh" datatype="float" ucd="instr.sensitivity;obs.param" unit="adu"/>
+   <FIELD name="Weight_Scaling" datatype="float" ucd="arith.factor;obs.image;stat.median"/>
+   <FIELD name="Interpolate" datatype="boolean" ucd="meta.code;obs.param"/>
+   <FIELD name="Gain" datatype="float" ucd="instr.calib;obs.image" unit="photon/adu"/>
+   <FIELD name="Saturation" datatype="float" ucd="instr.calib;obs.image" unit="adu"/>
+   <FIELD name="ExpTime" datatype="float" ucd="time.expo;obs.image" unit="s"/>
+   <FIELD name="Photometric_Flux_Scaling" datatype="float" ucd="phot.calib;obs.image"/>
+   <FIELD name="Astrometric_Flux_Scaling" datatype="float" ucd="phot.calib;obs.image"/>
+   <FIELD name="Field_Coordinates" datatype="double" arraysize="2" ucd="pos.eq;obs.image" unit="pix"/>
+   <FIELD name="Pixel_Scale" datatype="float" ucd="instr.pixel;obs.image;stat.mean" unit="arcsec"/>
+   <FIELD name="ObsDate" datatype="double" ucd="time.start;obs" unit="yr"/>
+   <FIELD name="Equinox" datatype="double" ucd="time.equinox;obs" unit="yr"/>
+   <FIELD name="Epoch" datatype="double" ucd="time.epoch;obs" unit="yr"/>
+   <FIELD name="COOSYS" datatype="char" arraysize="*" ucd="meta.code;pos"/>
+   <DATA><TABLEDATA>
+    <TR>
+     <TD>1</TD><TD>/media/data3/wiseman/des/coadding/5yr_stacks/MY1/SN-X1/r/ccd_42_r_0.2_2.2_clipweighted_sci.fits</TD><TD>(null)</TD><TD>F</TD><TD>DES supernova hex SN-X1 tiling 20</TD>
+     <TD>0</TD><TD>2018-12-05</TD><TD>13:11:45</TD><TD>3.00</TD>
+     <TD>-0.00170799</TD><TD>1.55051</TD><TD>T</TD><TD>AUTO</TD><TD>128</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>T</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>149.018</TD><TD>32988.6</TD><TD>0</TD><TD>1</TD>
+     <TD>1</TD><TD>34.62941786 -5.179753769</TD><TD>0.2363</TD><TD>2014.671391</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+   </TABLEDATA></DATA>
+  </TABLE>
+  <TABLE ID="Warnings" name="Warnings">
+   <DESCRIPTION>SWarp warnings (limited to the last 1000)</DESCRIPTION>
+   <FIELD name="Date" datatype="char" arraysize="*" ucd="meta;time.event.end"/>
+   <FIELD name="Time" datatype="char" arraysize="*" ucd="meta;time.event.end"/>
+   <FIELD name="Msg" datatype="char" arraysize="*" ucd="meta"/>
+   <DATA><TABLEDATA>
+    <TR><TD>2018-12-05</TD><TD>13:11:42</TD><TD>default.swarp not found, using internal defaults</TD></TR>
+   </TABLEDATA></DATA>
+  </TABLE>
+  <RESOURCE ID="Config" name="Config">
+   <DESCRIPTION>SWarp configuration</DESCRIPTION>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="swarp /media/data3/wiseman/des/coadding/5yr_stacks/MY1/SN-X1/r/ccd_42_r_0.2_2.2_clipweighted_sci.fits -COMBINE N -RESAMPLE Y -WEIGHTOUT_NAME img"/>
+   <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.swarp"/>
+   <PARAM name="ImageOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="coadd.fits"/>
+   <PARAM name="WeightOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="img"/>
+   <PARAM name="Header_Only" datatype="boolean" ucd="meta.code;obs.param" value="F"/>
+   <PARAM name="Header_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".head"/>
+   <PARAM name="Weight_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".weight.fits"/>
+   <PARAM name="Combine" datatype="boolean" ucd="meta.code" value="F"/>
+   <PARAM name="Combine_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param" value="MEDIAN"/>
+   <PARAM name="Blank_BadPixels" datatype="boolean" ucd="meta.code;obs.param" value="F"/>
+   <PARAM name="Celestial_Type" datatype="char" arraysize="*" ucd="meta;pos;obs.param" value="NATIVE"/>
+   <PARAM name="Projection_Type" datatype="char" arraysize="*" ucd="meta;pos;obs.param" value="TAN"/>
+   <PARAM name="Projection_Err" datatype="float" arraysize="2" ucd="pos.angDistance;stat.max;obs.param" value="0.001 0" unit="pix"/>
+   <PARAM name="Center_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="ALL"/>
+   <PARAM name="Center" datatype="double" arraysize="2" ucd="pos;obs.param" value="      34.629319     -5.17968813" unit="pix"/>
+   <PARAM name="PixelScale_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="MEDIAN"/>
+   <PARAM name="Pixel_Scale" datatype="float" arraysize="1" ucd="instr.scale;instr.pixel;obs.param" value="0"/>
+   <PARAM name="Image_Size" datatype="int" arraysize="1" ucd="instr.scale;instr.pixel;obs.param" value="0"/>
+   <PARAM name="Resample" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="Resample_Dir" datatype="char" arraysize="*" ucd="meta.dataset" value="."/>
+   <PARAM name="Resample_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".resamp.fits"/>
+   <PARAM name="Resampling_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="LANCZOS3"/>
+   <PARAM name="Oversampling" datatype="int" arraysize="1" ucd="arith.factor;instr.pixel;obs.param" value="1"/>
+   <PARAM name="FScalAstro_Type" datatype="char" arraysize="*" ucd="phot.calib;obs.param" value="FIXED"/>
+   <PARAM name="FScale_Keyword" datatype="char" arraysize="*" ucd="meta.code;phot.calib;obs.param" value="FLXSCALE"/>
+   <PARAM name="FScale_Default" datatype="float" ucd="phot.calib;obs.param" value="1"/>
+   <PARAM name="Gain_Keyword" datatype="char" arraysize="*" ucd="meta.code;phot.calib;obs.param" value="GAIN"/>
+   <PARAM name="Gain_Default" datatype="float" ucd="phot.calib;obs.param" value="0"/>
+   <PARAM name="SatLev_Keyword" datatype="char" arraysize="*" ucd="meta.code;instr.saturation;obs.param" value="SATURATE"/>
+   <PARAM name="SatLev_Default" datatype="float" ucd="instr.saturation;obs.param" value="50000"/>
+   <PARAM name="Subtract_Back" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="Back_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param" value="NONE"/>
+   <PARAM name="Back_Size" datatype="int" ucd="obs.param" value="128"/>
+   <PARAM name="Back_FilterSize" datatype="int" ucd="obs.param" value="3"/>
+   <PARAM name="Back_Default" datatype="float" ucd="obs.param" value="0" unit="adu"/>
+   <PARAM name="Back_FiltThresh" datatype="float" ucd="phot.count;arith.ratio;obs.param" value="0"/>
+   <PARAM name="VMem_Dir" datatype="char" arraysize="*" ucd="meta" value="."/>
+   <PARAM name="VMem_Max" datatype="int" ucd="meta.number;stat.max" value="2047" unit="Mbyte"/>
+   <PARAM name="Mem_Max" datatype="int" ucd="meta.number;stat.max" value="256" unit="Mbyte"/>
+   <PARAM name="Combine_BufSize" datatype="int" ucd="meta.number;stat.max" value="256" unit="Mbyte"/>
+   <PARAM name="Delete_TmpFiles" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="Copy_Keywords" datatype="char" arraysize="*" ucd="meta;meta.fits" value="OBJECT  "/>
+   <PARAM name="Write_FileInfo" datatype="boolean" ucd="meta.code" value="F"/>
+   <PARAM name="Verbose_Type" datatype="char" arraysize="*" ucd="meta.code" value="NORMAL"/>
+  </RESOURCE>
+ </RESOURCE>
+</RESOURCE>
+</VOTABLE>

@@ -51,7 +51,7 @@ def multi_fn(lst):
     pool._clear()
     pool._serve()
 
-    results = pool.map(worker,lst)
+    results = pool.map(worker2,lst)
 
 def main():
     fields = ['X1','X2','X3','C1','C2','C3','E1','E2','S1','S2']

@@ -681,7 +681,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         if len(match)>5:
             res_df = res_df[res_df['DLR']<30]
         logger.info(res_df[res_df['DLR_RANK']==1]['z'].values[0])
-        if res_df[res_df['DLR_RANK']==1]['z'].values[0]:
+        if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:
             pass
         else:
             snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')

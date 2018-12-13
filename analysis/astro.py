@@ -680,7 +680,18 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         res_df['DLR_RANK']=rank
         if len(match)>5:
             res_df = res_df[res_df['DLR']<30]
-        # make region files for ds9
+        if res_df[res_df['DLR_RANK']==1]['z']>0:
+            pass
+        else:
+            snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
+            snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
+            if len (snspecobs)>0:
+                if snspecobs['Z_GAL']>0:
+                    try:
+                        res_df[res_df['DLR_RANK']==1]['z']=snspecobs['Z_GAL'].values[0]
+                    except:
+                        res_df[res_df['DLR_RANK']==1]['z']=snspecobs['Z_GAL']
+
         res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
         os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
@@ -767,6 +778,39 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     return gals_with_z,z_gals
 
 def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
+    ordered_surveys = [
+    'PRIMUS',
+    'NED',
+    'UDS_FORS2',
+    'UDS_VIMOS',
+    'ZFIRE_UDS',
+    'ACES',
+    'SDSS',
+    '6dF',
+    'ATLAS',
+    '2dFGRS',
+    'GAMA',
+    'SNLS_FORS           ',
+    'CDB',
+    'VVDS_DEEP',
+    'VVDS_CDFS',
+    'MUSE',
+    'SAGA',
+    'DEEP2_DR4',
+    'VUDS_COSMOS',
+    'VUDS_ECDFS',
+    'NOAO_0522',
+    'NOAO_0334',
+    'N17B331',
+    'MOSDEF',
+    'SpARCS',
+    'VIPERS',
+    'PanSTARRS_AAOmega   ',
+    'PanSTARRS_MMT',
+    'SNLS_AAOmega',
+    'DES_AAOmega']
+
+
 
     logger = logging.getLogger(__name__)
     logger.handlers =[]
@@ -795,13 +839,14 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
         except:
             g = stack_gals_with_z.iloc[c:]
         gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
-        idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,4*u.arcsec)
+        idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
         grcres = cat.iloc[idxc]
+        for survey in ordered_surveys:
 
-        for row in grcres[grcres['source']=='DES_AAOmega'].index:
-            if grcres['ID'].loc[row][:10] =='SVA1_COADD':
-                ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
+            for row in grcres[grcres['source']=='DES_AAOmega'].index:
+                if grcres['ID'].loc[row][:10] =='SVA1_COADD':
+                    ins = grcres[['z','z_Err','flag','source']].loc[row].values
+                    stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
     logger.debug(gals['z'].nonzero())

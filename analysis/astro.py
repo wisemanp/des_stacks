@@ -686,6 +686,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         else:
             snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
             snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
+            print (snspecobs[['TRANSIENT_NAME','Z_GAL']])
             if len (snspecobs)>0:
                 if snspecobs['Z_GAL'].values[0]>0:
                     try:

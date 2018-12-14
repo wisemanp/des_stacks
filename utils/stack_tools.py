@@ -673,22 +673,7 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4100,stamp_sizey
         out,errs = pr.communicate()
     resamp_frame_str = resamp_frames[0]+' '+resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
 
-    white_cmd = ['swarp',
-    '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizex),
-    '-CENTER_TYPE','MANUAL',
-    '-CENTER','%f,%f'%(ra,dec),
-    '-PIXELSCALE_TYPE','MANUAL',
-    '-PIXEL_SCALE','%.03f'%pixel_scale,
-    '-BACK_SIZE','512',
-    '-IMAGEOUT_NAME','%s_white_stamp.fits'%sn_name,
-    resamp_frame_str]
-    logger.info("Making a white stamp for %s as a detection image for CAP"%sn_name)
-    starttime=float(time.time())
-    p = subprocess.Popen(white_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    outs,errs = p.communicate()
-    endtime=float(time.time())
-    logger.info('Done making white stamp for %s, took %.3f seconds'%(sn_name,endtime-starttime))
-    return '%s_white_stamp.fits'%sn_name
+    return
 
 def get_chip_vals(f,chip,vals = 'center'):
     lim_file=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')

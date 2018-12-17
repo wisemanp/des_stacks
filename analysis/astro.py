@@ -682,22 +682,23 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             res_df = res_df[res_df['DLR']<30]
         logger.info(res_df[res_df['DLR_RANK']==1].index)
         ind = res_df[res_df['DLR_RANK']==1].index
-        if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:
-            pass
-        else:
-            snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
-            snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
+        try:
+            if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:
+                pass
+            else:
+                snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
+                snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
 
-            if len (snspecobs)>0:
-                for i in range(len(snspecobs)):
-                    if snspecobs['Z_GAL'].values[i]>0:
-                        logger.info(snspecobs['Z_GAL'].values[i])
-                        try:
-                            res_df['z'].loc[ind]=snspecobs['Z_GAL'].values[i]
-                            res_df['z_Err'].loc[ind] = -9999.0
-                        except:
-                            res_df['z'].loc[ind]=snspecobs['Z_GAL']
-                            res_df['z_Err'].loc[ind] = -9999.0
+                if len (snspecobs)>0:
+                    for i in range(len(snspecobs)):
+                        if snspecobs['Z_GAL'].values[i]>0:
+                            logger.info(snspecobs['Z_GAL'].values[i])
+                            try:
+                                res_df['z'].loc[ind]=snspecobs['Z_GAL'].values[i]
+                                res_df['z_Err'].loc[ind] = -9999.0
+                            except:
+                                res_df['z'].loc[ind]=snspecobs['Z_GAL']
+                                res_df['z_Err'].loc[ind] = -9999.0
 
         res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):

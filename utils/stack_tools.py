@@ -535,11 +535,11 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4200,stamp_sizey=2200):
             '@%s'%lst,
             '-COMBINE','N',
             '-RESAMPLE','Y',
-            '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
-            '-CENTER_TYPE','MANUAL',
-            '-CENTER','%f,%f'%(ra_cent,dec_cent),
-            '-PIXELSCALE_TYPE','MANUAL',
-            '-PIXEL_SCALE','0.2363',#'%.03f'%pixel_scale,
+            #'-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
+            #'-CENTER_TYPE','MANUAL',
+            #'-CENTER','%f,%f'%(ra_cent,dec_cent),
+            #'-PIXELSCALE_TYPE','MANUAL',
+            #'-PIXEL_SCALE','0.2363',#'%.03f'%pixel_scale,
             '-BACK_SIZE','256',
             ]
 

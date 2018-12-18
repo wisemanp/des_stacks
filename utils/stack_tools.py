@@ -500,7 +500,7 @@ def get_y3a1():
         dat = conn.query_to_pandas(q)
         dat.to_csv('/home/wiseman/y3a1_%s_summary.csv'%f)
 
-def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4100,stamp_sizey=2100):
+def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4200,stamp_sizey=2200):
 
     img_list = np.genfromtxt(lst,dtype='str',delimiter='\n')
     if len(img_list)==0:

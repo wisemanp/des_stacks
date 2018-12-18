@@ -41,8 +41,8 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         logger.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
     else:'''
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -174,7 +174,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     try:
         good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
     except: #valueerror
-
+        logger.debug(good_frame)
         good_table = Table.from_pandas(good_frame)
     logger.debug('Here is the good_table, to write to fits format')
     logger.debug(good_table)

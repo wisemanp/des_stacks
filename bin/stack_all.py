@@ -178,6 +178,11 @@ def simple_stack(logger,parsed):
                 s.do_my_stack(cuts=cuts,final=True)
                 s.run_stack_sex(cuts=cuts,final=True)
                 s.init_phot()
+                tempfiles = glob.glob('/media/data3/wiseman/des/coadding/temp/*%s_%s_%s*'%(my,f,b))
+                for f in tempfiles:
+                    os.remove(f)
+                    
+
 def looped_stack(logger,parsed):
     fields = parsed['fields']
     bands = parsed['bands']

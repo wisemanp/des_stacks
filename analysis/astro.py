@@ -6,6 +6,8 @@ import astropy.io.fits as fits
 from astropy.table import Table
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+from astropy.nddata import NDData
+from astroimtools import nddata_stats
 import datetime
 import os
 import logging
@@ -180,12 +182,10 @@ def init_phot(s,chip,cat,pl='n'):
 
     nclip=50
     s.logger.info("Running iraf.imstat on %s in order to get sky noise" %imgname)
-    out = iraf.imstat(imgname,fields='midpt,stddev',format=0,Stdout=1,nclip=nclip,usigma=2.8,lsigma=2.8)
-    try:
-        mean,skynoise = map(float, out[0].split())
-    except ValueError:
-        s.logger.error("iraf.imstat failed on %s with following output: %s" %(imgname,out))
-        mean,skynoise = None,None
+    nd1 = NDData(fits.getdata(imgname))
+    columns=['mean','std']
+    tbl = nddata_stats(nd1,columns=columns,sigma=2.8,iters=50)
+    mean,skynoise = tbl['mean'],tbl['std']
     h = fits.getheader(imgname)
     exptime= h['EXPTIME']
     pixscale=0.27

@@ -181,7 +181,7 @@ def init_phot(s,chip,cat,pl='n'):
     kr_lim2 = c2['MAG_AUTO'].median()
 
     nclip=50
-    s.logger.info("Running iraf.imstat on %s in order to get sky noise" %imgname)
+    s.logger.info("Running nddata_stats on %s in order to get sky noise" %imgname)
     nd1 = NDData(fits.getdata(imgname))
     columns=['mean','std']
     tbl = nddata_stats(nd1,columns=columns,sigma=2.8,iters=50)

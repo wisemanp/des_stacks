@@ -164,22 +164,23 @@ def simple_stack(logger,parsed):
     workdir = parsed['workdir']
     cuts={'zp':parsed['zcut'],'psf':parsed['pcut'],'teff':parsed['tcut']}
     logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
-    for f in fields:
+    for fi in fields:
         for b in bands:
+            logger.info('Here is the field to be sent:')
+            logger.info(fi)
+
             try:
                 if parsed['optimized']:
-                    cuts = get_cuts(f,b)
+                    cuts = get_cuts(fi,b)
             except:
                 pass
             for my in mys:
-                logger.info('Found the following cuts: ')
-                logger.info(cuts)
-                logger.info('Sending following to Stack: ',f,b,my,chips,workdir,cuts,'true')
-                s = stack.Stack(f,b,my,chips,workdir,cuts=cuts,db=True)
+
+                s = stack.Stack(fi,b,my,chips,workdir,cuts=cuts,db=True)
                 s.do_my_stack(cuts=cuts,final=True)
                 s.run_stack_sex(cuts=cuts,final=True)
                 s.init_phot()
-                tempfiles = glob.glob('/media/data3/wiseman/des/coadding/temp/*%s_%s_%s*'%(my,f,b))
+                tempfiles = glob.glob('/media/data3/wiseman/des/coadding/temp/*%s_%s_%s*'%(my,fi,b))
                 for f in tempfiles:
                     os.remove(f)
 

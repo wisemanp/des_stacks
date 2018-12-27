@@ -22,7 +22,9 @@ from des_stacks.analysis.astro import init_phot, init_calib
 
 class Stack():
     def __init__(self, field, band, my, chips ,working_dir,cuts={'none':None},db = False,new=True):
+        print ('Printing field 1',field)
         self.field = field
+        print ('Printing field 2',self.field)
         self.band = band
         self.my =my
         self.chips=chips

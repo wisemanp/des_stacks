@@ -174,6 +174,7 @@ def simple_stack(logger,parsed):
             for my in mys:
                 logger.info('Found the following cuts: ')
                 logger.info(cuts)
+                logger.info('Sending following to Stack: ',f,b,my,chips,workdir,cuts,'true')
                 s = stack.Stack(f,b,my,chips,workdir,cuts=cuts,db=True)
                 s.do_my_stack(cuts=cuts,final=True)
                 s.run_stack_sex(cuts=cuts,final=True)

@@ -184,7 +184,7 @@ def init_phot(s,chip,cat,pl='n'):
     s.logger.info("Running nddata_stats on %s in order to get sky noise" %imgname)
     nd1 = NDData(fits.getdata(imgname))
     columns=['mean','std']
-    tbl = nddata_stats(nd1,columns=columns,sigma=2.8,iters=50)
+    tbl = nddata_stats(nd1,columns=columns,sigma=2.8,iters=10)
     s.logger.info(tbl)
     mean,skynoise = tbl['mean'],tbl['std']
     s.logger.info('Skynoise: %s'%skynoise)

@@ -181,7 +181,7 @@ def simple_stack(logger,parsed):
                 tempfiles = glob.glob('/media/data3/wiseman/des/coadding/temp/*%s_%s_%s*'%(my,f,b))
                 for f in tempfiles:
                     os.remove(f)
-                    
+
 
 def looped_stack(logger,parsed):
     fields = parsed['fields']
@@ -305,6 +305,7 @@ if __name__=="__main__":
             simple_stack(logger,parsed)
     else:
         simple_stack(logger,parsed)
-    check_done('stack',parsed['workdir'])
-    check_done('sex',parsed['workdir'])
-    check_done('phot',parsed['workdir'])
+    logger.info('############  Done  ############')
+    #check_done('stack',parsed['workdir'])
+    #check_done('sex',parsed['workdir'])
+    #check_done('phot',parsed['workdir'])

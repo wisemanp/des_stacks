@@ -185,7 +185,9 @@ def init_phot(s,chip,cat,pl='n'):
     nd1 = NDData(fits.getdata(imgname))
     columns=['mean','std']
     tbl = nddata_stats(nd1,columns=columns,sigma=2.8,iters=50)
+    s.logger.info(tbl)
     mean,skynoise = tbl['mean'],tbl['std']
+    s.logger.info('Skynoise: %s'%skynoise)
     h = fits.getheader(imgname)
     exptime= h['EXPTIME']
     pixscale=0.27

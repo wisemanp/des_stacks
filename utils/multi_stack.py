@@ -75,7 +75,13 @@ def stack_worker(arg_pair):
             except:
                 pass
             outhead = fits.getheader(outname)
-            xsize,ysize = outhead['NAXIS1'],outhead['NAXIS2']
+            headlistlst = np.genfromtxt(os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,field,band,chip,s.cutstring,key)),dtype=str,delimiter='\n')
+            widths, lengths = [],[]
+            for headfname in headlistlst:
+                inth = fits.Header.fromtextfile(headfname)
+                widths.append(inth['NAXIS1'])
+                lengths.append(inth['NAXIS2'])
+            xsize,ysize = max(widths),max(lengths)
             params = {
             'outliers': os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(y,field,band,chip,s.cutstring,key)),
             'stackhead': stackhead_name,

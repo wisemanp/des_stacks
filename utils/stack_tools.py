@@ -536,7 +536,7 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4200,stamp_sizey=2200):
             '@%s'%lst,
             '-COMBINE','N',
             '-RESAMPLE','Y',
-            '-IMAGE_SIZE','%s,%s'%(4113,2058),
+            #'-IMAGE_SIZE','%s,%s'%(4113,2058),
             #'-CENTER_TYPE','MANUAL',
             #'-CENTER','%f,%f'%(ra_cent,dec_cent),
             #'-PIXELSCALE_TYPE','MANUAL',

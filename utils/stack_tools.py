@@ -284,7 +284,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
                 swarp_clip = [
                 'swarp',
                 '@%s'%resamplist_name,
-                '-RESAMPLE','-N',
+                '-RESAMPLE','N',
                 '-IMAGEOUT_NAME',fn_out,
                 '-CLIP_LOGNAME',cliptab_name,
                 '-CLIP_SIGMA',str(clip_sigs[s.field])

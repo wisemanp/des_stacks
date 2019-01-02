@@ -81,8 +81,8 @@ def stack_worker(arg_pair):
             'headlist': os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.head.lst'%(y,field,band,chip,s.cutstring,key)),
             'mask':os.path.join(s.temp_dir,'mask.conf'),
             'masksuffix':'.mask.fits',
-            'xsize':'4100',
-            'ysize':'2100'
+            'xsize':'4200',
+            'ysize':'2200'
             }
             for p in params.keys():
                 mm_conf.write('%s  = %s     ;\n'%(p,params[p]))

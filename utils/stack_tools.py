@@ -284,6 +284,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
                 swarp_clip = [
                 'swarp',
                 '@%s'%resamplist_name,
+                '-RESAMPLE','-N',
                 '-IMAGEOUT_NAME',fn_out,
                 '-CLIP_LOGNAME',cliptab_name,
                 '-CLIP_SIGMA',str(clip_sigs[s.field])
@@ -296,7 +297,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
                 '@%s'%resamplist_name,
                 '-RESAMPLE', 'N',
                 '-COMBINE_TYPE', 'WEIGHTED',
-                '-WEIGHT_TYPE', 'MAP_RMS',
+                '-WEIGHT_TYPE', 'MAP_WEIGHT',
                 '-WEIGHT_IMAGE', '@%s'%maskweightlist_name,
                 '-IMAGEOUT_NAME', fn_out.replace('clipped.fits','weighted.fits')
                 ]

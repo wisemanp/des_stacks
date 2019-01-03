@@ -65,6 +65,8 @@ def stack_worker(arg_pair):
                 print ('Swarp failed for some reason in chip %s'%chip)
         if outname==False:
             print ('No outname - assume you are skipping this for a reason')
+        elif wgt_cmd==False:
+            print ('Already done the weighted stack of chip %s, part %s, going to the next, or the combination'%(chip,key))
         else:
             mm_conf_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_mm.config'%(y,field,band,chip,s.cutstring,key))
             mm_conf = open(mm_conf_name, 'w')
@@ -116,8 +118,7 @@ def stack_worker(arg_pair):
             combine_mask_weight(s,chip,key)
             endtime=float(time.time())
             print('Finished creating masked weightmaps for chip %s, part %s. Took %.3f seconds' %(chip,key,endtime-starttime))
-        if wgt_cmd==False:
-            print ('Already done the weighted stack of chip %s, part %s, going to the next, or the combination'%(chip,key))
+
         else:
             try:
                 print ('Stacking chip %s, part %s, weighted'%(chip,key))

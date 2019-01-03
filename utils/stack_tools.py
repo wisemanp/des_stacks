@@ -803,7 +803,15 @@ def combine_mask_weight(s,chip,j):
         w = fits.open(wn)
         wd = w[0].data
         m = fits.getdata(mn)
-        maskweight = np.multiply(wd,m)
+        try:
+            maskweight = np.multiply(wd,m)
+        except ValueError:
+            if wd.shape[0]<m.shape[0] or wd.shape[1]<m.shape[1]:
+                new_mask = m[:wd.shape[0],:wd.shape[1]]
+            elif wd.shape[0]>m.shape[0] or wd.shape[1]>m.shape[1]:
+                new_mask = np.ones_like(wd)
+                new_mask[:m.shape[0],:m.shape[1]]=m
+            maskweight = np.multiply(wd,new_mask)
         w[0].data = maskweight
         #print ('Weight size',w[0].header['NAXIS1'],w[0].header['NAXIS2'])
         w.writeto(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')),overwrite=True)

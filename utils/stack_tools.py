@@ -689,7 +689,7 @@ def get_chip_vals(f,chip,vals = 'center'):
     elif vals == 'lims':
         return this_chip_lims
 
-def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4100,stamp_sizey=2100):
+def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -710,7 +710,8 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4100,stamp_sizey=2100):
         glob_list = glob.glob(glob_string)
         sci_frames.append(glob_list[0])
         logger.info("Found the correct coadd, exists at: '%s'"%glob_list[0])
-    pixel_scale = 3600.0*abs(fits.getheader(sci_frames[0])['CD1_1'])
+    ghead = fits.getheader(sci_frames[0])
+    pixel_scale = 3600.0*abs(ghead['CD1_1'])
     sci_frame_str = sci_frames[0]+' ' +sci_frames[1]+' '+sci_frames[2]+' '+sci_frames[3]
 
     # set up the directory if it doesn't already exist
@@ -722,9 +723,8 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4100,stamp_sizey=2100):
         os.mkdir(cap_chip_dir)
     os.chdir(cap_chip_dir)
     # find the center of the chip
-    ra_cent,dec_cent = get_chip_vals(sg.field,chip)
-
-
+    ra_cent,dec_cent = ghead['CRVAL1'],ghead['CRVAL2']
+    stamp_sizex,stamp_sizey = ghead['NAXIS1'],ghead['NAXIS2']
     # make a riz stamp as a det image
     logger.info('Resampling all bands in MY%s, %s, chip %s'%(sg.my,sg.field,chip))
     resamp_cmd = ['swarp',

@@ -114,7 +114,7 @@ def stack_worker(arg_pair):
             except (OSError, IOError):
                 #s.logger.warn("Swarp failed.", exc_info=1)
                 print ('MaskMap failed for some reason in chip %s'%chip)
-            ## Combine the masks with the weightmaps 
+            ## Combine the masks with the weightmaps
             print ('Combining masks with weightmaps for chip %s, part %s'%(chip,key))
             starttime=float(time.time())
             combine_mask_weight(s,chip,key)
@@ -144,30 +144,34 @@ def stack_worker(arg_pair):
     staged_listname = os.path.join(s.temp_dir,'%s_%s_%s_%s_%s_staged.lst'%(y,field,band,chip,s.cutstring))
     np.savetxt(staged_listname,staged_list,fmt='%s')
     imgout_name = staged_list[0][:-16]+'_clipweighted_sci.fits'
-    resamp_cmd =['swarp','@%s'%staged_listname,'-IMAGEOUT_NAME',imgout_name,'-COMBINE_TYPE','AVERAGE']
+    resamp_cmd =['swarp','@%s'%staged_listname,'-COMBINE','-N','RESAMPLE','Y']
     os.chdir(s.band_dir)
     #s.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
-    print ('Combining intermediate images')
+    print ('Making weights for intermediate images')
     res_start = float(time.time())
     rf = subprocess.Popen(resamp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     r_out,r_errs = rf.communicate()
     res_end = float(time.time())
-    print ('Done combining intermediate images on chip %s in %.3f seconds'%(chip,(res_end-res_start)))
+    print ('Done weighting intermediate images on chip %s in %.3f seconds'%(chip,(res_end-res_start)))
     #s.logger.info('Done resampling intermediate stacks, took %.3f seconds'%(res_end-res_start))
-    '''resamplist = []
+    resamplist = []
     weightlist = []
     for img in staged_list:
         imgname = os.path.split(img)[-1]
         imgnameroot = imgname[:-5]
         resamplist.append(os.path.join(s.band_dir,imgnameroot+'.resamp.fits'))
         weightlist.append(os.path.join(s.band_dir,imgnameroot+'.resamp.weight.fits'))
-    final_resampname = os.path.join(s.temp_dir,'%s_%s_%s_%s_%s_final.lst'%(y,field,band,chip,s.cutstring))
-    final_weightname = os.path.join(s.temp_dir,'%s_%s_%s_%s_%s_final.wgt.lst'%(y,field,band,chip,s.cutstring))
+    final_resampname = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_final.lst'%(y,field,band,chip,s.cutstring))
+    final_weightname = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_final.wgt.lst'%(y,field,band,chip,s.cutstring))
     np.savetxt(final_resampname,resamplist,fmt='%s')
     np.savetxt(final_weightname,weightlist,fmt='%s')
-    imgout_name = staged_list[0][:-7]+'_sci.fits'
-    weightout_name = staged_list[0][:-7]+'_wgt.fits'
-    final_cmd = ['swarp','@%s'%final_resampname,'-IMAGEOUT_NAME',imgout_name,'-c','default.swarp','-WEIGHTOUT_NAME',weightout_name,'-COMBINE_TYPE','WEIGHTED','-WEIGHT_IMAGE','@%s'%final_weightname]
+
+    weightout_name = imgout_name.replace('_sci.fits','_wgt.fits')
+    final_cmd = ['swarp','@%s'%final_resampname,'-IMAGEOUT_NAME',imgout_name,
+    '-WEIGHTOUT_NAME',weightout_name,
+    '-COMBINE_TYPE','WEIGHTED',
+    '-WEIGHT_TYPE','MAP_WEIGHT',
+    '-WEIGHT_IMAGE','@%s'%final_weightname]
     #s.logger.info('Doing this command to do the final stack:\n %s'%final_cmd)
     print ('Doing final stack!')
     final_start = float(time.time())
@@ -175,7 +179,7 @@ def stack_worker(arg_pair):
     f_out,f_errs = pf.communicate()
     final_end = float(time.time())
 
-    print("Done combining mini-stacks, took %.3f seconds"%(final_end -final_start))'''
+    print("Done combining intermediate stacks, took %.3f seconds"%(final_end -final_start))
     print("Saved final science frame at %s"%imgout_name)
     #print("And final weightmap at %s"%weightout_name)
     t_tot = float(time.time()) - started

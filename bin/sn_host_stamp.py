@@ -46,6 +46,7 @@ def parser():
     parser.add_argument('-ne','--new',help = 'Use new stacks?',action='store_true' )
     parser.add_argument('-fc','--finder',help = 'Is this a finder chart?',action='store_true')
     parser.add_argument('-re','--resfile',help = 'File to find host phot results for this SN',default = None)
+    parser.add_argument('-b','--band',help='Only use one band? If so, enter here',default='All')
     return parser.parse_args()
 
 def get_sn_dat(sn):
@@ -108,6 +109,8 @@ def main(args,logger):
             ax.set_ylabel('Declination (J2000)',fontsize=12,labelpad = 30)
             hor_line = np.array([[sn_ra-0.00027,sn_ra+0.00027],[sn_dec,sn_dec]])
             ver_line = np.array([[sn_ra,sn_ra],[sn_dec-0.00027,sn_dec+0.00027]])
+            if args.band !='All':
+                bands = [args.band]
             for counter,b in enumerate(bands):
 
 
@@ -129,7 +132,10 @@ def main(args,logger):
                     sn_res = sn_res[sn_res['Y_WORLD']>sn_dec-(w)]
 
                     img = fits.open(img_fn)
-                    fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[b])
+                    if args.band != 'All':
+                        fg = aplpy.FITSFigure(img,figure=fig)
+                    else:
+                        fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[b])
                     try:
                         fg.recenter(sn_ra,sn_dec,w)
                     except:

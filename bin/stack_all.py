@@ -166,9 +166,6 @@ def simple_stack(logger,parsed):
     logger.info("Parsed command line and will work on:\n Fields: %s \n Bands: %s \n MYs: %s \n Chips: %s"%(fields,bands,mys,chips))
     for fi in fields:
         for b in bands:
-            logger.info('Here is the field to be sent:')
-            logger.info(fi)
-
             try:
                 if parsed['optimized']:
                     cuts = get_cuts(fi,b)

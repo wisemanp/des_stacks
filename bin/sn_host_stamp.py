@@ -70,12 +70,14 @@ def get_sn_dat(sn):
 def main(args,logger):
     sn_name = args.sn_name
     match_dist = args.distance
-    sn_cap_dir = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/',sn_name)
+
     if sn_name:
         l = [sn_name]
     else:
         l = np.genfromtxt(args.namelist,dtype=str,delimiter='\n')
     for sn in l:
+        sn_name = sn
+        sn_cap_dir = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/',sn_name)
         logger.info("Locating result file for %s ..."%sn)
         logger.info("First querying the DES database to get the RA,Dec of %s."%sn)
         sn_ra,sn_dec,f,y,chip = get_sn_dat(sn)

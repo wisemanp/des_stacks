@@ -22,9 +22,7 @@ from des_stacks.analysis.astro import init_phot, init_calib
 
 class Stack():
     def __init__(self, field, band, my, chips ,working_dir,cuts={'none':None},db = False,new=True):
-        print ('Printing field 1',field)
         self.field = field
-        print ('Printing field 2',self.field)
         self.band = band
         self.my =my
         self.chips=chips
@@ -106,9 +104,7 @@ class Stack():
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-        print('************** SHOULD PRINT THIS ***************')
         print(self.field)
-        print('************** SHOULD PRINT THIS AS WELL ***************')
         fh = logging.FileHandler(os.path.join(self.log_dir,'stack_%s%s%s.log'%(self.field,self.band,self.my)))
         fh.setFormatter(formatter)
         ch.setFormatter(formatter)

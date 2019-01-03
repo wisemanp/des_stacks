@@ -96,7 +96,7 @@ def stack_worker(arg_pair):
             for p in params.keys():
                 mm_conf.write('%s  = %s     ;\n'%(p,params[p]))
             mm_conf.close()
-
+            print ('Wrote mm_conf to: %s'%mm_conf_name)
             maskmap_cmd = ['/home/wiseman/software/cliputils/MaskMap']
             try:
                 print ('Making mask for chip %s, part %s'%(chip,key))

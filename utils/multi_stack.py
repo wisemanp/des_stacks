@@ -144,7 +144,10 @@ def stack_worker(arg_pair):
     staged_listname = os.path.join(s.temp_dir,'%s_%s_%s_%s_%s_staged.lst'%(y,field,band,chip,s.cutstring))
     np.savetxt(staged_listname,staged_list,fmt='%s')
     imgout_name = staged_list[0][:-16]+'_clipweighted_sci.fits'
-    resamp_cmd =['swarp','@%s'%staged_listname,'-COMBINE','-N','RESAMPLE','Y']
+    resamp_cmd =['swarp',
+    '@%s'%staged_listname,
+    '-COMBINE','N',
+    'RESAMPLE','Y']
     os.chdir(s.band_dir)
     #s.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
     print ('Making weights for intermediate images with: %s'%resamp_cmd)

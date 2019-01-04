@@ -147,7 +147,7 @@ def stack_worker(arg_pair):
     resamp_cmd =['swarp','@%s'%staged_listname,'-COMBINE','-N','RESAMPLE','Y']
     os.chdir(s.band_dir)
     #s.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
-    print ('Making weights for intermediate images')
+    print ('Making weights for intermediate images with: %s'%resamp_cmd)
     res_start = float(time.time())
     rf = subprocess.Popen(resamp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     r_out,r_errs = rf.communicate()
@@ -173,7 +173,7 @@ def stack_worker(arg_pair):
     '-WEIGHT_TYPE','MAP_WEIGHT',
     '-WEIGHT_IMAGE','@%s'%final_weightname]
     #s.logger.info('Doing this command to do the final stack:\n %s'%final_cmd)
-    print ('Doing final stack!')
+    print ('Doing final stack with command: %s'%final_cmd)
     final_start = float(time.time())
     pf = subprocess.Popen(final_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     f_out,f_errs = pf.communicate()

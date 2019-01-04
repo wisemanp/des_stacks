@@ -147,7 +147,7 @@ def stack_worker(arg_pair):
     resamp_cmd =['swarp',
     '@%s'%staged_listname,
     '-COMBINE','N',
-    'RESAMPLE','Y']
+    '-RESAMPLE','Y']
     os.chdir(s.band_dir)
     #s.logger.info('Resampling and weighting the intermediate images:\n %s'%resamp_cmd)
     print ('Making weights for intermediate images with: %s'%resamp_cmd)

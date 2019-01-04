@@ -47,6 +47,7 @@ def parser():
     parser.add_argument('-fc','--finder',help = 'Is this a finder chart?',action='store_true')
     parser.add_argument('-re','--resfile',help = 'File to find host phot results for this SN',default = None)
     parser.add_argument('-b','--band',help='Only use one band? If so, enter here',default='All')
+    parser.add_argument('-f','--ftype',help='File type for save. Default = pdf',default='pdf')
     return parser.parse_args()
 
 def get_sn_dat(sn):
@@ -226,9 +227,9 @@ def main(args,logger):
 
             plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)
             if args.path =='sn_dir':
-                savepath =os.path.join(sn_cap_dir,'%s_stamp.pdf'%sn)
+                savepath =os.path.join(sn_cap_dir,'%s_stamp.%s'%(sn,args.ftype))
             else:
-                savepath =os.path.join(args.path,'%s_stamp.pdf'%sn)
+                savepath =os.path.join(args.path,'%s_stamp.%s'%(sn,args.ftype))
 
             plt.savefig(savepath)
             plt.close(fig)

@@ -112,6 +112,8 @@ def main(args,logger):
             ver_line = np.array([[sn_ra,sn_ra],[sn_dec-0.00027,sn_dec+0.00027]])
             if args.band !='All':
                 bands = [args.band]
+            else:
+                bands = ['g','r','i','z']
             for counter,b in enumerate(bands):
 
 

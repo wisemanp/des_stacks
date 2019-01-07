@@ -732,6 +732,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300,npi
     # make a riz stamp as a det image
     logger.info('Resampling all bands in MY%s, %s, chip %s'%(sg.my,sg.field,chip))
     logger.info('Hopefully making images of size %s x %s'%(stamp_sizex,stamp_sizey))
+    logger.info('Having taken %s off Axis 1 and % off Axis 2' %(npix_off1,npix_off2))
     resamp_cmd = ['swarp',
     '-COMBINE','N',
     '-RESAMPLE','Y',
@@ -786,18 +787,19 @@ def check_resamps(riz_fn,resamp_frames):
     n_off1 = 0
     n_off2 = 0
     for i in range(len(resamp_frames)):
-        #print (resamp_frames[i])
+        print (resamp_frames[i])
         h = fits.getheader(resamp_frames[i])
         n1,n2 = h['NAXIS1'],h['NAXIS2']
         n_diff1 = n1riz - n1
         n_diff2 = n2riz - n2
+        print (n_diff1,n_diff2)
         if n_diff1<0:
             if n_diff1<n_off1:
                 n_off1 = n_diff1*-1
         if n_diff2<0:
             if n_diff2<n_off2:
                 n_off2 = n_diff2*-1
-
+    print ('Returning',n_off1,n_off2)
     return (n_off1,n_off2)
 
 

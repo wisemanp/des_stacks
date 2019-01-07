@@ -460,7 +460,12 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_riz.fits'%(y,f,chip))
     if not os.path.isfile(det_name):
         logger.info("Couldn't find a detection image, so going to resample each band plus a riz combo to the same pixels")
-        det_name = resample_chip_for_cap(sg,sr,si,sz,chip)
+        noff1,noff2 = 0,0
+        while True:
+            det_name,noff1,noff2 = resample_chip_for_cap(sg,sr,si,sz,chip,npix_off1=noff1,npix_off2 = noff2)
+            if noff1 = 0 and noff2 = 0:
+                False
+
     # do common aperture photometry
     logger.info("Going to cap_sex to do CAP on each band")
     sexcats =cap_sex_chip(sg,sr,si,sz,chip)

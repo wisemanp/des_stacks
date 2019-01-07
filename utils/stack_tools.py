@@ -689,7 +689,7 @@ def get_chip_vals(f,chip,vals = 'center'):
     elif vals == 'lims':
         return this_chip_lims
 
-def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
+def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300,npix_off1 = 0,npix_off2 = 0):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -728,7 +728,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
     # find the center of the chip
     ra_cent,dec_cent = ghead['CRVAL1'],ghead['CRVAL2']
     smallest1,smallest2 = min(naxis1s),min(naxis2s)
-    stamp_sizex,stamp_sizey = smallest1-50,smallest2-50
+    stamp_sizex,stamp_sizey = smallest1-80-npix_off1,smallest2-80-npix_off2
     # make a riz stamp as a det image
     logger.info('Resampling all bands in MY%s, %s, chip %s'%(sg.my,sg.field,chip))
     logger.info('Hopefully making images of size %s x %s'%(stamp_sizex,stamp_sizey))
@@ -754,6 +754,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
         glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_clipweighted*.resamp.fits'%(str(chip),s.band))
         glob_list = glob.glob(glob_string)
         resamp_frames.append(glob_list[0])
+
     resamp_frame_str = resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
     logger.info('Creating riz with size %s x %s'%(stamp_sizex,stamp_sizey))
     riz_cmd = ['swarp',
@@ -774,7 +775,28 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
     outs,errs = p.communicate()
     endtime=float(time.time())
     logger.info('Done making detection image for for MY%s, %s, chip %s, took %.3f seconds'%(sg.my,sg.field,chip,endtime-starttime))
-    return '%s_%s_%s_riz.fits'%(sg.my,sg.field,chip)
+    logger.info('Checking they are the correct size')
+    noff1,noff2 = check_resamps('%s_%s_%s_riz.fits'%(sg.my,sg.field,chip),resamp_frames)
+    return '%s_%s_%s_riz.fits'%(sg.my,sg.field,chip),n_off1,n_off2
+
+def check_resamps(riz_fn,resamp_frames):
+    riz_h = fits.getheader(riz_fn)
+    n1riz,n2riz = riz_h['NAXIS1'],riz_h['NAXIS2']
+    n_off1 = 0
+    n_off2 = 0
+    for i in range(len(resamp_frames)):
+        h = fits.getheader(resamp_frames[i])
+        n1,n2 = h['NAXIS1'],h['NAXIS2']
+        n_diff1 = n1riz - n1
+        n_diff2 = n2riz - n2
+        if n_diff1<0:
+            if n_diff1<n_off1:
+                n_off1 = n_diff1*-1
+        if n_diff2<0:
+            if n_diff2<n_off2:
+                n_off2 = n_diff2*-1
+        return (n_off1,n_off2)
+
 
 def get_cuts(f,b):
     cp=configparser.ConfigParser()

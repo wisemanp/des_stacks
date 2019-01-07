@@ -793,12 +793,12 @@ def check_resamps(riz_fn,resamp_frames):
         n_diff1 = n1riz - n1
         n_diff2 = n2riz - n2
         print (n_diff1,n_diff2)
-        if n_diff1<0:
-            if n_diff1<n_off1:
-                n_off1 = n_diff1*-1
-        if n_diff2<0:
-            if n_diff2<n_off2:
-                n_off2 = n_diff2*-1
+        if n_diff1>0:
+            if n_diff1>n_off1:
+                n_off1 = n_diff1
+        if n_diff2>0:
+            if n_diff2>n_off2:
+                n_off2 = n_diff2
     print ('Returning',n_off1,n_off2)
     return (n_off1,n_off2)
 

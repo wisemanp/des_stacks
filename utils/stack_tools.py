@@ -727,6 +727,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
     stamp_sizex,stamp_sizey = ghead['NAXIS1'],ghead['NAXIS2']
     # make a riz stamp as a det image
     logger.info('Resampling all bands in MY%s, %s, chip %s'%(sg.my,sg.field,chip))
+    logger.info('Hopefully making images of size %s x %s'%(stamp_sizex,stamp_sizey))
     resamp_cmd = ['swarp',
     '-COMBINE','N',
     '-RESAMPLE','Y',

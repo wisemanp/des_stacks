@@ -782,9 +782,11 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300,npi
 def check_resamps(riz_fn,resamp_frames):
     riz_h = fits.getheader(riz_fn)
     n1riz,n2riz = riz_h['NAXIS1'],riz_h['NAXIS2']
+    #print ('Length of riz: %s x %s'%(n1riz,n2riz))
     n_off1 = 0
     n_off2 = 0
     for i in range(len(resamp_frames)):
+        #print (resamp_frames[i])
         h = fits.getheader(resamp_frames[i])
         n1,n2 = h['NAXIS1'],h['NAXIS2']
         n_diff1 = n1riz - n1
@@ -795,7 +797,8 @@ def check_resamps(riz_fn,resamp_frames):
         if n_diff2<0:
             if n_diff2<n_off2:
                 n_off2 = n_diff2*-1
-        return (n_off1,n_off2)
+
+    return (n_off1,n_off2)
 
 
 def get_cuts(f,b):

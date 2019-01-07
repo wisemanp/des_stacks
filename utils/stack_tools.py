@@ -750,13 +750,13 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
         glob_list = glob.glob(glob_string)
         resamp_frames.append(glob_list[0])
     resamp_frame_str = resamp_frames[1]+' '+resamp_frames[2]+' '+resamp_frames[3]
-
+    logger.info('Creating riz with size %s x %s'%(stamp_sizex,stamp_sizey))
     riz_cmd = ['swarp',
-    #'-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
-    #'-CENTER_TYPE','MANUAL',
-    #'-CENTER','%f,%f'%(ra_cent,dec_cent),
-    #'-PIXELSCALE_TYPE','MANUAL',
-    #'-PIXEL_SCALE','%.03f'%pixel_scale,
+    '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
+    '-CENTER_TYPE','MANUAL',
+    '-CENTER','%f,%f'%(ra_cent,dec_cent),
+    '-PIXELSCALE_TYPE','MANUAL',
+    '-PIXEL_SCALE','%.03f'%pixel_scale,
     '-COMBINE','Y',
     '-RESAMPLE','N',
     '-BACK_SIZE','512',

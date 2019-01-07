@@ -463,7 +463,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         noff1,noff2 = 0,0
         while True:
             det_name,noff1,noff2 = resample_chip_for_cap(sg,sr,si,sz,chip,npix_off1=noff1,npix_off2 = noff2)
-            if noff1 = 0 and noff2 = 0:
+            if noff1 == 0 and noff2 == 0:
                 False
 
     # do common aperture photometry

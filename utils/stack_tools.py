@@ -705,7 +705,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
     for s in [sg,sr,si,sz]:
         bd = s.band_dir
         # assume we don't have multiple versions of the science frame
-        glob_string = os.path.join(bd,'ccd_%s_%s_*_clipweighted*.fits'%(str(chip),s.band))
+        glob_string = os.path.join(bd,'ccd_%s_%s_*_clipweighted_sci.fits'%(str(chip),s.band))
         logger.info("Looking for things that look like: '%s'"%glob_string)
         glob_list = glob.glob(glob_string)
         sci_frames.append(glob_list[0])

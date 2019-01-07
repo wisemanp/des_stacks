@@ -464,7 +464,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         while True:
             det_name,noff1,noff2 = resample_chip_for_cap(sg,sr,si,sz,chip,npix_off1=noff1,npix_off2 = noff2)
             if noff1 == 0 and noff2 == 0:
-                False
+                break
 
     # do common aperture photometry
     logger.info("Going to cap_sex to do CAP on each band")

@@ -799,8 +799,8 @@ def check_resamps(riz_fn,resamp_frames):
         if n_diff2>0:
             if n_diff2>n_off2:
                 n_off2 = n_diff2
-    print ('Returning',n_off1,n_off2)
-    return (n_off1,n_off2)
+    print ('Returning',n_off1*2,n_off2*2)
+    return (n_off1*2,n_off2*2)
 
 
 def get_cuts(f,b):

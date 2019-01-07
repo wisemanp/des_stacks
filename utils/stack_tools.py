@@ -776,7 +776,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300,npi
     endtime=float(time.time())
     logger.info('Done making detection image for for MY%s, %s, chip %s, took %.3f seconds'%(sg.my,sg.field,chip,endtime-starttime))
     logger.info('Checking they are the correct size')
-    noff1,noff2 = check_resamps('%s_%s_%s_riz.fits'%(sg.my,sg.field,chip),resamp_frames)
+    n_off1,n_off2 = check_resamps('%s_%s_%s_riz.fits'%(sg.my,sg.field,chip),resamp_frames)
     return '%s_%s_%s_riz.fits'%(sg.my,sg.field,chip),n_off1,n_off2
 
 def check_resamps(riz_fn,resamp_frames):

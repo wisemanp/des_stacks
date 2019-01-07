@@ -728,7 +728,7 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300):
     # find the center of the chip
     ra_cent,dec_cent = ghead['CRVAL1'],ghead['CRVAL2']
     smallest1,smallest2 = min(naxis1s),min(naxis2s)
-    stamp_sizex,stamp_sizey = smallest1-10,smallest2-10
+    stamp_sizex,stamp_sizey = smallest1-50,smallest2-50
     # make a riz stamp as a det image
     logger.info('Resampling all bands in MY%s, %s, chip %s'%(sg.my,sg.field,chip))
     logger.info('Hopefully making images of size %s x %s'%(stamp_sizex,stamp_sizey))

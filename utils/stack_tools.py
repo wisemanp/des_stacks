@@ -858,4 +858,6 @@ def combine_mask_weight(s,chip,j):
                 #maskweightlist.append(os.path.join(s.temp_dir,f.replace('fits','maskweight.fits')))
 
     np.savetxt(resamplist_name.replace('resamp','maskweight'),np.array(maskweightlist),fmt='%s')
+    for mn in masklist:
+        os.remove(mn)
     return maskweightlist

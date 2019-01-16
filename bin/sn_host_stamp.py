@@ -53,13 +53,13 @@ def parser():
 def get_sn_dat(sn):
     f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
     chiplims = cpickle.load(f)
-    sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
+    sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv').to_pandas()
     gap = ' '
     ngaps = (11-len(sn))*gap
-    dat = sncand[sncand['TRANSIENT_NAME']==sn+ngaps]
+    dat = sncand[sncand['transient_name']==sn+ngaps]
 
-    ra,dec =dat[['RA','DEC']].iloc[0].values
-    y = dat['SEASON'].values[0]
+    ra,dec =dat[['ra','dec']].iloc[0].values
+    y = dat['season'].values[0]
 
     #################
     obj_field = sn[5:7]

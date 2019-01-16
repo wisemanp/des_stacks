@@ -54,9 +54,8 @@ def get_sn_dat(sn):
     f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
     chiplims = cpickle.load(f)
     sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv')
-    gap = ' '
-    ngaps = (11-len(sn))*gap
-    dat = sncand[sncand['transient_name']==sn+ngaps]
+
+    dat = sncand[sncand['transient_name']==sn]
 
     ra,dec =dat[['ra','dec']].iloc[0].values
     y = dat['season'].values[0]

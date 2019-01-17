@@ -147,6 +147,7 @@ class Stack():
         info_tab = Table.read(os.path.join(self.config_dir,'snobsinfo.fits'))
         info_tab['BAND'] = info_tab['BAND'].astype(str)
         info_tab['FIELD'] = info_tab['FIELD'].astype(str)
+        info_tab['NITE'] = info_tab['NITE'].astype(str)
 
         self.info_df = info_tab.to_pandas()
         #self.qual_tab = Table.read(os.path.join(self.config_dir,'firstcut_eval.fits')).to_pandas()

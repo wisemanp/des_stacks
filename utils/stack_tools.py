@@ -151,7 +151,6 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         for counter,exp in enumerate(info.EXPNUM.unique()):
 
             this_exp = info[info['EXPNUM']==exp]
-            logger.info(this_exp)
             exp_idx = this_exp.index
             try:
                 t_eff = this_exp['T_EFF'].values[0]
@@ -161,13 +160,22 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
                 t_eff = 2
             elif not t_eff:
                 t_eff = 2
+
+
+            try:
+                fwhm = this_exp['FWHM_ASEC'].values[0]
+            except:
+                fwhm = 2
+            if fwhm < -1:
+                fwhm = 5
+            elif not fwhm:
+                fwhm = 5
             if not cuts['psf']:
                 psf_cut=5
             else:
                 psf_cut = cuts['psf']
-            logger.info('len(PSF_NEA > PSF_CUT):')
-            logger.info(len(this_exp[this_exp['PSF_NEA']>psf_cut]))
-            if t_eff > cuts['teff'] and len(this_exp[this_exp['PSF_NEA']>psf_cut])<15:
+
+            if t_eff > cuts['teff'] and fwhm < cuts['psf'] :
                 this_exp['T_EFF']= t_eff
                 good_frame = good_frame.append(this_exp)
                 good_exps.append(exp)

@@ -164,6 +164,8 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
                 psf_cut=5
             else:
                 psf_cut = cuts['psf']
+            logger.info('len(PSF_NEA > PSF_CUT):')
+            logger.info(len(this_exp[this_exp['PSF_NEA']>psf_cut]))
             if t_eff > cuts['teff'] and len(this_exp[this_exp['PSF_NEA']>psf_cut])<15:
                 this_exp['T_EFF']= t_eff
                 good_frame = good_frame.append(this_exp)

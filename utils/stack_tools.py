@@ -151,7 +151,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         for counter,exp in enumerate(info.EXPNUM.unique()):
 
             this_exp = info[info['EXPNUM']==exp]
-            logger.info(len(this_exp))
+            logger.info(this_exp)
             exp_idx = this_exp.index
             try:
                 t_eff = this_exp['T_EFF'].values[0]

@@ -47,12 +47,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     logger.info('Initiating make_good_frame_list.py')
-    logger.info('Finding good frames for {0}, in {1}')#, clipping ZP at {2}'.format(field,band,zp_cut))
-
-    logger.info('Getting median zeropoint for each exposure, calculating residual for each image')
-
     info = s.info_df
-    logger.info(info)
     import math
     info = info[info['FIELD']==field]
     logger.info('These are the bands available for field {0}'.format(field))
@@ -160,8 +155,6 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
                 t_eff = 2
             elif not t_eff:
                 t_eff = 2
-
-
             try:
                 fwhm = this_exp['FWHM_ASEC'].values[0]
             except:

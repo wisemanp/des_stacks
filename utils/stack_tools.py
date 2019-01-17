@@ -52,7 +52,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     logger.info('Getting median zeropoint for each exposure, calculating residual for each image')
 
     info = s.info_df
-
+    logger.info(info)
     import math
     info = info[info['FIELD']==field]
     logger.info('These are the bands available for field {0}'.format(field))

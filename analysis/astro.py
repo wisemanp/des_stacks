@@ -118,7 +118,7 @@ def init_phot(s,chip,cat,pl='n'):
     quals= np.loadtxt(os.path.join(ana_dir,'%s_ana.qual'%s.cutstring))
     zp = float(quals[0])
     zp_sig = float(quals[1])
-    av_fwhm = float(quals[3])
+    av_fwhm = float(quals[2])
     cat = cat.sort_values(by='X_WORLD')
     cat['MAG_AUTO']=cat['MAG_AUTO']+zp
     try:

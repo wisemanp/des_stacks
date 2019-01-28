@@ -237,7 +237,6 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
                     if n%100.0 == 0:
                         l+=1
                         stack_fns[l]=[]
-    logger.info('Added %s files to the %s, %s band, chip %s stack'%(counter,field,band,chip))
     cmd_list = {}
     for j in range(0,l+1):
         fns = np.array(stack_fns[j])

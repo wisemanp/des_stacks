@@ -177,7 +177,11 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     np.savetxt(txtname,good_exps,fmt='%s')
     logger.info('Writing out good exposure list to {0}'.format(good_fn))
 
-    good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1).to_csv(good_fn)
+    try:
+        good_frame = good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1)
+    except:
+        pass
+    good_frame.to_csv(good_fn)
     return good_frame
 
 def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):

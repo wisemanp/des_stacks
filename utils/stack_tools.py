@@ -175,12 +175,8 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
         good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s.csv'%(field,band,cuts['teff'],cuts['psf']))
     txtname = good_fn[:-4]+'txt'
     np.savetxt(txtname,good_exps,fmt='%s')
-    logger.debug('Here is the good_table, to write to fits format')
-    logger.debug(good_table)
-
     logger.info('Writing out good exposure list to {0}'.format(good_fn))
-    if os.path.isfile(good_fn):
-        os.remove(good_fn)
+
     good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1).to_csv(good_fn)
     return good_frame
 

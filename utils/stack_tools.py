@@ -168,25 +168,20 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
             else:
                 psf_cut = cuts['psf']
 
-            if t_eff > cuts['teff'] and fwhm < cuts['psf'] :
+            if t_eff > cuts['teff'] and len(this_exp[this_exp['PSF_NEA']>psf_cut])<15 :
                 this_exp['T_EFF']= t_eff
                 good_frame = good_frame.append(this_exp)
                 good_exps.append(exp)
-        good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,cuts['teff'],cuts['psf']))
+        good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s.csv'%(field,band,cuts['teff'],cuts['psf']))
     txtname = good_fn[:-4]+'txt'
     np.savetxt(txtname,good_exps,fmt='%s')
-    try:
-        good_table = Table.from_pandas(good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1))
-    except: #valueerror
-        logger.debug(good_frame)
-        good_table = Table.from_pandas(good_frame)
     logger.debug('Here is the good_table, to write to fits format')
     logger.debug(good_table)
 
     logger.info('Writing out good exposure list to {0}'.format(good_fn))
     if os.path.isfile(good_fn):
         os.remove(good_fn)
-    good_table.write(good_fn)
+    good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1).to_csv(good_fn)
     return good_frame
 
 def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):

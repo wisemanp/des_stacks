@@ -220,6 +220,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
         first = this_exp.iloc[0]
         night = first['NITE']
         #chip = first['CCDNUM']
+        logger.info(type(night))
         this_exp_fn = get_dessn_obs(s,field,band,night,exp,chip,logger)
         #logger.info("Adding file from %s" %night)
         if night not in nights:
@@ -372,6 +373,8 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
     #------------------------------------
     # step 2 - find the directory for this night
     year_dir = s.data_dirs[year]
+    logger.info(year_dir)
+    logger.info(night)
     glob_str = year_dir+night+'-r????'
     subdir = glob.glob(glob_str)[-1]+'/'
     # then this field

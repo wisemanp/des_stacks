@@ -184,7 +184,7 @@ class Stack():
             if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.csv'%(field,band,chip,self.cutstring))):
                 #get the list of good frames
                 self.logger.info('No good frame list with conditions (%s, %s, %s) yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(field,band,self.cutstring,self.t_cut,self.zp_cut,self.psf_cut))
-                self.good_frames[chip] = make_good_frame_list(self,field,chip,band,cuts)
+                self.good_frames[chip] = make_good_frame_list_chip(self,field,chip,band,cuts)
 
             else:
                 good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.csv'%(field,band,chip,self.cutstring))

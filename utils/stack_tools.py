@@ -319,7 +319,7 @@ def make_good_frame_list_chip(s,field,band,chip,cuts={'teff':0.2, 'zp':None,'psf
                         break
                     this_exp = this_exp.iloc[0]
             except:
-                pass 
+                pass
             try:
                 t_eff = this_exp['T_EFF']
             except:
@@ -338,11 +338,18 @@ def make_good_frame_list_chip(s,field,band,chip,cuts={'teff':0.2, 'zp':None,'psf
             else:
                 psf_cut = cuts['psf']
 
-            if t_eff > cuts['teff'] and psf < cuts['psf'] :
-                this_exp['T_EFF']= t_eff
-                this_exp['PSF_NEA'] = psf
-                good_frame = good_frame.append(this_exp)
-                good_exps.append(exp)
+            if s.new ==True:
+                if t_eff > cuts['teff'] and psf < cuts['psf'] :
+                    this_exp['T_EFF']= t_eff
+                    this_exp['PSF_NEA'] = psf
+                    good_frame = good_frame.append(this_exp)
+                    good_exps.append(exp)
+            elif s.new == 'seeing':
+                if psf < cuts['psf'] :
+                    this_exp['T_EFF']= t_eff
+                    this_exp['PSF_NEA'] = psf
+                    good_frame = good_frame.append(this_exp)
+                    good_exps.append(exp)
         good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s_%s.csv'%(field,band,str(chip),cuts['teff'],cuts['psf']))
     txtname = good_fn[:-4]+'txt'
     np.savetxt(txtname,good_exps,fmt='%s')

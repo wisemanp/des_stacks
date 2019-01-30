@@ -310,7 +310,7 @@ def make_good_frame_list_chip(s,field,band,chip,cuts={'teff':0.2, 'zp':None,'psf
         this_chip = info[info['CCDNUM']==float(chip)]
         for counter,exp in enumerate(this_chip.EXPNUM.unique()):
 
-            this_exp = this_chip[this_chip(['EXPNUM']==exp]
+            this_exp = this_chip[this_chip['EXPNUM']==exp]
             exp_idx = this_exp.index
             for iter_ex in range(len(this_exp)):
                 if this_exp['T_EFF'].iloc[iter_ex] >0:

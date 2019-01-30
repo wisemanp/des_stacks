@@ -179,7 +179,7 @@ class Stack():
         self.logger.info('Initiating stack on {0} in {1} band'.format(field,band))
         self.logger.info('******************************************************')
         #does list of good frames exist?
-        self.good_frames = []
+        self.good_frames = {}
         for chip in self.chips:
             if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.csv'%(field,band,chip,self.cutstring))):
                 #get the list of good frames

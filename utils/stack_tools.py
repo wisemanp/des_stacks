@@ -312,6 +312,11 @@ def make_good_frame_list_chip(s,field,band,chip,cuts={'teff':0.2, 'zp':None,'psf
 
             this_exp = this_chip[this_chip(['EXPNUM']==exp]
             exp_idx = this_exp.index
+            for iter_ex in range(len(this_exp)):
+                if this_exp['T_EFF'].iloc[iter_ex] >0:
+                    this_exp = this_exp.iloc[iter_ex]
+                    break
+                this_exp = this_exp.iloc[0]
             try:
                 t_eff = this_exp['T_EFF']
             except:

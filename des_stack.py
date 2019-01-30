@@ -177,15 +177,17 @@ class Stack():
         self.logger.info('Initiating stack on {0} in {1} band'.format(field,band))
         self.logger.info('******************************************************')
         #does list of good frames exist?
-        if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.csv'%(field,band,self.cutstring))):
+        self.good_frames = []
+        for chip in chips:
+            if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.csv'%(field,band,chip,self.cutstring))):
             #get the list of good frames
             self.logger.info('No good frame list with conditions (%s, %s, %s) yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(field,band,self.cutstring,self.t_cut,self.zp_cut,self.psf_cut))
-            self.good_frame = make_good_frame_list(self,field,band,cuts)
+            self.good_frames[chip] = make_good_frame_list(self,field,chip,band,cuts)
 
         else:
-            good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s.csv'%(field,band,self.cutstring))
+            good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.csv'%(field,band,chip,self.cutstring))
             self.logger.info('Reading in list of good frames from {0}'.format(good_fn))
-            self.good_frame = pd.read_csv(good_fn)
+            self.good_frames[chip]=(pd.read_csv(good_fn))
 
         # how many chips are we stacking?
         chips = self.chips

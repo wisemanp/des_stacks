@@ -20,13 +20,13 @@ def reduce_info(info,**kwargs):
     #Get a smaller info dataframe based on kwargs
 
 def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
-    """Returns a list of images for a certain chip that are of quality better than a given cut.
+    """Returns a list of images that are of quality better than a given cut.
     Arguments:
     field (str): (e.g. 'X2')
     band (str): (e.g. 'g')
 
     Keyword arguments:
-    sig (float): the residual from mean ZP to clip at (float, default = -0.15)
+    cuts (dict)
 
     Returns:
     good_exps (DataFrame): A reduced DataFrame of good exposures for each (field,band)
@@ -184,6 +184,169 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     good_frame.to_csv(good_fn)
     return good_frame
 
+def make_good_frame_list_chip(s,field,band,chip,cuts={'teff':0.2, 'zp':None,'psf':None}):
+    """Returns a list of images for a certain chip that are of quality better than a given cut.
+    Arguments:
+    field (str): (e.g. 'X2')
+    band (str): (e.g. 'g')
+
+    Keyword arguments:
+    cuts (dict)
+
+    Returns:
+    good_exps (DataFrame): A reduced DataFrame of good exposures for each (field,band)
+    """
+    ## 1
+    ## Get median ZP for each exposure
+    ## And calculate residual for each chip compared to that median
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    '''if zp_cut>0:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:'''
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    logger.info('Initiating make_good_frame_list.py')
+    info = s.info_df
+    import math
+    info = info[info['FIELD']==field]
+    logger.info('These are the bands available for field {0}'.format(field))
+    logger.info(info.BAND.unique())
+    info = info[info['BAND']==band]
+    logger.info(cuts)
+
+    if cuts['zp']!= 'None' and cuts['zp']!= None:
+        logger.warning('Gone to do ZP residuals, not sure you want this.')
+        logger.info(cuts['zp'])
+        info['ZP_EXPRES']=''
+        for counter,exp in enumerate(info.EXPNUM.unique()):
+            this_exp = info[info['EXPNUM']==exp]
+            exp_idx = this_exp.index
+            med_zp = this_exp['CHIP_ZERO_POINT'].median()
+            info.loc[exp_idx,'ZP_EXPRES'] = this_exp['CHIP_ZERO_POINT']-med_zp
+
+        logger.info('Here is the column of initial residuals for each exposure')
+        logger.info(info['ZP_EXPRES'])
+        ######################################################
+        ## 2
+        ## Calculate the average residual from part 1 over all exposures for that chip (field,band)
+        logger.info('Getting the median zeropoint residual for all exposures for each chip')
+        info['ZP_ADJ1'] = ''
+        info['ZP_SIG_ADJ1'] = ''
+        for counter, chip in enumerate(info.CCDNUM.unique()):
+
+            this_chip = info[info['CCDNUM']==chip]
+            chip_idx = this_chip.index
+            med_zp = this_chip['ZP_EXPRES'].median()
+            sig_chip_zps = this_chip['ZP_EXPRES'].std()
+            ## 3
+            ## Subtract that average residual from the given ZP to give an adjusted ZP
+            info.loc[chip_idx,'ZP_ADJ1']=this_chip['CHIP_ZERO_POINT']-med_zp
+            info.loc[chip_idx,'ZP_SIG_ADJ1']=sig_chip_zps
+        logger.debug('Here is the column of adjusted zeropoints')
+        logger.debug(info['ZP_ADJ1'])
+        #####################################################
+        ## 4
+        ## Subtract the average ZP for each year off the individual zps for that year
+
+        years =[1,2,3,4,5]
+        info['ZP_RES']=''
+        for year in years:
+            logger.info('Subtracting the median zeropoint for {0} from all exposures that year'.format(year))
+            this_year = info[info['YEAR']==year]
+            year_idx = this_year.index
+            year_med = this_year['ZP_ADJ1'].median()
+            year_sig = this_year['ZP_ADJ1'].std()
+            final_resid = this_year['ZP_ADJ1']-year_med
+            info.loc[year_idx,'ZP_RES']=final_resid
+
+        #####################################################################
+        ## 5
+        ## Now cut exposures (field,band,chip) based on whether they make the cut and return them
+        logger.info('Getting rid of exposures whose ZP residual is below {0}'.format(zp_cut))
+        exps = info.EXPNUM.unique()
+        zp_cut     = float(zp_cut)
+        if cuts['psf']:
+            psf_cut = float(cuts['psf'])
+        nbad = 15
+        good_exps = []
+        good_frame = pd.DataFrame()
+        for exp in exps:
+            this_exp = info[info['EXPNUM']==exp]
+            logger.debug('Cutting in exposure {0}'.format(exp))
+            resids = this_exp['ZP_RES']
+            resids = resids.as_matrix()
+
+            bad_resids = 0
+            reformatted_resids = []
+            for i in range(len(resids)):
+                res = resids[i]
+                res = float(res)
+                reformatted_resids.append(res)
+                if float(res)<zp_cut:
+                    bad_resids +=1
+            this_exp['ZP_RES']=np.array(reformatted_resids)
+            logger.debug('Number of frames in exposure {0} that fail the ZP cut: {1}'.format(exp,bad_resids))
+            bads =bad_resids+len(this_exp[this_exp['PSF_NEA']>psf_cut])
+            logger.info("Number of frames failing the combined ZP and PSF cut: %s" %bads)
+            if bads <nbad:
+                #is a good frame
+                logger.debug('...is a good frame!')
+                good_exps.append(exp)
+
+                good_frame = good_frame.append(this_exp)
+        good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s.fits'%(field,band,zp_cut,psf_cut))
+        logger.info("%s exposures were rejected!" %(len(exps)-len(good_exps)))
+    ## Save results
+    elif -1 < cuts['teff'] < 500:
+        logger.info('Doing the cut based on T_eff > %s and PSF < %s'%(cuts['teff'],cuts['psf']))
+        good_frame = pd.DataFrame()
+        good_exps = []
+        this_chip = info[info['CCDNUM']==float(chip)]
+        for counter,exp in enumerate(this_chip.EXPNUM.unique()):
+
+            this_exp = this_chip[this_chip(['EXPNUM']==exp]
+            exp_idx = this_exp.index
+            try:
+                t_eff = this_exp['T_EFF']
+            except:
+                t_eff = 2
+            try:
+                psf = this_exp['PSF_NEA']
+            except:
+                psf = 3
+            if t_eff < -1:
+                t_eff = 2
+            elif not t_eff:
+                t_eff = 2
+
+            if not cuts['psf']:
+                psf_cut=5
+            else:
+                psf_cut = cuts['psf']
+
+            if t_eff > cuts['teff'] and psf < cuts['psf'] :
+                this_exp['T_EFF']= t_eff
+                this_exp['PSF_NEA'] = psf
+                good_frame = good_frame.append(this_exp)
+                good_exps.append(exp)
+        good_fn = os.path.join(s.list_dir,'good_exps_%s_%s_%s_%s_%s.csv'%(field,band,str(chip),cuts['teff'],cuts['psf']))
+    txtname = good_fn[:-4]+'txt'
+    np.savetxt(txtname,good_exps,fmt='%s')
+    logger.info('Writing out good exposure list for chip %s to %s'%(chip,good_fn))
+
+    try:
+        good_frame = good_frame.drop(['ZP_RES','ZP_EXPRES','ZP_ADJ1','ZP_SIG_ADJ1'],axis=1)
+    except:
+        pass
+    good_frame.to_csv(good_fn)
+    return good_frame
+
 def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
     if not os.path.isdir(os.path.join(s.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(s.out_dir,'MY%s'%MY,field,band))
@@ -199,7 +362,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
     logger.info('Preparing the frames for %s, %s band, chip %s'%(field,band, chip))
     #band = band + '    '
     ## Get the list of exposures for MY, field, chip, band.
-    good = s.good_frame
+    good = s.good_frames[chip]
     good_band = good[good['BAND']==band]
     if MY == 'none':
         good_band_my =good_band

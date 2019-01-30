@@ -378,6 +378,8 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
     #band = band + '    '
     ## Get the list of exposures for MY, field, chip, band.
     good = s.good_frames[chip]
+    logger.debug('Here is the good frame I will use')
+    logger.debug(good)
     good_band = good[good['BAND']==band]
     if MY == 'none':
         good_band_my =good_band

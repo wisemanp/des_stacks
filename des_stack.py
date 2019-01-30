@@ -68,6 +68,8 @@ class Stack():
             os.mkdir(self.res_dir)
         if self.new ==True:
             self.out_dir = os.path.join(self.coadding_dir,'5yr_stacks')
+        elif self.new =='seeing':
+            self.out_dir = os.path.join(self.coadding_dir,'seeing_optimized')
         else:
             self.out_dir = os.path.join(self.coadding_dir,'stacks')
         if not os.path.isdir(self.out_dir):

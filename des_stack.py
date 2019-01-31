@@ -180,7 +180,13 @@ class Stack():
         self.logger.info('******************************************************')
         #does list of good frames exist?
         self.good_frames = {}
-        for chip in [self.chips]:
+        chips = self.chips
+        if chips == 'All':
+            self.chips =[]
+            chips = self.info_df.CCDNUM.sort_values().unique()
+            for c in chips:
+                self.chips.append(str(int(c)))
+        for chip in self.chips:
             if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s_%s.csv'%(field,band,chip,self.cutstring))):
                 #get the list of good frames
                 self.logger.info('No good frame list with conditions (%s, %s, %s) yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(field,band,self.cutstring,self.t_cut,self.zp_cut,self.psf_cut))
@@ -192,12 +198,7 @@ class Stack():
                 self.good_frames[chip]=(pd.read_csv(good_fn))
 
         # how many chips are we stacking?
-        chips = self.chips
-        if chips == 'All':
-            self.chips =[]
-            chips = self.info_df.CCDNUM.sort_values().unique()
-            for c in chips:
-                self.chips.append(str(int(c)))
+
         # get swarp commands
         log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s.log' %(field, band, my)),'a')
         log.flush()

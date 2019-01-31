@@ -142,16 +142,13 @@ class optimiser():
         t0,t1,ts = float(self.parsed['teffrange'][0]),float(self.parsed['teffrange'][1]),float(self.parsed['step'][1])
         p0,p1,ps = float(self.parsed['psfrange'][0]),float(self.parsed['psfrange'][1]),float(self.parsed['step'][0])
         wd,lt = self.parsed['workdir'],self.parsed['looptype'][0]
-        print(t0,t1,ts)
-        print(p0,p1,ps)
-        print (lt)
         teff_range = np.arange(t0,t1,ts)
         psf_range = np.arange(p0,p1,ps)
         lim_df = pd.DataFrame(index = [str(r) for r in psf_range],columns=[str(r) for r in teff_range])
         psf_df = pd.DataFrame(index = [str(r) for r in psf_range],columns=[str(r) for r in teff_range])#create the DataFrame to put the quality measurements in
         lim_df.name = 'depth'
         psf_df.name = 'psf'
-
+        print ('Doing it over this range %s'%psf_range)
         for psf_cut in psf_range:
             for teff_cut in teff_range:
                 lim,psf = self.do_stack(f,b,y,ch,wd,cuts = {'zp':None,'teff':teff_cut,'psf':psf_cut})

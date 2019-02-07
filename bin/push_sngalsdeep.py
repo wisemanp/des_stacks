@@ -7,7 +7,11 @@ deep = pd.read_csv(sys.argv[1])
 
 conn = ea.connect('desoper')
 cursor = conn.cursor()
-for i in range(len(deep)): #len(deep)
+try:
+    start = sys.argv[2]
+except:
+    start = 0
+for i in range(start,len(deep)): #len(deep)
 
     query =("INSERT INTO SNGALS_DEEP "
       "( A_IMAGE, B_IMAGE, CCDNUM, CLASS_STAR_G, CLASS_STAR_I,"

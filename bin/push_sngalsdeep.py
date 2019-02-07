@@ -11,7 +11,7 @@ try:
     start = sys.argv[2]
 except:
     start = 0
-for i in range(start,len(deep)): #len(deep)
+for i in range(float(start),len(deep)): #len(deep)
 
     query =("INSERT INTO SNGALS_DEEP "
       "( A_IMAGE, B_IMAGE, CCDNUM, CLASS_STAR_G, CLASS_STAR_I,"

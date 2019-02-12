@@ -439,8 +439,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -576,6 +576,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         main_cat_df['FLUXERR_APER_%s'%b].fillna(-9999,inplace=True)
     catobjs = SkyCoord(ra = main_cat_df['X_WORLD'].values*u.degree,dec = main_cat_df['Y_WORLD'].values*u.degree)
     # match the cap catalog with the ozdes one
+    logger.debug('Len of grccoord,capcoord for chip %s: %s, %s'%(chip,len(gals_with_z_coords),len(catobjs)))
     matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)
     logger.debug(matched_cat_df.columns)
 
@@ -836,6 +837,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+
     inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord)
     init_matches = cat.iloc[inds]
     close_match_inds = d2d< dist_thresh*u.arcsec

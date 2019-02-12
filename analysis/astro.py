@@ -782,7 +782,12 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'VUDS_COSMOS':['3','4','13','14','23','24','43','44'],
     'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
     }
-    grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits')).to_pandas()
+    grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits'))
+    grc['ID'] = grc['ID'].astype(str)
+    grc['flag'] = grc['flag'].astype(str)
+    grc['source'] = grc['source'].astype(str)
+    grc['comments'] = grc['comments'].astype(str)
+    grc = grc.to_pandas()
     good_redshifts = pd.DataFrame()
     for survey,flags in survey_flags.items():
         if flags !=['Any']:

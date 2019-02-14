@@ -48,6 +48,8 @@ def parser():
     parser.add_argument('-re','--resfile',help = 'File to find host phot results for this SN',default = None)
     parser.add_argument('-b','--band',help='Only use one band? If so, enter here',default='All')
     parser.add_argument('-f','--ftype',help='File type for save. Default = pdf',default='pdf')
+    parser.add_argument('-w','--width',help='Size in pixels',default=300)
+
     return parser.parse_args()
 
 def get_sn_dat(sn):
@@ -123,7 +125,7 @@ def main(args,logger):
                     from des_stacks.utils.stack_tools import make_cap_stamps,get_cuts
                     cuts = [get_cuts(f,b) for b in bands]
                     sg,sr,si,sz = [stack.Stack(f, b, y, [str(chip)] ,'coadding',cuts[counter]) for counter,b in enumerate(bands)]
-                    make_cap_stamps(sg,sr,si,sz,chip,sn_name,sn_ra,sn_dec,300,300)
+                    make_cap_stamps(sg,sr,si,sz,chip,sn_name,sn_ra,sn_dec,args.width,args.width)
                     img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
 
                 if os.path.isfile(img_fn):

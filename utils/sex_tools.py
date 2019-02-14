@@ -157,16 +157,15 @@ def get_sn_dat(sn):
     f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
     chiplims = cpickle.load(f)
 
-    sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
-    gap = ' '
-    ngaps = (11-len(sn))*gap
-    dat = sncand[sncand['TRANSIENT_NAME']==sn+ngaps]
+    sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv')
 
-    ra,dec =dat[['RA','DEC']].iloc[0].values
-    y = dat['SEASON'].values[0]
+    dat = sncand[sncand['transient_name']==sn]
+
+    ra,dec =dat[['ra','dec']].iloc[0].values
+    y = dat['season'].values[0]
 
     #################
-    obj_field = dat['FIELD'].values[0].strip(' ')
+    obj_field = dat['field'].values[0].strip(' ')
     if len(obj_field)>2:
         obj_field = obj_field.split(',')[0]
     the_field = chiplims[obj_field]

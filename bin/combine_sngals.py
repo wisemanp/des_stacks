@@ -14,20 +14,25 @@ def parser():
 
 def main(args):
 
-    main_df = pd.DataFrame()
-    if args.df !='none':
-        main_df = pd.read_csv(args.df,index_col=0)
+    #main_df = pd.DataFrame()
+    #if args.df !='none':
+        #main_df = pd.read_csv(args.df,index_col=0)
+
     resdir = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/'
     snlist = np.genfromtxt(args.list,dtype=str,delimiter='\n')
     for sn in snlist:
+        main_f = open(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename),'w')
         cat = os.path.join(resdir,sn,'%s.result'%sn)
         try:
-            cat_df = pd.read_csv(cat,index_col=0)
-            print ('Adding cat: %s'%cat, ' of length ',len(cat_df))
-            main_df = main_df.append(cat_df)
+            c = open(cat,'r')
+            print ('Adding cat: %s'%cat, ' of length ',len(c.readlines()))
+            for l in c.readlines():
+                main_f.write(l)
+            main_f.close()
+
         except:
             print ('Couldnt read cat: %s'%cat)
-    main_df.to_csv(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
+            main_f.close()
     print ('Saved new file to %s'%os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
 if __name__=="__main__":
     args=parser()

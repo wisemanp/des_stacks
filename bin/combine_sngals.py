@@ -13,14 +13,14 @@ def parser():
     return parser.parse_args()
 
 def main(args):
-    
+
     main_df = pd.DataFrame()
     if args.df !='none':
         main_df = pd.read_csv(args.df,index_col=0)
-    resdir = '/media/data3/wiseman/des/coadding/results/staging'
+    resdir = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/'
     snlist = np.genfromtxt(args.list,dtype=str,delimiter='\n')
     for sn in snlist:
-        cat = os.path.join(resdir,sn)
+        cat = os.path.join(resdir,sn,'%s.result'%sn)
         try:
             cat_df = pd.read_csv(cat,index_col=0)
             print ('Adding cat: %s'%cat, ' of length ',len(cat_df))

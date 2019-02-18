@@ -21,7 +21,7 @@ def main(args):
     resdir = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/'
     snlist = np.genfromtxt(args.list,dtype=str,delimiter='\n')
     for sn in snlist:
-        main_f = open(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename),'w')
+        main_f = open(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename),'a')
         cat = os.path.join(resdir,sn,'%s.result'%sn)
         try:
             c = open(cat,'r')

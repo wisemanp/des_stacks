@@ -25,7 +25,7 @@ def main(args):
         cat = os.path.join(resdir,sn,'%s.result'%sn)
         try:
             c = open(cat,'r')
-            print ('Adding cat: %s'%cat, ' of length ',len(c.readlines()))
+            #print ('Adding cat: %s'%cat, ' of length ',len(c.readlines()))
             for l in c.readlines():
                 main_f.write(l)
             main_f.close()

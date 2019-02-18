@@ -26,8 +26,9 @@ def main(args):
         try:
             c = open(cat,'r')
             #print ('Adding cat: %s'%cat, ' of length ',len(c.readlines()))
-            for l in c.readlines():
-                main_f.write(l)
+            for counter,l in enumerate(c.readlines()):
+                if counter!=0:
+                    main_f.write(l)
             main_f.close()
 
         except:

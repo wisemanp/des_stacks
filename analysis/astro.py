@@ -751,7 +751,7 @@ def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
 
 def get_zs_box(s,search_ra,search_dec,search_rad):
     survey_flags = {
-    'DES_AAOmega':['3','4','6'],
+    'DES_AAOmega':['1','2','3','4','6'],
     'ZFIRE_UDS':['3'],
     'NOAO_0522':['4','6'],
     'NOAO_0334':['4','6'],

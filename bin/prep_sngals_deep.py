@@ -131,7 +131,7 @@ deep_coords = SkyCoord(ra=deep['RA'].values*u.deg,dec=deep['DEC'].values*u.deg)
 idx,d2d,d3d = deep_coords.match_to_catalog_sky(sngals_coords)
 
 init_good_sngals = sngals.iloc[idx]
-good_match_inds = np.nonzero(d2d.arcsec <0.3)[0]
+good_match_inds = np.nonzero(d2d.arcsec <0.6)[0]
 good_deep  = deep.iloc[good_match_inds]
 good_sngals = init_good_sngals.iloc[good_match_inds]
 deep['SNGALID'].loc[good_deep.index] = good_sngals['sngalid'].values

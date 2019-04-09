@@ -78,6 +78,7 @@ class sn():
 
         try:
             ra,dec =dat[['ra','dec']].iloc[0].values
+            print('This should work')
         except IndexError:
             print ('WARNING: it looks like this transient does not exist in SNCAND. Programme will crash')
         y = dat['season'].values[0]

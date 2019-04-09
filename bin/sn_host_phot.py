@@ -99,8 +99,8 @@ class sn():
             return None
         else:
             all_trans = pd.read_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v4.csv',index_col=0)
-            sn_res_row = all_trans[all_trans['SN_NAME']==self.sn_name]
-            if len(sn_res_row['SN_NAME'])==0:
+            sn_res_row = all_trans[all_trans['TRANSIENT_NAME']==self.sn_name]
+            if len(sn_res_row['TRANSIENT_NAME'])==0:
                 return None
             else:
                 print ('Found the results in the main transient results file, /media/data3/wiseman/des/coadding/results/all_transients.result')

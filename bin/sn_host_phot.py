@@ -98,7 +98,7 @@ class sn():
             print ('No directory for Common Aperture Photometry on %s yet'%self.sn_name)
             return None
         else:
-            all_trans = pd.read_csv('/media/data3/wiseman/des/coadding/results/all_transients.result',index_col=0)
+            all_trans = pd.read_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v4.csv',index_col=0)
             sn_res_row = all_trans[all_trans['SN_NAME']==self.sn_name]
             if len(sn_res_row['SN_NAME'])==0:
                 return None

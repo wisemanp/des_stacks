@@ -74,13 +74,13 @@ class sn():
         sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
         gap = ' '
         ngaps = (11-len(self.sn_name))*gap
-        dat = sncand[sncand['TRANSIENT_NAME']==self.sn_name+ngaps]
+        dat = sncand[sncand['transient_name']==self.sn_name+ngaps]
 
         try:
-            ra,dec =dat[['RA','DEC']].iloc[0].values
+            ra,dec =dat[['ra','dec']].iloc[0].values
         except IndexError:
             print ('WARNING: it looks like this transient does not exist in SNCAND. Programme will crash')
-        y = dat['SEASON'].values[0]
+        y = dat['season'].values[0]
         self.ra,self.dec,self.y = ra,dec,y
         #################
         obj_field = self.sn_name[5:7]

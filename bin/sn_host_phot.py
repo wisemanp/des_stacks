@@ -71,9 +71,8 @@ class sn():
         f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
         chiplims = cpickle.load(f)
 
-        sncand = Table.read('/media/data3/wiseman/des/coadding/catalogs/sn_cand.fits').to_pandas()
-        gap = ' '
-        ngaps = (11-len(self.sn_name))*gap
+        sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv',index_col=0)
+
         dat = sncand[sncand['transient_name']==self.sn_name+ngaps]
 
         try:

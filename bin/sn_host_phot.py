@@ -73,7 +73,7 @@ class sn():
 
         sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv',index_col=0)
 
-        dat = sncand[sncand['transient_name']==self.sn_name+ngaps]
+        dat = sncand[sncand['transient_name']==self.sn_name]
 
         try:
             ra,dec =dat[['ra','dec']].iloc[0].values

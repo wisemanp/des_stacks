@@ -582,7 +582,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     logger.debug(matched_cat_df.columns)
     low_conf_z = matched_cat_df[(matched_cat_df['source']=='DES_AAOmega')&((matched_cat_df['flag']=='1')|(matched_cat_df['flag']=='2'))]
     logger.info('Found these OzDES targets with z flag 1 or 2: ')
-    logger.info(low_conf_z[['TRANSIENT_NAME','z','source','flag']])
+    logger.info(low_conf_z[['z','source','flag']])
     matched_cat_df['z'].loc[low_conf_z.index] = -9.9900
     matched_cat_df['z_Err'].loc[low_conf_z.index] = -9999
 

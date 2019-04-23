@@ -104,7 +104,6 @@ class Stack():
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-        print(self.field)
         fh = logging.FileHandler(os.path.join(self.log_dir,'stack_%s%s%s.log'%(self.field,self.band,self.my)))
         fh.setFormatter(formatter)
         ch.setFormatter(formatter)

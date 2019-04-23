@@ -31,7 +31,7 @@ res = pd.read_csv(readfile,
                          'X_IMAGE','X_WORLD','Y_IMAGE','Y_WORLD','flag','source','z','z_Err'])
 res= res.reset_index(drop=True)
 
-res = res.drop([0,300150])
+#res = res.drop([0,300150])
 
 res = res.rename(index=str,columns={'X_WORLD':'RA','Y_WORLD':'DEC',
                                     'MY':'SEASON',

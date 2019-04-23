@@ -580,6 +580,11 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     logger.debug('Len of grccoord,capcoord for chip %s: %s, %s'%(chip,len(gals_with_z_coords),len(catobjs)))
     matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)
     logger.debug(matched_cat_df.columns)
+    low_conf_z = matched_cat_df[(matched_cat_df['source']=='DES_AAOmega')&((matched_cat_df['flag']=='1')|(matched_cat_df['flag']=='2'))]
+    logger.info('Found these OzDES targets with z flag 1 or 2: ')
+    logger.info(low_conf_z[['TRANSIENT_NAME','z','source','flag']])
+    matched_cat_df['z'].loc[low_conf_z.index] = -9.9900
+    matched_cat_df['z_Err'].loc[low_conf_z.index] = -9999
 
     matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
     logger.info("Done CAP on %s, MY%s, CCD %s. Saved result to %s "%(f,y,chip,os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip))))

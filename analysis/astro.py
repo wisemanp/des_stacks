@@ -872,17 +872,30 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 0.5):
             g = stack_gals_with_z.iloc[c:]
         gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
+        hereitis=False
         grcres = cat.iloc[idxc]
+        if g['X_WORLD']<34.718 and g['X_WORLD']>34.716 and g['Y_WORLD']<-4.032 and g['Y_WORLD']>-4.034)]:
+            hereitis=True
+            logger.info(grcres)
+
         for survey in ordered_surveys:
 
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
                 logger.debug('Alert, found an OzDES redshift')
                 logger.debug(g)
                 logger.debug(grcres)
+
+
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
                     if grcres['flag'].loc[row] in ['3','4']:
                         ins = grcres[['z','z_Err','flag','source']].loc[row].values
                         stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
+            if hereitis:
+                logger.info('I gonna try')            
+            if len(grcres)>1:
+                if grcres[grcres['source']=='DES_AAOmega']['flag' in ['1','2']:
+                    ins = grcres[['z','z_Err','flag','source']].loc[grcres[grcres['source']!='DES_AAOmega']].values
+                    stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
     logger.debug(gals['z'].nonzero())

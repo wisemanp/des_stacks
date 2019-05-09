@@ -613,7 +613,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     bands = ['g','r','i','z']
 
     try:
-        ra,dec,f,y,chip = get_sn_dat(sn_name)
+        ra,dec,f,y,chip = get_sn_dat(int(sn_name))
     except:
         return None
     my = 'MY'+str(y)

@@ -27,7 +27,7 @@ res = pd.read_csv(readfile,
                          'MAG_APER_i','MAG_APER_r','MAG_APER_z','MAG_AUTO_g','MAG_AUTO_i','MAG_AUTO_r',
                          'MAG_AUTO_z','MAG_ZEROPOINT_ERR_g','MAG_ZEROPOINT_ERR_i','MAG_ZEROPOINT_ERR_r',
                          'MAG_ZEROPOINT_ERR_z','MAG_ZEROPOINT_g','MAG_ZEROPOINT_i','MAG_ZEROPOINT_r',
-                         'MAG_ZEROPOINT_z','MY','PHOTOZ','PHOTOZ_ERR','SN_NAME','THETA_IMAGE',
+                         'MAG_ZEROPOINT_z','MY','PHOTOZ','PHOTOZ_ERR','SNID','THETA_IMAGE',
                          'X_IMAGE','X_WORLD','Y_IMAGE','Y_WORLD','flag','source','z','z_Err'])
 res= res.reset_index(drop=True)
 
@@ -36,7 +36,6 @@ res= res.reset_index(drop=True)
 res = res.rename(index=str,columns={'X_WORLD':'RA','Y_WORLD':'DEC',
                                     'MY':'SEASON',
                                     'ANGSEP':'SEPARATION',
-                                   'SN_NAME':'TRANSIENT_NAME',
                                    'z':'SPECZ',
                                    'z_Err':'SPECZ_ERR',
                                    'source':'SPECZ_CATALOG',
@@ -141,8 +140,8 @@ deep['COADD_OBJECTS_ID'].loc[good_deep.index] = good_sngals['coadd_objects_id'].
 sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv',index_col=0)
 ids = sncand[sncand['snfake_id']==0][['transient_name','snid']]
 ids=ids.rename(str,columns={'transient_name':'TRANSIENT_NAME','snid':'SNID'})
-ids = ids[ids['TRANSIENT_NAME']!='-9999']
-deep = deep.merge(ids,on='TRANSIENT_NAME',how='inner')
+#ids = ids[ids['TRANSIENT_NAME']!='-9999']
+deep = deep.merge(ids,on='SNID',how='inner')
 deep['VERSION']=''
 deep['VERSION']=str(version)
 deep['GALFLAG']=1

@@ -159,7 +159,7 @@ def get_sn_dat(sn):
 
     sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv')
 
-    dat = sncand[sncand['transient_name']==sn]
+    dat = sncand[sncand['snid']==sn]
 
     ra,dec =dat[['ra','dec']].iloc[0].values
     y = dat['season'].values[0]

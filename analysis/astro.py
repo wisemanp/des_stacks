@@ -629,7 +629,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
 
     cols = capres.columns.tolist() + [
-        'SN_NAME',
+        'SNID',
          'DLR',
          'DLR_RANK',
          'ANGSEP',
@@ -674,13 +674,13 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
        'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
        'MAGERR_STATSYST_APER_z', 'MAG_ZEROPOINT_z', 'MAG_ZEROPOINT_ERR_z','DLR', 'DLR_RANK',
        'ANGSEP','z','z_Err','flag','source']] = np.NaN
-        res_df.SN_NAME = sn_name
+        res_df.SNID = sn_name
 
     else:
 
         res_df = res_df.append(match)
 
-        res_df['SN_NAME']=sn_name
+        res_df['SNID']=sn_name
         dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
 
         res_df['ANGSEP'] = angsep

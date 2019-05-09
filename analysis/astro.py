@@ -892,11 +892,14 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 0.5):
                         stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
             if hereitis:
                 logger.info('I gonna try')
-            if len(grcres)>1:
-                if grcres[grcres['source']=='DES_AAOmega']['flag'] in ['1','2']:
-                    ins = grcres[['z','z_Err','flag','source']].loc[grcres[grcres['source']!='DES_AAOmega']].values
+            for row in grcres[grcres['source']!='DES_AAOmega'].index:
+                bad_ozdes = 0
+                for ozrow in grcres[grcres['source']=='DES_AAOmega'].index:
+                    if grcres['flag'].loc[ozrow] in ['1','2']:
+                        bad_ozdes =1
+                if bad_ozdes ==1:
+                    ins = grcres[['z','z_Err','flag','source']].loc[row].values
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
-
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
     logger.debug(gals['z'].nonzero())
     return gals

@@ -893,7 +893,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 0.5):
             if hereitis:
                 logger.info('I gonna try')
             if len(grcres)>1:
-                if grcres[grcres['source']=='DES_AAOmega']['flag' in ['1','2']:
+                if grcres[grcres['source']=='DES_AAOmega']['flag'] in ['1','2']:
                     ins = grcres[['z','z_Err','flag','source']].loc[grcres[grcres['source']!='DES_AAOmega']].values
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 

@@ -699,7 +699,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         try:
             if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:
                 pass
-            else:
+            elif res_df['DLR'].loc[ind]<1:
                 snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                 snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
 
@@ -710,9 +710,11 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                             try:
                                 res_df['z'].loc[ind]=snspecobs['Z_GAL'].values[i]
                                 res_df['z_Err'].loc[ind] = -9999.0
+                                res_df['source'].loc[ind] = 'SNSPECT'
                             except:
                                 res_df['z'].loc[ind]=snspecobs['Z_GAL']
                                 res_df['z_Err'].loc[ind] = -9999.0
+                                res_df['source'].loc[ind] = 'SNSPECT'
         except:
             pass
         res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)

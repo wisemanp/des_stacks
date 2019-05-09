@@ -694,7 +694,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         res_df['DLR_RANK']=rank
         if len(match)>5:
             res_df = res_df[res_df['DLR']<30]
-        logger.info(res_df[res_df['DLR_RANK']==1].index)
+        logger.debug(res_df[res_df['DLR_RANK']==1].index)
         ind = res_df[res_df['DLR_RANK']==1].index
         try:
             if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:

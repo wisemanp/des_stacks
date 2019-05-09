@@ -874,7 +874,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 0.5):
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
         hereitis=False
         grcres = cat.iloc[idxc]
-        if g['X_WORLD']<34.718 and g['X_WORLD']>34.716 and g['Y_WORLD']<-4.032 and g['Y_WORLD']>-4.034:
+        if g['X_WORLD'].values<34.718 and g['X_WORLD'].values>34.716 and g['Y_WORLD'].values<-4.032 and g['Y_WORLD'].values>-4.034:
             hereitis=True
             logger.info(grcres)
 

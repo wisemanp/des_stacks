@@ -876,6 +876,9 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 0.5):
         for survey in ordered_surveys:
 
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
+                logger.info('Alert, found an OzDES redshift')
+                logger.info(g)
+                logger.info(grcres)
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
                     if grcres['flag'].loc[row] in ['3','4']:
                         ins = grcres[['z','z_Err','flag','source']].loc[row].values

@@ -708,6 +708,8 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300,npi
         glob_string = os.path.join(bd,'ccd_%s_%s_*_clipweighted_sci.fits'%(str(chip),s.band))
         logger.info("Looking for things that look like: '%s'"%glob_string)
         glob_list = glob.glob(glob_string)
+        if len(glob_list)==0:
+            logger.info('Failing on %s,%s'%(s.band,chip))
         sci_frames.append(glob_list[0])
         logger.info("Found the correct coadd, exists at: '%s'"%glob_list[0])
         naxis1s.append(fits.getheader(glob_list[0])['NAXIS1'])

@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 from astropy.coordinates import SkyCoord
+from astropy import units as u
 readfile = sys.argv[1]
 version = sys.argv[2]
 res = pd.read_csv(readfile,

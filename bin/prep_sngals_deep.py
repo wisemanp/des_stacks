@@ -118,7 +118,7 @@ sngals.replace(-9999,np.NaN,inplace=True)
 deep = res
 deep['SNGALID'] = np.arange(len(deep))*-1
 deep.dropna(subset=['SEPARATION'],inplace=True)
-deep['DEC'] = deep['DEC'].astype(float)]
+deep['DEC'] = deep['DEC'].astype(float)
 deep.index = deep.index.astype(int)
 deep[['CLASS_STAR_G','CLASS_STAR_R','CLASS_STAR_I','CLASS_STAR_Z']].replace(-9999,np.NaN,inplace=True)
 sngals = sngals.dropna(axis=0,subset=['ra','dec'])

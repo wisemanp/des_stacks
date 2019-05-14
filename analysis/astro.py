@@ -814,7 +814,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     z_gals = SkyCoord(ra=gals_with_z['RA'].values*u.degree,dec = gals_with_z['DEC'].values*u.degree)
     return gals_with_z,z_gals
 
-def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 0.5):
+def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     ordered_surveys = [
     'PRIMUS',
     'NED',

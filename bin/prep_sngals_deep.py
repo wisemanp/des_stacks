@@ -131,11 +131,25 @@ deep_coords = SkyCoord(ra=deep['RA'].values*u.deg,dec=deep['DEC'].values*u.deg)
 idx,d2d,d3d = deep_coords.match_to_catalog_sky(sngals_coords)
 
 init_good_sngals = sngals.iloc[idx]
-good_match_inds = np.nonzero(d2d.arcsec <0.6)[0]
+good_match_inds = np.nonzero(d2d.arcsec <2)[0]
 good_deep  = deep.iloc[good_match_inds]
 good_sngals = init_good_sngals.iloc[good_match_inds]
 deep['SNGALID'].loc[good_deep.index] = good_sngals['sngalid'].values
 deep['SNGALID'].loc[~deep.index.isin(good_deep.index)] = np.arange(len(deep.loc[~deep.index.isin(good_deep.index)]))+sngals['sngalid'].max()
+
+duplicate_snglids = deep[deep.duplicated(['SNGALID']).values]
+dupe_deep_coords = SkyCoord(ra=duplicate_snglids['RA'].values*u.deg,dec=duplicate_snglids['DEC'].values*u.deg)
+
+idx,d2d,d3d = dupe_deep_coords.match_to_catalog_sky(sngals_coords,2)
+
+init_good_sngals = sngals.iloc[idx]
+good_match_inds = np.nonzero(d2d.arcsec <2)[0]
+good_dupe_deep  = duplicate_snglids.iloc[good_match_inds]
+good_sngals = init_good_sngals.iloc[good_match_inds]
+deep['SNGALID'].loc[good_dupe_deep.index] = good_sngals['sngalid'].values
+deep['SNGALID'].loc[~dupe_deep.index.isin(good_dupe_deep.index)] = np.arange(len(dupe_deep.loc[~dupe_deep.index.isin(good_dupe_deep.index)]))+sngals['sngalid'].max()
+
+
 deep['COADD_OBJECTS_ID']=np.NaN
 deep['COADD_OBJECTS_ID'].loc[good_deep.index] = good_sngals['coadd_objects_id'].values
 sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv',index_col=0)

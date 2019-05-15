@@ -145,8 +145,8 @@ idx,d2d,d3d = dupe_deep_coords.match_to_catalog_sky(sngals_coords,2)
 init_good_sngals = sngals.iloc[idx]
 good_match_inds = np.nonzero(d2d.arcsec <2)[0]
 good_dupe_deep  = duplicate_snglids.iloc[good_match_inds]
-good_sngals = init_good_sngals.iloc[good_match_inds]
-deep['SNGALID'].loc[good_dupe_deep.index] = good_sngals['sngalid'].values
+good_sngals2 = init_good_sngals.iloc[good_match_inds]
+deep['SNGALID'].loc[good_dupe_deep.index] = good_sngals2['sngalid'].values
 deep['SNGALID'].loc[~duplicate_snglids.index.isin(good_dupe_deep.index)] = np.arange(len(duplicate_snglids.loc[~duplicate_snglids.index.isin(good_dupe_deep.index)]))+sngals['sngalid'].max()
 
 

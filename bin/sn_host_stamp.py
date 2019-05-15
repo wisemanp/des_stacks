@@ -91,7 +91,7 @@ def main(args,logger):
         logger.info("Field:  %s"%f)
         logger.info("CCD:    %s"%chip)
         sngals_deep = pd.read_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v3.csv',index_col=0)
-        sn_res = sngals_deep[sngals_deep['SN_NAME']==sn]
+        sn_res = sngals_deep[sngals_deep['TRANSIENT_NAME']==sn]
         has_spec = sn_res.dropna(subset=['z'])
         if len(has_spec)>0:
             loc = has_spec.index
@@ -130,10 +130,10 @@ def main(args,logger):
 
                 if os.path.isfile(img_fn):
 
-                    sn_res = sn_res[sn_res['X_WORLD']<sn_ra+(w)]
-                    sn_res = sn_res[sn_res['X_WORLD']>sn_ra-(w)]
-                    sn_res = sn_res[sn_res['Y_WORLD']<sn_dec+(w)]
-                    sn_res = sn_res[sn_res['Y_WORLD']>sn_dec-(w)]
+                    sn_res = sn_res[sn_res['RA']<sn_ra+(w)]
+                    sn_res = sn_res[sn_res['RA']>sn_ra-(w)]
+                    sn_res = sn_res[sn_res['DEC']<sn_dec+(w)]
+                    sn_res = sn_res[sn_res['DEC']>sn_dec-(w)]
 
                     img = fits.open(img_fn)
                     if args.band != 'All':
@@ -155,12 +155,12 @@ def main(args,logger):
 
                     # now add some region ellipses and axis_labels
                     try:
-                        i = sn_res[(sn_res['X_WORLD']<host['X_WORLD'].values[0]+0.00001)&(sn_res['X_WORLD']>host['X_WORLD'].values[0]-0.00001)].index
+                        i = sn_res[(sn_res['RA']<host['RA'].values[0]+0.00001)&(sn_res['RA']>host['RA'].values[0]-0.00001)].index
                         sn_res.drop(i,inplace=True)
                     except:
                         pass
                     try:
-                        j = sn_res[(sn_res['X_WORLD']<has_spec['X_WORLD'].values[0]+0.00001)&(sn_res['X_WORLD']>has_spec['X_WORLD'].values[0]-0.00001)].index
+                        j = sn_res[(sn_res['RA']<has_spec['RA'].values[0]+0.00001)&(sn_res['RA']>has_spec['RA'].values[0]-0.00001)].index
                         sn_res.drop(j,inplace=True)
                     except:
                         pass
@@ -168,18 +168,18 @@ def main(args,logger):
                     if not args.finder:
                         try:
                             As,Bs,thetas = sn_res.A_IMAGE.values*pix_arcsec*4/3600,sn_res.B_IMAGE.values*pix_arcsec*4/3600,sn_res.THETA_IMAGE.values
-                            ras,decs = sn_res.X_WORLD.values,sn_res.Y_WORLD.values
-                            mags,errs = sn_res['MAG_AUTO_%s'%b].values,sn_res['MAGERR_AUTO_%s'%b].values
+                            ras,decs = sn_res.RA.values,sn_res.DEC.values
+                            mags,errs = sn_res['MAG_AUTO_%s'%b.capitalize()].values,sn_res['MAGERR_AUTO_%s'%b.capitalize()].values
 
                             fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
                             if len(host)>0:
                                 if not math.isnan(host['z'].values[0]):
-                                    fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,
+                                    fg.show_ellipses(host.RA.values,host.DEC.values,4*host.A_IMAGE.values*pix_arcsec/3600,
         4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=1)
                                 else:
-                                    fg.show_ellipses(host.X_WORLD.values,host.Y_WORLD.values,4*host.A_IMAGE.values*pix_arcsec/3600,
+                                    fg.show_ellipses(host.RA.values,host.DEC.values,4*host.A_IMAGE.values*pix_arcsec/3600,
         4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
-                                    fg.add_label(host.X_WORLD.values[0],host.Y_WORLD.values[0]+0.00045,'%.3f +/- %.3f'%(host['MAG_AUTO_%s'%b].values[0],host['MAGERR_AUTO_%s'%b].values[0]),
+                                    fg.add_label(host.RA.values[0],host.DEC.values[0]+0.00045,'%.3f +/- %.3f'%(host['MAG_AUTO_%s'%b.capitalize()].values[0],host['MAGERR_AUTO_%s'%b.capitalize()].values[0]),
                                              size=8,color='b',weight='bold')
 
                             for obj in range(len(ras)):
@@ -192,26 +192,26 @@ def main(args,logger):
                                 else:
                                     fg.add_label(ras[obj],decs[obj]-0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
                                              size=7,color='g',weight='bold')
-                            for spec in range(len(has_spec.X_WORLD.values)):
+                            for spec in range(len(has_spec.RA.values)):
                                 row = has_spec.iloc[spec]
                                 if len(host)>0:
-                                    if row['X_WORLD']!=host['X_WORLD'].values[0]:
-                                        fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
+                                    if row['RA']!=host['RA'].values[0]:
+                                        fg.add_label(row.RA,row.DEC+0.001,
                                                  'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
-                                        fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                        fg.add_label(row.RA,row.DEC+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
                                              size=8,color='b',weight='bold')
-                                        fg.show_ellipses(row.X_WORLD,row.Y_WORLD,4*row.A_IMAGE*pix_arcsec/3600,
+                                        fg.show_ellipses(row.RA,row.DEC,4*row.A_IMAGE*pix_arcsec/3600,
                  4*row.B_IMAGE*pix_arcsec/3600,row.THETA_IMAGE,edgecolor='b',facecolor='none',linewidth=1)
                                     else:
-                                        fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
+                                        fg.add_label(row.RA,row.DEC+0.001,
                                                  'z = %.3g'%has_spec.z.values[spec],size=7,color='r',weight='bold')
-                                        fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                        fg.add_label(row.RA,row.DEC+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
                                              size=8,color='r',weight='bold')
 
                                 else:
-                                        fg.add_label(row.X_WORLD,row.Y_WORLD+0.001,
+                                        fg.add_label(row.RA,row.DEC+0.001,
                                                  'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
-                                        fg.add_label(row.X_WORLD,row.Y_WORLD+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b],row['MAGERR_AUTO_%s'%b]),
+                                        fg.add_label(row.RA,row.DEC+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
                                              size=8,color='b',weight='bold')
 
                         except:

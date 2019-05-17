@@ -613,9 +613,13 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     bands = ['g','r','i','z']
 
     try:
-        ra,dec,f,y,chip = get_sn_dat(int(sn_name))
+        ra,dec,f,y,chip = get_sn_dat(snid =int(sn_name))
     except:
-        return None
+        try:
+            ra,dec,f,y,chip = get_sn_dat(sn_name= sn_name)
+        except:
+
+            return None
     my = 'MY'+str(y)
     logger.info("Found %s in the database SNCAND"%sn_name)
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))

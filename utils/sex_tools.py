@@ -153,13 +153,16 @@ def sex_for_cat(s,chip,cuts = None):
         logger.info("SExtractor failed...")
         return None
 
-def get_sn_dat(sn):
+def get_sn_dat(sn_name = None, snid = None):
     f=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
     chiplims = cpickle.load(f)
 
     sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv')
 
-    dat = sncand[sncand['snid']==sn]
+    if snid:
+        dat = sncand[sncand['snid']==snid]
+    elif sn_name:
+        dat = sncand[sncand['transient_name']==sn_name]
 
     ra,dec =dat[['ra','dec']].iloc[0].values
     y = dat['season'].values[0]

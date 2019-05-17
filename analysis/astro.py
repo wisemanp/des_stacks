@@ -620,112 +620,115 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger.info("Found %s in the database SNCAND"%sn_name)
     logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
     # Make a Stack instance for each band
+    main_res_df = pd.DataFrame()
+    for ch in [chip -1, chip,chip+1]:
+        if ch not in [0,2,31,61,63]:
+            capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
+                                 f,'CAP',str(ch),'%s_%s_%s_obj_deep.cat'%(y,f,ch))
+            logger.info('Searching for %s in %s'%(sn_name,capres_fn))
+            capres = pd.read_csv(capres_fn,index_col = 0)
+            search_rad = dist_thresh
+            capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
 
-    capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
-                             f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(y,f,chip))
-    logger.info('Searching for %s in %s'%(sn_name,capres_fn))
-    capres = pd.read_csv(capres_fn,index_col = 0)
-    search_rad = dist_thresh
-    capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
+            cols = capres.columns.tolist() + [
+                'SNID',
+                 'DLR',
+                 'DLR_RANK',
+                 'ANGSEP',
+                 'EDGE_FLAG'
+            ]
+            res_df = pd.DataFrame(columns=cols)
+            res_df['EDGE_FLAG'] = 0
+            sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
+            catalog = SkyCoord(ra = capres.X_WORLD.values*u.deg,dec = capres.Y_WORLD.values*u.deg)
+            d2d= sncoord.separation(catalog)
+            close_inds = d2d <dist_thresh*u.arcsec
+            dists = d2d[close_inds]
+            match = capres.iloc[close_inds]
+            angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
+            logger.info("Found %s galaxies within %s arcseconds of %s"%(len(match),dist_thresh,sn_name))
+            if len(match)==0:
 
-    cols = capres.columns.tolist() + [
-        'SNID',
-         'DLR',
-         'DLR_RANK',
-         'ANGSEP',
-         'EDGE_FLAG'
-    ]
-    res_df = pd.DataFrame(columns=cols)
-    res_df['EDGE_FLAG'] = 0
-    sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
-    catalog = SkyCoord(ra = capres.X_WORLD.values*u.deg,dec = capres.Y_WORLD.values*u.deg)
-    d2d= sncoord.separation(catalog)
-    close_inds = d2d <dist_thresh*u.arcsec
-    dists = d2d[close_inds]
-    match = capres.iloc[close_inds]
-    angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
-    logger.info("Found %s galaxies within %s arcseconds of %s"%(len(match),dist_thresh,sn_name))
-    if len(match)==0:
+                logger.info("Didn't detect a galaxy within %s arcsec of %s; reporting limits only"%(dist_thresh,sn_name))
+                res_df = res_df.append(capres.iloc[0])
 
-        logger.info("Didn't detect a galaxy within %s arcsec of %s; reporting limits only"%(dist_thresh,sn_name))
-        res_df = res_df.append(capres.iloc[0])
+                res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
+               'MAGERR_AUTO_g', 'MAG_APER_g', 'MAGERR_APER_g', 'FLUX_AUTO_g',
+               'FLUXERR_AUTO_g', 'FLUX_APER_g', 'FLUXERR_APER_g', 'FWHM_WORLD_g',
+               'ELONGATION', 'KRON_RADIUS', 'CLASS_STAR_g', 'FLUX_RADIUS_g', 'A_IMAGE',
+               'B_IMAGE', 'THETA_IMAGE', 'CXX_IMAGE', 'CYY_IMAGE', 'CXY_IMAGE',
+               'MAGERR_SYST_AUTO_g', 'MAGERR_SYST_APER_g', 'MAGERR_STATSYST_AUTO_g',
+               'MAGERR_STATSYST_APER_g', 'MAG_ZEROPOINT_g', 'MAG_ZEROPOINT_ERR_g',
+               'CCDNUM', 'FIELD', 'MY', 'PHOTOZ', 'PHOTOZ_ERR', 'MAG_AUTO_r',
+               'MAGERR_AUTO_r', 'MAG_APER_r', 'MAGERR_APER_r', 'FLUX_AUTO_r',
+               'FLUXERR_AUTO_r', 'FLUX_APER_r', 'FLUXERR_APER_r', 'FWHM_WORLD_r',
+               'CLASS_STAR_r', 'FLUX_RADIUS_r', 'MAGERR_SYST_AUTO_r',
+               'MAGERR_SYST_APER_r', 'MAGERR_STATSYST_AUTO_r',
+               'MAGERR_STATSYST_APER_r', 'MAG_ZEROPOINT_r', 'MAG_ZEROPOINT_ERR_r',
+               'MAG_AUTO_i', 'MAGERR_AUTO_i', 'MAG_APER_i', 'MAGERR_APER_i',
+               'FLUX_AUTO_i', 'FLUXERR_AUTO_i', 'FLUX_APER_i', 'FLUXERR_APER_i',
+               'FWHM_WORLD_i', 'CLASS_STAR_i', 'FLUX_RADIUS_i', 'MAGERR_SYST_AUTO_i',
+               'MAGERR_SYST_APER_i', 'MAGERR_STATSYST_AUTO_i',
+               'MAGERR_STATSYST_APER_i', 'MAG_ZEROPOINT_i', 'MAG_ZEROPOINT_ERR_i',
+               'MAG_AUTO_z', 'MAGERR_AUTO_z', 'MAG_APER_z', 'MAGERR_APER_z',
+               'FLUX_AUTO_z', 'FLUXERR_AUTO_z', 'FLUX_APER_z', 'FLUXERR_APER_z',
+               'FWHM_WORLD_z', 'CLASS_STAR_z', 'FLUX_RADIUS_z', 'MAGERR_SYST_AUTO_z',
+               'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
+               'MAGERR_STATSYST_APER_z', 'MAG_ZEROPOINT_z', 'MAG_ZEROPOINT_ERR_z','DLR', 'DLR_RANK',
+               'ANGSEP','z','z_Err','flag','source']] = np.NaN
+                res_df.SNID = sn_name
 
-        res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
-       'MAGERR_AUTO_g', 'MAG_APER_g', 'MAGERR_APER_g', 'FLUX_AUTO_g',
-       'FLUXERR_AUTO_g', 'FLUX_APER_g', 'FLUXERR_APER_g', 'FWHM_WORLD_g',
-       'ELONGATION', 'KRON_RADIUS', 'CLASS_STAR_g', 'FLUX_RADIUS_g', 'A_IMAGE',
-       'B_IMAGE', 'THETA_IMAGE', 'CXX_IMAGE', 'CYY_IMAGE', 'CXY_IMAGE',
-       'MAGERR_SYST_AUTO_g', 'MAGERR_SYST_APER_g', 'MAGERR_STATSYST_AUTO_g',
-       'MAGERR_STATSYST_APER_g', 'MAG_ZEROPOINT_g', 'MAG_ZEROPOINT_ERR_g',
-       'CCDNUM', 'FIELD', 'MY', 'PHOTOZ', 'PHOTOZ_ERR', 'MAG_AUTO_r',
-       'MAGERR_AUTO_r', 'MAG_APER_r', 'MAGERR_APER_r', 'FLUX_AUTO_r',
-       'FLUXERR_AUTO_r', 'FLUX_APER_r', 'FLUXERR_APER_r', 'FWHM_WORLD_r',
-       'CLASS_STAR_r', 'FLUX_RADIUS_r', 'MAGERR_SYST_AUTO_r',
-       'MAGERR_SYST_APER_r', 'MAGERR_STATSYST_AUTO_r',
-       'MAGERR_STATSYST_APER_r', 'MAG_ZEROPOINT_r', 'MAG_ZEROPOINT_ERR_r',
-       'MAG_AUTO_i', 'MAGERR_AUTO_i', 'MAG_APER_i', 'MAGERR_APER_i',
-       'FLUX_AUTO_i', 'FLUXERR_AUTO_i', 'FLUX_APER_i', 'FLUXERR_APER_i',
-       'FWHM_WORLD_i', 'CLASS_STAR_i', 'FLUX_RADIUS_i', 'MAGERR_SYST_AUTO_i',
-       'MAGERR_SYST_APER_i', 'MAGERR_STATSYST_AUTO_i',
-       'MAGERR_STATSYST_APER_i', 'MAG_ZEROPOINT_i', 'MAG_ZEROPOINT_ERR_i',
-       'MAG_AUTO_z', 'MAGERR_AUTO_z', 'MAG_APER_z', 'MAGERR_APER_z',
-       'FLUX_AUTO_z', 'FLUXERR_AUTO_z', 'FLUX_APER_z', 'FLUXERR_APER_z',
-       'FWHM_WORLD_z', 'CLASS_STAR_z', 'FLUX_RADIUS_z', 'MAGERR_SYST_AUTO_z',
-       'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
-       'MAGERR_STATSYST_APER_z', 'MAG_ZEROPOINT_z', 'MAG_ZEROPOINT_ERR_z','DLR', 'DLR_RANK',
-       'ANGSEP','z','z_Err','flag','source']] = np.NaN
-        res_df.SNID = sn_name
+            else:
 
-    else:
+                res_df = res_df.append(match)
 
-        res_df = res_df.append(match)
+                res_df['SNID']=sn_name
+                dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
 
-        res_df['SNID']=sn_name
-        dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
+                res_df['ANGSEP'] = angsep
 
-        res_df['ANGSEP'] = angsep
+                res_df['DLR'] = np.array(dlr)
+                rank = res_df['DLR'].rank().astype(int)
 
-        res_df['DLR'] = np.array(dlr)
-        rank = res_df['DLR'].rank().astype(int)
+                for counter, r in enumerate(res_df['DLR'].values):
+                    if r >4:
+                        rank.iloc[counter]*=-1
+                res_df['DLR_RANK']=rank
+                if len(match)>5:
+                    res_df = res_df[res_df['DLR']<30]
+                logger.debug(res_df[res_df['DLR_RANK']==1].index)
+                ind = res_df[res_df['DLR_RANK']==1].index
+                try:
+                    if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:
+                        pass
+                    elif res_df['DLR'].loc[ind]<1:
+                        snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
+                        snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
 
-        for counter, r in enumerate(res_df['DLR'].values):
-            if r >4:
-                rank.iloc[counter]*=-1
-        res_df['DLR_RANK']=rank
-        if len(match)>5:
-            res_df = res_df[res_df['DLR']<30]
-        logger.debug(res_df[res_df['DLR_RANK']==1].index)
-        ind = res_df[res_df['DLR_RANK']==1].index
-        try:
-            if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:
-                pass
-            elif res_df['DLR'].loc[ind]<1:
-                snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
-                snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
-
-                if len (snspecobs)>0:
-                    for i in range(len(snspecobs)):
-                        if snspecobs['Z_GAL'].values[i]>0:
-                            logger.info(snspecobs['Z_GAL'].values[i])
-                            try:
-                                res_df['z'].loc[ind]=snspecobs['Z_GAL'].values[i]
-                                res_df['z_Err'].loc[ind] = -9999.0
-                                res_df['source'].loc[ind] = 'SNSPECT'
-                            except:
-                                res_df['z'].loc[ind]=snspecobs['Z_GAL']
-                                res_df['z_Err'].loc[ind] = -9999.0
-                                res_df['source'].loc[ind] = 'SNSPECT'
-        except:
-            pass
-        res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
+                        if len (snspecobs)>0:
+                            for i in range(len(snspecobs)):
+                                if snspecobs['Z_GAL'].values[i]>0:
+                                    logger.info(snspecobs['Z_GAL'].values[i])
+                                    try:
+                                        res_df['z'].loc[ind]=snspecobs['Z_GAL'].values[i]
+                                        res_df['z_Err'].loc[ind] = -9999.0
+                                        res_df['source'].loc[ind] = 'SNSPECT'
+                                    except:
+                                        res_df['z'].loc[ind]=snspecobs['Z_GAL']
+                                        res_df['z_Err'].loc[ind] = -9999.0
+                                        res_df['source'].loc[ind] = 'SNSPECT'
+                except:
+                    pass
+                res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
+            main_res_df = main_res_df.append(res_df)
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
         os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
     save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s.result'%(sn_name,sn_name)
     logger.info('Saving result of %s to %s'%(sn_name,save_fn))
-    res_df.to_csv(save_fn)
+    main_res_df.to_csv(save_fn)
 
     logger.info("Done finding CAP for %s"%sn_name)
-    return res_df
+    return main_res_df
 
 def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
     # inputs are arrays

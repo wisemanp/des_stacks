@@ -902,16 +902,16 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                     canskip = False
                     if grcres['flag'].loc[row] in ['3','4']:
                         ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                        stack_gals_with_z.loc[i,['SPECZ','SPECZ_ERR','SPECZ_FLAG','SPECZ_CATALOG']] = ins
+                        stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
                     else: canskip = True
                 else:
                     if canskip ==True:
                         if grcres['flag'].loc[row] in ['3','4']:
                             ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                            stack_gals_with_z.loc[i,['SPECZ','SPECZ_ERR','SPECZ_FLAG','SPECZ_CATALOG']] = ins
+                            stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 
 
-                
+
             if hereitis:
                 logger.info('I gonna try')
             for row in grcres[grcres['source']!='DES_AAOmega'].index:

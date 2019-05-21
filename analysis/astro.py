@@ -898,8 +898,9 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                 logger.debug('Alert, found an OzDES redshift')
                 logger.debug(g)
                 logger.debug(grcres)
+                canskip = False
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
-                    canskip = False
+
                     if grcres['flag'].loc[row] in ['3','4']:
                         ins = grcres[['z','z_Err','flag','source']].loc[row].values
                         stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins

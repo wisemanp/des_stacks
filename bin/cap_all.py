@@ -27,7 +27,7 @@ def phot_worker(arg_pair):
     args, chip = arg_pair[0],arg_pair[1]
     print(args)
     my,f,parsed_args = [args[i]for i in range(len(args))]
-    
+
     ch = int(chip)
     print ('In phot_worker to do cap_phot_all on chip %s'%ch)
     n_bad = 0
@@ -40,10 +40,10 @@ def phot_worker(arg_pair):
         done_phot = os.path.isfile(os.path.join(capdir,'%s_%s_%s_obj_deep.cat'%(my,f,ch)))
         if not parsed_args.skipdone:
             cap_phot_all(my,f,ch,autocuts=True)
-            return 
+            return
         elif not done_phot:
             cap_phot_all(my,f,ch,autocuts=True)
-            return 
+            return
 
 def multi_phot(my,f,chips,parsed_args):
 
@@ -57,16 +57,16 @@ def multi_phot(my,f,chips,parsed_args):
     pool._serve()
 
     chips = list(chips)
-    
+
     all_args = []
     for c in chips:
         all_args.append([args,c])
         #p = Process(target=worker,args=(args,c))
         #p.start()
         #p.join()
-    
+
     results = pool.map(phot_worker,all_args)
-    
+
     pool.close()
     pool.join()
     return results

@@ -886,35 +886,29 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
             g = stack_gals_with_z.iloc[c:]
         gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
-        hereitis=False
         grcres = cat.iloc[idxc]
-        if g['X_WORLD'].values<34.718 and g['X_WORLD'].values>34.716 and g['Y_WORLD'].values<-4.032 and g['Y_WORLD'].values>-4.034:
-            hereitis=True
-            logger.info(grcres)
 
         for survey in ordered_surveys:
-
+            canskip = True
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
-                logger.debug('Alert, found an OzDES redshift')
-                logger.debug(g)
-                logger.debug(grcres)
-                canskip = False
+
+
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
 
                     if grcres['flag'].loc[row] in ['3','4']:
                         ins = grcres[['z','z_Err','flag','source']].loc[row].values
                         stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
-                    else: canskip = True
+                    else:
+                        canskip = True
+                        logger.info('There is an ozdes source with name SVA1_COADD, but it has flag 1 or 2, so allowing further searching')
                 else:
                     if canskip ==True:
                         if grcres['flag'].loc[row] in ['3','4']:
+                            logger.info('I am going to insert an OzDES source that does not have name SVA1_COADD but does have a good flag')
                             ins = grcres[['z','z_Err','flag','source']].loc[row].values
                             stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 
 
-
-            if hereitis:
-                logger.info('I gonna try')
             for row in grcres[grcres['source']!='DES_AAOmega'].index:
                 bad_ozdes = 0
                 for ozrow in grcres[grcres['source']=='DES_AAOmega'].index:

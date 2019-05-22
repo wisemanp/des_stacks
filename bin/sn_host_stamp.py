@@ -45,6 +45,7 @@ def parser():
     parser.add_argument('-vx','--vmax',help='vmax for greyscale',default=15.0)
     parser.add_argument('-ne','--new',help = 'Use new stacks?',action='store_true' )
     parser.add_argument('-fc','--finder',help = 'Is this a finder chart?',action='store_true')
+    parser.add_argument('-pa','--paper',help = 'Is this for a paper?',action='store_true')
     parser.add_argument('-re','--resfile',help = 'File to find host phot results for this SN',default = None)
     parser.add_argument('-b','--band',help='Only use one band? If so, enter here',default='All')
     parser.add_argument('-f','--ftype',help='File type for save. Default = pdf',default='pdf')
@@ -109,7 +110,7 @@ def main(args,logger):
             ax.set_yticks([])
             for loc in ['top','right','left','bottom']:
                 ax.spines[loc].set_visible(False)
-            ax.set_ylabel('Declination (J2000)',fontsize=12,labelpad = 30)
+            #ax.set_ylabel('Declination (J2000)',fontsize=12,labelpad = 30)
             hor_line = np.array([[sn_ra-0.00027,sn_ra+0.00027],[sn_dec,sn_dec]])
             ver_line = np.array([[sn_ra,sn_ra],[sn_dec-0.00027,sn_dec+0.00027]])
             if args.band !='All':
@@ -227,7 +228,7 @@ def main(args,logger):
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
                     fg.add_label(0.5,0.5,'[Failed to load %s band image]'%b,relative=True,fontsize=12,color='black')
-                if counter ==0:
+                if counter ==0 and not paper:
                     fg.add_label(0.99,1.05,sn,relative=True,fontsize=14,color='black')
 
             #plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)

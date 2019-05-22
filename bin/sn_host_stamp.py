@@ -228,7 +228,7 @@ def main(args,logger):
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
                     fg.add_label(0.5,0.5,'[Failed to load %s band image]'%b,relative=True,fontsize=12,color='black')
-                if counter ==0 and not paper:
+                if counter ==0 and not args.paper:
                     fg.add_label(0.99,1.05,sn,relative=True,fontsize=14,color='black')
 
             #plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)

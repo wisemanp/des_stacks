@@ -860,8 +860,8 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -892,6 +892,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
 
         for survey in ordered_surveys:
             grcres = grcres_full[grcres_full['source']==survey]
+            logger.debug(grcres)
             canskip = True
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
 

@@ -168,7 +168,7 @@ def main(args,logger):
                     except:
                         pass
 
-                    if not args.finder:
+                    if not args.finder or not args.paper:
                         try:
                             As,Bs,thetas = sn_res.A_IMAGE.values*pix_arcsec*4/3600,sn_res.B_IMAGE.values*pix_arcsec*4/3600,sn_res.THETA_IMAGE.values
                             ras,decs = sn_res.RA.values,sn_res.DEC.values

@@ -90,14 +90,15 @@ def main(args,logger):
         logger.info("Season: %s"%y)
         logger.info("Field:  %s"%f)
         logger.info("CCD:    %s"%chip)
-        sngals_deep = pd.read_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v3.csv',index_col=0)
+        sngals_deep = pd.read_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v4.csv',index_col=0)
         sn_res = sngals_deep[sngals_deep['TRANSIENT_NAME']==sn]
         has_spec = sn_res.dropna(subset=['SPECZ'])
         if len(has_spec)>0:
             loc = has_spec.index
         host = sn_res[sn_res['DLR_RANK']==1]
         phost = sn_res[sn_res['DLR_RANK']==-1]
-
+        if len(host)>0:
+            logger.info('Found the host! \n %s'%host)
         if args.stamp:
             logger.info("You want a stamp of %s too. So I'm making one."%sn)
             logger.warning("You might need AplPy installed...")
@@ -197,20 +198,20 @@ def main(args,logger):
                                 if len(host)>0:
                                     if row['RA']!=host['RA'].values[0]:
                                         fg.add_label(row.RA,row.DEC+0.001,
-                                                 'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
+                                                 'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='b',weight='bold')
                                         fg.add_label(row.RA,row.DEC+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
                                              size=8,color='b',weight='bold')
                                         fg.show_ellipses(row.RA,row.DEC,4*row.A_IMAGE*pix_arcsec/3600,
                  4*row.B_IMAGE*pix_arcsec/3600,row.THETA_IMAGE,edgecolor='b',facecolor='none',linewidth=1)
                                     else:
                                         fg.add_label(row.RA,row.DEC+0.001,
-                                                 'z = %.3g'%has_spec.z.values[spec],size=7,color='r',weight='bold')
+                                                 'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='r',weight='bold')
                                         fg.add_label(row.RA,row.DEC+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
                                              size=8,color='r',weight='bold')
 
                                 else:
                                         fg.add_label(row.RA,row.DEC+0.001,
-                                                 'z = %.3g'%has_spec.z.values[spec],size=7,color='b',weight='bold')
+                                                 'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='b',weight='bold')
                                         fg.add_label(row.RA,row.DEC+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
                                              size=8,color='b',weight='bold')
 

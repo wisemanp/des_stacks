@@ -23,12 +23,20 @@ import seaborn as sns
 
 sns.set_color_codes(palette='colorblind')
 
-plot_locs={
+plot_locs_labeled={
 'g':[0.18,0.53,0.40,0.43],
 'r':[0.59,0.53,0.40,0.43],
 'i':[0.18,0.09,0.40,0.43],
 'z':[0.59,0.09,0.40,0.43]
 }
+
+plot_locs_paper = {
+'g':[0.09,0.55,0.43,0.43],
+'r':[0.55,0.55,0.43,0.43],
+'i':[0.09,0.09,0.43,0.43],
+'z':[0.55,0.09,0.43,0.43]
+}
+
 bands = ['g','r','i','z']
 pix_arcsec = 0.264
 def parser():
@@ -138,6 +146,11 @@ def main(args,logger):
                     sn_res = sn_res[sn_res['DEC']>sn_dec-(w)]
 
                     img = fits.open(img_fn)
+                    if not args.paper:
+                        plot_locs = plot_locs_labeled
+                    else:
+                        plot_locs = plot_locs_paper
+
                     if args.band != 'All':
                         fg = aplpy.FITSFigure(img,figure=fig)
                     else:
@@ -230,14 +243,14 @@ def main(args,logger):
                     fg.add_label(0.5,0.5,'[Failed to load %s band image]'%b,relative=True,fontsize=12,color='black')
                 if counter ==0 and not args.paper:
                     fg.add_label(0.99,1.05,sn,relative=True,fontsize=14,color='black')
-
+            if args.paper:
+                fg.subplots_adjust(left=0.02,right=0.98)
             #plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)
             if args.path =='sn_dir':
                 savepath =os.path.join(sn_cap_dir,'%s_stamp.%s'%(sn,args.ftype))
             else:
                 savepath =os.path.join(args.path,'%s_stamp.%s'%(sn,args.ftype))
-            if args.paper:
-                plt.subplots_adjust(left=0.02,right=0.98)
+
             plt.savefig(savepath)
             plt.close(fig)
             logger.info("Figure saved to %s"%savepath)

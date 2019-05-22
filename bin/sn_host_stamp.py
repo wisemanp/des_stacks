@@ -92,7 +92,7 @@ def main(args,logger):
         logger.info("CCD:    %s"%chip)
         sngals_deep = pd.read_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v4.csv',index_col=0)
         sn_res = sngals_deep[sngals_deep['TRANSIENT_NAME']==sn]
-        has_spec = sn_res.dropna(subset=['SPECZ'])
+        has_spec = sn_res[sn_res['SPECZ']>0]
         if len(has_spec)>0:
             loc = has_spec.index
         host = sn_res[sn_res['DLR_RANK']==1]

@@ -236,7 +236,8 @@ def main(args,logger):
                 savepath =os.path.join(sn_cap_dir,'%s_stamp.%s'%(sn,args.ftype))
             else:
                 savepath =os.path.join(args.path,'%s_stamp.%s'%(sn,args.ftype))
-
+            if args.paper:
+                plt.subplots_adjust(left=0.02,right=0.98)
             plt.savefig(savepath)
             plt.close(fig)
             logger.info("Figure saved to %s"%savepath)

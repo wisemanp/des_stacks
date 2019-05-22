@@ -166,8 +166,8 @@ def main(args,logger):
                     fg.tick_labels.hide()
                     fg.set_theme('publication')
                     fg.ticks.set_length(0)
-                    fg.ticks.set_xspacing(1/3600)
-                    fg.ticks.set_yspacing(1/3600)
+                    if args.paper:
+                        fg.ticks.hide()
                     fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=24,weight='bold')
                     fg.add_scalebar(5/3600,color='r',linewidth=3,fontsize=20,weight='bold')
                     fg.scalebar.set_label('5"')

@@ -153,8 +153,8 @@ def main(args,logger):
                     fg.set_theme('publication')
                     fg.ticks.set_length(0)
                     fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=24,weight='bold')
-                    fg.add_scalebar(5/3600)
-                    fg.scalebar.set_label('5"',color='r',fontsize=24,weight='bold')
+                    fg.add_scalebar(5/3600,color='r',fontsize=24,weight='bold')
+                    fg.scalebar.set_label('5"')
                     # now add some region ellipses and axis_labels
                     try:
                         i = sn_res[(sn_res['RA']<host['RA'].values[0]+0.00001)&(sn_res['RA']>host['RA'].values[0]-0.00001)].index

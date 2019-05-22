@@ -19,6 +19,7 @@ import _pickle as cpickle
 import math
 import glob
 import seaborn as sns
+import itertools 
 
 
 sns.set_color_codes(palette='colorblind')

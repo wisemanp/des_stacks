@@ -873,6 +873,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     stack_gal_zs = init_matches[close_match_inds]
 
     logger.info('Matched %s galaxies with redshifts'%len(stack_gals_with_z))
+    logger.info('Going through them one-by-one to get the priority right')
     gals['z']= ''
     gals['z_Err']= ''
     gals['flag']= ''
@@ -880,15 +881,17 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
 
     for c,i in enumerate(stack_gals_with_z.index):
+        logger.info('I am on galaxy number %s of %s'%(c,len(stack_gals_with_z)))
         try:
             g = stack_gals_with_z.iloc[c:c+1]
         except:
             g = stack_gals_with_z.iloc[c:]
         gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
-        grcres = cat.iloc[idxc]
+        grcres_full = cat.iloc[idxc]
 
         for survey in ordered_surveys:
+            grcres = grcres_full[grcres_full['source']==survey]
             canskip = True
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
 

@@ -244,7 +244,7 @@ def main(args,logger):
                 if counter ==0 and not args.paper:
                     fg.add_label(0.99,1.05,sn,relative=True,fontsize=14,color='black')
             if args.paper:
-                fg.subplots_adjust(left=0.02,right=0.98)
+                plt.subplots_adjust(left=0.02,right=0.98)
             #plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)
             if args.path =='sn_dir':
                 savepath =os.path.join(sn_cap_dir,'%s_stamp.%s'%(sn,args.ftype))

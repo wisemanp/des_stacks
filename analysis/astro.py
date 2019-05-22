@@ -898,9 +898,11 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
 
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
 
+                    
+                    ins = grcres[['z','z_Err','flag','source']].loc[row].values
+                    stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
                     if grcres['flag'].loc[row] in ['3','4']:
-                        ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                        stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
+                        canskip = False
                     else:
                         canskip = True
                         logger.info('There is an ozdes source with name SVA1_COADD, but it has flag 1 or 2, so allowing further searching')

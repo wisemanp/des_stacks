@@ -873,7 +873,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     stack_gal_zs = init_matches[close_match_inds]
 
     logger.info('Matched %s galaxies with redshifts'%len(stack_gals_with_z))
-    logger.info('Going through them one-by-one to get the priority right')
+    logger.debug('Going through them one-by-one to get the priority right')
     gals['z']= ''
     gals['z_Err']= ''
     gals['flag']= ''
@@ -881,7 +881,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
 
     for c,i in enumerate(stack_gals_with_z.index):
-        logger.info('I am on galaxy number %s of %s'%(c,len(stack_gals_with_z)))
+        logger.debug('I am on galaxy number %s of %s'%(c,len(stack_gals_with_z)))
         try:
             g = stack_gals_with_z.iloc[c:c+1]
         except:
@@ -898,22 +898,22 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
 
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
 
-                    
+
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
                     if grcres['flag'].loc[row] in ['3','4']:
                         canskip = False
                     else:
                         canskip = True
-                        logger.info('There is an ozdes source with name SVA1_COADD, but it has flag 1 or 2, so allowing further searching')
+                        logger.debug('There is an ozdes source with name SVA1_COADD, but it has flag 1 or 2, so allowing further searching')
 
                 else:
                     if canskip ==True:
                         if grcres['flag'].loc[row] in ['3','4']:
-                            logger.info('I am going to insert an OzDES source that does not have name SVA1_COADD but does have a good flag')
-                            logger.info(grcres['ID'].loc[row][:10])
+                            logger.debug('I am going to insert an OzDES source that does not have name SVA1_COADD but does have a good flag')
+                            logger.debug(grcres['ID'].loc[row][:10])
                             ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                            logger.info(ins)
+                            logger.debug(ins)
                             stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 
 

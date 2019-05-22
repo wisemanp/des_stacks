@@ -881,42 +881,40 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
 
     for c,i in enumerate(stack_gals_with_z.index):
-        logger.debug('I am on galaxy number %s of %s'%(c,len(stack_gals_with_z)))
         try:
             g = stack_gals_with_z.iloc[c:c+1]
         except:
             g = stack_gals_with_z.iloc[c:]
-        gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
+        gobj= SkyCoord(ra=g['RA'].values*u.deg,dec = g['DEC'].values*u.deg)
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
+        hereitis=False
         grcres_full = cat.iloc[idxc]
+        print('So, around that galaxy, I found this: \n',grcres_full)
+        '''if g['X_WORLD'].values<34.718 and g['X_WORLD'].values>34.716 and g['Y_WORLD'].values<-4.032 and g['Y_WORLD'].values>-4.034:
+            hereitis=True
+            logger.info(grcres)'''
 
         for survey in ordered_surveys:
             grcres = grcres_full[grcres_full['source']==survey]
-
             canskip = True
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
-                logger.debug(grcres[grcres['source']=='DES_AAOmega'])
+
 
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
-
-
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
+
                     if grcres['flag'].loc[row] in ['3','4']:
-                        canskip = False
+                        canskip=False
                     else:
                         canskip = True
-                        logger.debug('There is an ozdes source with name SVA1_COADD, but it has flag 1 or 2, so allowing further searching')
-
+                        print('There is an ozdes source with name SVA1_COADD, but it has flag 1 or 2, so allowing further searching')
                 else:
                     if canskip ==True:
                         if grcres['flag'].loc[row] in ['3','4']:
-                            logger.debug('I am going to insert an OzDES source that does not have name SVA1_COADD but does have a good flag')
-                            logger.debug(grcres['ID'].loc[row][:10])
+                            print('I am going to insert an OzDES source that does not have name SVA1_COADD but does have a good flag')
                             ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                            logger.debug(ins)
                             stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
-
 
             for row in grcres[grcres['source']!='DES_AAOmega'].index:
                 bad_ozdes = 0
@@ -927,7 +925,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
-    logger.debug(gals['z'].nonzero())
+    logger.debug(gals['SPECZ'].nonzero())
     return gals
 
 def get_edge_flags(xs,ys,dist=20):

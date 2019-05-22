@@ -885,7 +885,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
             g = stack_gals_with_z.iloc[c:c+1]
         except:
             g = stack_gals_with_z.iloc[c:]
-        gobj= SkyCoord(ra=g['RA'].values*u.deg,dec = g['DEC'].values*u.deg)
+        gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
         hereitis=False
         grcres_full = cat.iloc[idxc]
@@ -925,7 +925,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
-    logger.debug(gals['SPECZ'].nonzero())
+    logger.debug(gals['z'].nonzero())
     return gals
 
 def get_edge_flags(xs,ys,dist=20):

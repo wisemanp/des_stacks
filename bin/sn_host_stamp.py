@@ -146,14 +146,14 @@ def main(args,logger):
                     except:
                         logger.info('Could not recenter to outside the frame')
 
-                    fg.show_lines([ver_line,hor_line],color='r',linewidth=1.8)
+                    fg.show_lines([ver_line,hor_line],color='r',linewidth=1.)
                     fg.show_grayscale(vmin=float(args.vmin),vmax=float(args.vmax))
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
                     fg.set_theme('publication')
                     fg.ticks.set_length(0)
                     fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=24,weight='bold')
-                    fg.add_scalebar(5/3600,color='r',fontsize=24,weight='bold')
+                    fg.add_scalebar(5/3600,color='r',linewidth=3,fontsize=20,weight='bold')
                     fg.scalebar.set_label('5"')
                     # now add some region ellipses and axis_labels
                     try:

@@ -146,13 +146,13 @@ def main(args,logger):
                     except:
                         logger.info('Could not recenter to outside the frame')
 
-                    fg.show_lines([ver_line,hor_line],color='r',linewidth=.8)
+                    fg.show_lines([ver_line,hor_line],color='r',linewidth=1.8)
                     fg.show_grayscale(vmin=float(args.vmin),vmax=float(args.vmax))
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()
                     fg.set_theme('publication')
-                    fg.ticks.set_length(-3)
-                    fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=14,weight='bold')
+                    fg.ticks.set_length(0)
+                    fg.add_label(0.1,0.8,b,relative=True,color='r',fontsize=24,weight='bold')
 
                     # now add some region ellipses and axis_labels
                     try:
@@ -217,10 +217,10 @@ def main(args,logger):
 
                         except:
                             pass
-                    if counter in [0,2]:
+                    '''if counter in [0,2]:
                         fg.tick_labels.show_y()
                     if counter in [2,3]:
-                        fg.tick_labels.show_x()
+                        fg.tick_labels.show_x()'''
                 else:
                     fg = aplpy.FITSFigure('/media/data3/wiseman/des/coadding/config/blank2.fits',figure=fig,subplot=plot_locs[b])
                     fg.axis_labels.hide()

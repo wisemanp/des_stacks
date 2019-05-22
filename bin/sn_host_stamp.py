@@ -125,9 +125,12 @@ def main(args,logger):
                 bands = [args.band]
             else:
                 bands = ['g','r','i','z']
+            palette = itertools.cycle(sns.color_palette(palette='colorblind',n_colors=5))
             for counter,b in enumerate(bands):
 
-
+                color = next(palette)
+                if counter==1:
+                    color=next(palette)
                 try:
                     img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
                 except:
@@ -168,8 +171,8 @@ def main(args,logger):
                     fg.ticks.set_length(0)
                     if args.paper:
                         fg.ticks.hide()
-                    fg.add_label(0.1,0.8,b,relative=True,color='c',fontsize=24,weight='bold')
-                    fg.add_scalebar(5/3600,color='c',linewidth=3,fontsize=20,weight='bold')
+                    fg.add_label(0.1,0.8,b,relative=True,color=color,fontsize=24,weight='bold')
+                    fg.add_scalebar(5/3600,color=color,linewidth=3,fontsize=20,weight='bold')
                     fg.scalebar.set_label('5"')
                     # now add some region ellipses and axis_labels
                     try:

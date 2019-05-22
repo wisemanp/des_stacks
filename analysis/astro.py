@@ -904,11 +904,13 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                     else:
                         canskip = True
                         logger.info('There is an ozdes source with name SVA1_COADD, but it has flag 1 or 2, so allowing further searching')
+
                 else:
                     if canskip ==True:
                         if grcres['flag'].loc[row] in ['3','4']:
                             logger.info('I am going to insert an OzDES source that does not have name SVA1_COADD but does have a good flag')
                             ins = grcres[['z','z_Err','flag','source']].loc[row].values
+                            logger.info(ins)
                             stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
 
 

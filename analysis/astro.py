@@ -608,7 +608,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger.addHandler(ch)
 
     logger.info("Entered 'cap_phot.py' to do common aperture photometry for the host of %s"%sn_name)
-    logger.info("Will search a radius of %s arcseconds around the SN location"%dist_thresh)
+    #logger.info("Will search a radius of %s arcseconds around the SN location"%dist_thresh)
     # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
 
@@ -629,7 +629,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         if ch not in [0,2,31,61,63]:
             capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
                                  f,'CAP',str(ch),'%s_%s_%s_obj_deep.cat'%(y,f,ch))
-            logger.info('Searching for %s in %s'%(sn_name,capres_fn))
+            #logger.info('Searching for %s in %s'%(sn_name,capres_fn))
             capres = pd.read_csv(capres_fn,index_col = 0)
             search_rad = dist_thresh
             capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
@@ -731,7 +731,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger.info('Saving result of %s to %s'%(sn_name,save_fn))
     main_res_df.to_csv(save_fn)
 
-    logger.info("Done finding CAP for %s"%sn_name)
+    #logger.info("Done finding CAP for %s"%sn_name)
     return main_res_df
 
 def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):

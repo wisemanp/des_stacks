@@ -892,10 +892,10 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
 
         for survey in ordered_surveys:
             grcres = grcres_full[grcres_full['source']==survey]
-            logger.debug(grcres)
+
             canskip = True
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
-
+                logger.debug(grcres[grcres['source']=='DES_AAOmega'])
 
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
 

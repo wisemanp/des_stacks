@@ -889,7 +889,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
         hereitis=False
         grcres_full = cat.iloc[idxc]
-        print('So, around that galaxy, I found this: \n',grcres_full)
+        #print('So, around that galaxy, I found this: \n',grcres_full)
         '''if g['X_WORLD'].values<34.718 and g['X_WORLD'].values>34.716 and g['Y_WORLD'].values<-4.032 and g['Y_WORLD'].values>-4.034:
             hereitis=True
             logger.info(grcres)'''
@@ -898,7 +898,8 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
             grcres = grcres_full[grcres_full['source']==survey]
             canskip = True
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
-
+                if row[row['ID']=='DES14E2u']:
+                    print(grcres)
 
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values

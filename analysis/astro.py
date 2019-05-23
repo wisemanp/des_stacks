@@ -926,7 +926,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
-    logger.debug(gals['z'].nonzero())
+    logger.info(gals[(gals['source']=='DES_AAOmega')&(gals['flag']==4)])
     return gals
 
 def get_edge_flags(xs,ys,dist=20):

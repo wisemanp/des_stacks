@@ -39,7 +39,7 @@ class Stack():
             self.cutstring = '%s'%cuts['teff']
 
         elif cuts['teff'] and cuts['psf']:
-            self.cutstring = '%.2f_%s'%(cuts['teff'],cuts['psf'])
+            self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         self._define_paths()
         self._init_log()
         if db:

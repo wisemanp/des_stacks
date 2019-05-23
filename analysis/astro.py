@@ -504,7 +504,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     chip_cent_dec = (this_chip_lims[0][1]+this_chip_lims[1][1])/2
     chip_search_rad = np.abs(this_chip_lims[1][1]-this_chip_lims[0][1])
     logger.debug('Searching for galaxy redshifts around %s, %s, %s' %(chip_cent_ra,chip_cent_dec,1))
-    gals_with_z,gals_with_z_coords = get_zs_box(sg,chip_cent_ra,chip_cent_dec,chip_search_rad)
+    gals_with_z,gals_with_z_coords = get_zs_box(sg,chip_cent_ra,chip_cent_dec,1)
     # find the galaxies that OzDES has redshifts for
     cats, limmags, limfluxes = {},{},{}
     for counter,s in enumerate([sg,sr,si,sz]):

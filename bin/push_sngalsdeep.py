@@ -79,7 +79,7 @@ for i in range(int(start),len(deep)): #len(deep)
        deep['THETA_IMAGE'].iloc[i], deep['X_IMAGE'].iloc[i], deep['RA'].iloc[i], deep['Y_IMAGE'].iloc[i], deep['DEC'].iloc[i], deep['SPECZ_FLAG'].iloc[i],
        deep['SPECZ_CATALOG'].iloc[i], deep['SPECZ'].iloc[i], deep['SPECZ_ERR'].iloc[i], deep['COADD_OBJECTS_ID'].iloc[i], deep['SNGALID'].iloc[i],
        deep['VERSION'].iloc[i], deep['SNID'].iloc[i], deep['GALFLAG'].iloc[i], deep['HOST'].iloc[i],deep['SEPARATION'].iloc[i]))
-    print int(deep['SNID'].iloc[i])
+    print (int(deep['SNID'].iloc[i]))
     if int(deep['SNID'].iloc[i]) in new_snids:
         print(deep['SNID'].iloc[i],'Fuck')
     else:

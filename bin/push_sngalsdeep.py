@@ -80,7 +80,7 @@ for i in range(int(start),len(deep)): #len(deep)
        deep['SPECZ_CATALOG'].iloc[i], deep['SPECZ'].iloc[i], deep['SPECZ_ERR'].iloc[i], deep['COADD_OBJECTS_ID'].iloc[i], deep['SNGALID'].iloc[i],
        deep['VERSION'].iloc[i], deep['SNID'].iloc[i], deep['GALFLAG'].iloc[i], deep['HOST'].iloc[i],deep['SEPARATION'].iloc[i]))
     if deep['SNID'].iloc[i] in new_snids:
-        pass
+        print(deep['SNID'].iloc[i],'Fuck')
     else:
         print ('Inserting: \n %s'%query)
         cursor.execute(query)

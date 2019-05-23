@@ -898,7 +898,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
             grcres = grcres_full[grcres_full['source']==survey]
             canskip = True
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
-                if row[row['ID']=='DES14E2u']:
+                if grcres['ID'].loc[row]=='DES14E2u':
                     print(grcres)
 
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':

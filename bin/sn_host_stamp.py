@@ -164,7 +164,7 @@ def main(args,logger):
                     except:
                         logger.info('Could not recenter to outside the frame')
 
-                    fg.show_lines([ver_line,hor_line],color='r',linewidth=1.)
+                    fg.show_lines([ver_line,hor_line],color='r',linewidth=1.5)
                     fg.show_grayscale(vmin=float(args.vmin),vmax=float(args.vmax))
                     fg.axis_labels.hide()
                     fg.tick_labels.hide()

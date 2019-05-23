@@ -577,12 +577,12 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         main_cat_df['FLUXERR_APER_%s'%b].fillna(-9999,inplace=True)
     catobjs = SkyCoord(ra = main_cat_df['X_WORLD'].values*u.degree,dec = main_cat_df['Y_WORLD'].values*u.degree)
     # match the cap catalog with the ozdes one
-    logger.debug('Len of grccoord,capcoord for chip %s: %s, %s'%(chip,len(gals_with_z_coords),len(catobjs)))
+    #logger.debug('Len of grccoord,capcoord for chip %s: %s, %s'%(chip,len(gals_with_z_coords),len(catobjs)))
     matched_cat_df = match_gals(gals_with_z_coords,catobjs,gals_with_z,main_cat_df,dist_thresh=1.5)
-    logger.debug(matched_cat_df.columns)
+    #logger.debug(matched_cat_df.columns)
     low_conf_z = matched_cat_df[(matched_cat_df['source']=='DES_AAOmega')&((matched_cat_df['flag']=='1')|(matched_cat_df['flag']=='2'))]
-    logger.info('Found these OzDES targets with z flag 1 or 2: ')
-    logger.info(low_conf_z[['z','source','flag']])
+    #logger.info('Found these OzDES targets with z flag 1 or 2: ')
+    #logger.info(low_conf_z[['z','source','flag']])
     matched_cat_df['z'].loc[low_conf_z.index] = -9.9900
     matched_cat_df['z_Err'].loc[low_conf_z.index] = -9999
 
@@ -898,8 +898,6 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
             grcres = grcres_full[grcres_full['source']==survey]
             canskip = True
             for row in grcres[grcres['source']=='DES_AAOmega'].index:
-                if grcres['ID'].loc[row]=='DES14E2u':
-                    print(grcres)
 
                 if grcres['ID'].loc[row][:10] =='SVA1_COADD':
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values
@@ -926,7 +924,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values
                     stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
-    logger.info(gals[(gals['source']=='DES_AAOmega')&(gals['flag']=='4')])
+
     return gals
 
 def get_edge_flags(xs,ys,dist=20):

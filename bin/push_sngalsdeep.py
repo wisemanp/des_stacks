@@ -4,7 +4,9 @@ import pandas as pd
 import easyaccess as ea
 
 deep = pd.read_csv(sys.argv[1])
+new_sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/all_snids.csv')
 
+new_snids = new_sncand[new_sncand['SNFAKE_ID']==0]['SNID'].values
 conn = ea.connect('desoper')
 cursor = conn.cursor()
 try:
@@ -77,7 +79,10 @@ for i in range(int(start),len(deep)): #len(deep)
        deep['THETA_IMAGE'].iloc[i], deep['X_IMAGE'].iloc[i], deep['RA'].iloc[i], deep['Y_IMAGE'].iloc[i], deep['DEC'].iloc[i], deep['SPECZ_FLAG'].iloc[i],
        deep['SPECZ_CATALOG'].iloc[i], deep['SPECZ'].iloc[i], deep['SPECZ_ERR'].iloc[i], deep['COADD_OBJECTS_ID'].iloc[i], deep['SNGALID'].iloc[i],
        deep['VERSION'].iloc[i], deep['SNID'].iloc[i], deep['GALFLAG'].iloc[i], deep['HOST'].iloc[i],deep['SEPARATION'].iloc[i]))
-    print ('Inserting: \n %s'%query)
-    cursor.execute(query)
-    print ('Successfully pushed row %s of %s to SNGALS_DEEP'%(i,len(deep)))
+    if deep['SNID'].iloc[i] in new_snids:
+        pass
+    else:
+        print ('Inserting: \n %s'%query)
+        cursor.execute(query)
+        print ('Successfully pushed row %s of %s to SNGALS_DEEP'%(i,len(deep)))
 print ('DONE!')

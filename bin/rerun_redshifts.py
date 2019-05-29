@@ -8,6 +8,7 @@ from astropy.nddata import NDData
 from astroimtools import nddata_stats
 import datetime
 import os
+import sys
 import logging
 import time
 import seaborn as sns

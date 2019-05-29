@@ -156,7 +156,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh):
                         bad_ozdes =1
                 if bad_ozdes ==1:
                     ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                    stack_gals_with_z.loc[i,[['SPECZ','SPECZ_ERR','SPECZ_FLAG','SPECZ_CATALOG']] = ins
+                    stack_gals_with_z.loc[i,['SPECZ','SPECZ_ERR','SPECZ_FLAG','SPECZ_CATALOG']] = ins
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
 
     return gals

@@ -767,8 +767,8 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     survey_flags = {
     'DES_AAOmega':['1','2','3','4','6'],
     'ZFIRE_UDS':['3'],
-    'NOAO_0522':['4','6'],
-    'NOAO_0334':['4','6'],
+    'NOAO_0522':['3','4','6'],
+    'NOAO_0334':['3','4','6'],
     'N17B331':['4','6'],
     'MOSDEF':['Any'],
     'SpARCS':['1','2'],

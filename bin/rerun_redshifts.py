@@ -160,10 +160,11 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh):
     gals.loc[stack_gals_with_z.index]=stack_gals_with_z
 
     return gals
-
-res = pd.read_csv(resname,index_col=0)
-noz_res = res[res['SPECZ']<0]
-gals_with_z,gals_with_z_coords = get_zs()
-nozrescoords = SkyCoord(ra=noz_res['RA'].values*u.deg,dec= noz_res['DEC'].values*u.deg)
-final_res = match_gals(gals_with_z_coords,nozrescoords,
-                                gals_with_z,noz_res,dist_thresh=1.5)
+if __name__ == "__main__":
+    res = pd.read_csv(resname,index_col=0)
+    noz_res = res[res['SPECZ']<0]
+    gals_with_z,gals_with_z_coords = get_zs()
+    nozrescoords = SkyCoord(ra=noz_res['RA'].values*u.deg,dec= noz_res['DEC'].values*u.deg)
+    final_res = match_gals(gals_with_z_coords,nozrescoords,
+                                    gals_with_z,noz_res,dist_thresh=1.5)
+    final_res.to_csv(resname)

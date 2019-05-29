@@ -116,10 +116,6 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh):
     stack_gals_with_z = gals.iloc[close_match_inds]
     stack_gal_zs = init_matches[close_match_inds]
 
-    logger.info('Matched %s galaxies with redshifts'%len(stack_gals_with_z))
-    logger.debug('Going through them one-by-one to get the priority right')
-
-
     for c,i in enumerate(stack_gals_with_z.index):
         try:
             g = stack_gals_with_z.iloc[c:c+1]
@@ -129,11 +125,6 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh):
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
         hereitis=False
         grcres_full = cat.iloc[idxc]
-        #print('So, around that galaxy, I found this: \n',grcres_full)
-        '''if g['X_WORLD'].values<34.718 and g['X_WORLD'].values>34.716 and g['Y_WORLD'].values<-4.032 and g['Y_WORLD'].values>-4.034:
-            hereitis=True
-            logger.info(grcres)'''
-
         for survey in ordered_surveys:
             grcres = grcres_full[grcres_full['source']==survey]
             canskip = True

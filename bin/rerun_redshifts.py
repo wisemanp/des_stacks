@@ -121,7 +121,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh):
             g = stack_gals_with_z.iloc[c:c+1]
         except:
             g = stack_gals_with_z.iloc[c:]
-        gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
+        gobj= SkyCoord(ra=g['RA'].values*u.deg,dec = g['DEC'].values*u.deg)
         idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
         hereitis=False
         grcres_full = cat.iloc[idxc]
@@ -160,6 +160,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh):
 if __name__ == "__main__":
     res = pd.read_csv(resname,index_col=0)
     noz_res = res[res['SPECZ']<0]
+    print('going to try and get redshifts for %s galaxies'%len(noz_res))
     gals_with_z,gals_with_z_coords = get_zs()
     nozrescoords = SkyCoord(ra=noz_res['RA'].values*u.deg,dec= noz_res['DEC'].values*u.deg)
     final_res = match_gals(gals_with_z_coords,nozrescoords,

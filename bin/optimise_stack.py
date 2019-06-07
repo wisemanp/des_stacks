@@ -229,7 +229,7 @@ class optimiser():
             s.run_stack_sex(cuts=cuts,final=True)
         s.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         #lim = np.median(s.init_phot()[ch[0]][-1])
-        skylim = s.init_phot()[ch[0]][3]
+        skylim = s.init_phot()[ch[0]][2]
         psf = np.loadtxt(os.path.join(s.band_dir,ch[0],'ana','%s_ana.qual'%s.cutstring))[2]
         psf_err = np.loadtxt(os.path.join(s.band_dir,ch[0],'ana','%s_ana.qual'%s.cutstring))[3]
         np.savetxt(os.path.join(s.ana_dir,'%s_limmags.txt'%s.cutstring),np.array([skylim,psf,psf_err]))

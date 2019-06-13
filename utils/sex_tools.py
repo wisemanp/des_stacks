@@ -266,7 +266,7 @@ def cap_sex_chip(sg,sr,si,sz,chip):
         if os.path.isfile(sexcat) and redo ==False:
             pass
         else:
-            glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_*_clipweighted*.resamp.fits'%(str(chip),s.band))
+            glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_%s*_clipweighted*.resamp.fits'%(str(chip),s.band,s.cutstring))
             resamp_name = glob.glob(glob_string)[0]
             check_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_check_aper.fits'%(s.my,s.field,chip,s.band))
             sex_cmd = [

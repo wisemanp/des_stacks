@@ -54,7 +54,7 @@ def parser():
     parser.add_argument('-re','--resfile',help = 'File to find host phot results for this SN',default = None)
     parser.add_argument('-b','--band',help='Only use one band? If so, enter here',default='All')
     parser.add_argument('-f','--ftype',help='File type for save. Default = pdf',default='pdf')
-    parser.add_argument('-s','--size',help='Size in arcsec',default=60,dtype='float')
+    parser.add_argument('-s','--size',help='Size in arcsec',default=60)
 
     return parser.parse_args()
 
@@ -80,7 +80,7 @@ def main(args,logger):
         f,ccd = find_chip(ra,dec)
         import aplpy
         fig,ax = plt.subplots() #figsize=(16,9)
-        w = args.size/3600
+        w = float(args.size)/3600
         ax.set_xticks([])
         ax.set_yticks([])
         for loc in ['top','right','left','bottom']:
@@ -108,7 +108,7 @@ def main(args,logger):
                 from des_stacks.utils.stack_tools import make_cap_stamps,get_cuts
                 cuts = [get_cuts(f,b) for b in bands]
                 sg,sr,si,sz = [stack.Stack(f, b, y, [str(chip)] ,'coadding',cuts[counter]) for counter,b in enumerate(bands)]
-                make_cap_stamps(sg,sr,si,sz,chip,'%s_%s'%(f,ccd),ra,dec,args.size/0.264,args.size/0.264)
+                make_cap_stamps(sg,sr,si,sz,chip,'%s_%s'%(f,ccd),ra,dec,float(args.size)/0.264,float(args.size)/0.264)
                 img_fn = glob.glob(os.path.join(capdir,'ccd_%s*%s*_sci.resamp.fits'%(ccd,b)))[0]
 
             if os.path.isfile(img_fn):

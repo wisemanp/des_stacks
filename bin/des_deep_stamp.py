@@ -54,7 +54,7 @@ def parser():
     parser.add_argument('-re','--resfile',help = 'File to find host phot results for this SN',default = None)
     parser.add_argument('-b','--band',help='Only use one band? If so, enter here',default='All')
     parser.add_argument('-f','--ftype',help='File type for save. Default = pdf',default='pdf')
-    parser.add_argument('-s','--size',help='Size in arcsec',default=60)
+    parser.add_argument('-s','--size',help='Size in arcsec',default=60,dtype='float')
 
     return parser.parse_args()
 

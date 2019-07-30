@@ -95,7 +95,7 @@ def main(args,logger):
         fdir = '/media/data3/wiseman/des/coadding/5yr_stacks/MY1/%s/'%f
         for counter,b in enumerate(bands):
             bdir = os.path.join(fdir,b)
-            capdir = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s_%s'%(f,ccd))
+            capdir = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s_%s'%(ra,dec))
             if not os.path.isdir(capdir):
                 os.mkdir(capdir)
             color = next(palette)
@@ -108,7 +108,7 @@ def main(args,logger):
                 from des_stacks.utils.stack_tools import make_cap_stamps,get_cuts
                 cuts = [get_cuts(f,b) for b in bands]
                 sg,sr,si,sz = [stack.Stack(f, b, 1, [str(ccd)] ,'coadding',cuts[counter]) for counter,b in enumerate(bands)]
-                make_cap_stamps(sg,sr,si,sz,ccd,'%s_%s'%(f,ccd),ra,dec,float(args.size)/0.264,float(args.size)/0.264)
+                make_cap_stamps(sg,sr,si,sz,ccd,'%s_%s'%(ra,dec),ra,dec,float(args.size)/0.264,float(args.size)/0.264)
                 img_fn = glob.glob(os.path.join(capdir,'ccd_%s*%s*_sci.resamp.fits'%(ccd,b)))[0]
 
             if os.path.isfile(img_fn):
@@ -147,7 +147,7 @@ def main(args,logger):
                 fg.tick_labels.hide()
                 fg.add_label(0.5,0.5,'[Failed to load %s band image]'%b,relative=True,fontsize=12,color='black')
             if counter ==0 and not args.paper:
-                fg.add_label(0.99,1.05,sn,relative=True,fontsize=14,color='black')
+                fg.add_label(0.99,1.05,'%s_%s'%(ra,dec),relative=True,fontsize=14,color='black')
         if args.paper:
             plt.subplots_adjust(left=0.02,right=0.98)
         #plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)

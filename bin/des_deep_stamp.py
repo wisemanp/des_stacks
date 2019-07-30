@@ -79,7 +79,7 @@ def main(args,logger):
         ra,dec = coords[0],coords[1]
         f,ccd = find_chip(ra,dec)
         import aplpy
-        fig,ax = plt.subplots() #figsize=(16,9)
+        fig,ax = plt.subplots(figsize=(15,15)) #figsize=(16,9)
         w = float(args.size)/3600
         ax.set_xticks([])
         ax.set_yticks([])
@@ -125,7 +125,7 @@ def main(args,logger):
                 else:
                     fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[b])
                 try:
-                    fg.recenter(ra,dec,w)
+                    fg.recenter(ra,dec,w/2)
                 except:
                     logger.info('Could not recenter to outside the frame')
 

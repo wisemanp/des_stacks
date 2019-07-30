@@ -43,6 +43,8 @@ pix_arcsec = 0.264
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n','--sn_name',help='Full DES supernova ID, e.g. DES16C2nm (case sensitive)',default=None)
+    parser.add_argument('-ra','--ra',help='RA of target',default=None)
+    parser.add_argument('-de','--dec',help='DEC of target',default=None)
     parser.add_argument('-l','--namelist',help='List of SN names as a .txt or .csv file',default = None)
     parser.add_argument('-wd','--workdir',help='Path to directory to work in',required = False,default = '/media/data3/wiseman/des/coadding')
     parser.add_argument('-d','--distance',help='Maximum allowable match radius (arcsec) for galaxy association',required=False,default=5)
@@ -83,7 +85,7 @@ def get_sn_dat(sn):
 def main(args,logger):
     sn_name = args.sn_name
     match_dist = args.distance
-
+    
     if sn_name:
         l = [sn_name]
     else:
@@ -109,158 +111,158 @@ def main(args,logger):
         phost = sn_res[sn_res['DLR_RANK']==-1]
         if len(host)>0:
             logger.info('Found the host! \n %s'%host)
-        if args.stamp:
-            logger.info("You want a stamp of %s too. So I'm making one."%sn)
-            logger.warning("You might need AplPy installed...")
-            import aplpy
-            fig,ax = plt.subplots() #figsize=(16,9)
-            w = args.size/3600
-            ax.set_xticks([])
-            ax.set_yticks([])
-            for loc in ['top','right','left','bottom']:
-                ax.spines[loc].set_visible(False)
-            #ax.set_ylabel('Declination (J2000)',fontsize=12,labelpad = 30)
-            hor_line = np.array([[sn_ra-(w/10),sn_ra+(w/10)],[sn_dec,sn_dec]])
-            ver_line = np.array([[sn_ra,sn_ra],[sn_dec-(w/10),sn_dec+(w/10)]])
-            if args.band !='All':
-                bands = [args.band]
-            else:
-                bands = ['g','r','i','z']
-            palette = itertools.cycle(sns.color_palette(palette='colorblind',n_colors=5))
-            for counter,b in enumerate(bands):
 
-                color = next(palette)
-                if counter==1:
-                    color=next(palette)
-                try:
-                    img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
-                except:
-                    from des_stacks import des_stack as stack
-                    from des_stacks.utils.stack_tools import make_cap_stamps,get_cuts
-                    cuts = [get_cuts(f,b) for b in bands]
-                    sg,sr,si,sz = [stack.Stack(f, b, y, [str(chip)] ,'coadding',cuts[counter]) for counter,b in enumerate(bands)]
-                    make_cap_stamps(sg,sr,si,sz,chip,sn_name,sn_ra,sn_dec,args.width,args.width)
-                    img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
+        logger.info("You want a stamp of %s too. So I'm making one."%sn)
+        logger.warning("You might need AplPy installed...")
+        import aplpy
+        fig,ax = plt.subplots() #figsize=(16,9)
+        w = args.size/3600
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for loc in ['top','right','left','bottom']:
+            ax.spines[loc].set_visible(False)
+        #ax.set_ylabel('Declination (J2000)',fontsize=12,labelpad = 30)
+        hor_line = np.array([[sn_ra-(w/10),sn_ra+(w/10)],[sn_dec,sn_dec]])
+        ver_line = np.array([[sn_ra,sn_ra],[sn_dec-(w/10),sn_dec+(w/10)]])
+        if args.band !='All':
+            bands = [args.band]
+        else:
+            bands = ['g','r','i','z']
+        palette = itertools.cycle(sns.color_palette(palette='colorblind',n_colors=5))
+        for counter,b in enumerate(bands):
 
-                if os.path.isfile(img_fn):
+            color = next(palette)
+            if counter==1:
+                color=next(palette)
+            try:
+                img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
+            except:
+                from des_stacks import des_stack as stack
+                from des_stacks.utils.stack_tools import make_cap_stamps,get_cuts
+                cuts = [get_cuts(f,b) for b in bands]
+                sg,sr,si,sz = [stack.Stack(f, b, y, [str(chip)] ,'coadding',cuts[counter]) for counter,b in enumerate(bands)]
+                make_cap_stamps(sg,sr,si,sz,chip,sn_name,sn_ra,sn_dec,args.width,args.width)
+                img_fn = glob.glob(os.path.join(sn_cap_dir,'ccd_*%s*_sci.resamp.fits'%b))[0]
 
-                    sn_res = sn_res[sn_res['RA']<sn_ra+(w)]
-                    sn_res = sn_res[sn_res['RA']>sn_ra-(w)]
-                    sn_res = sn_res[sn_res['DEC']<sn_dec+(w)]
-                    sn_res = sn_res[sn_res['DEC']>sn_dec-(w)]
+            if os.path.isfile(img_fn):
 
-                    img = fits.open(img_fn)
-                    if not args.paper:
-                        plot_locs = plot_locs_labeled
-                    else:
-                        plot_locs = plot_locs_paper
+                sn_res = sn_res[sn_res['RA']<sn_ra+(w)]
+                sn_res = sn_res[sn_res['RA']>sn_ra-(w)]
+                sn_res = sn_res[sn_res['DEC']<sn_dec+(w)]
+                sn_res = sn_res[sn_res['DEC']>sn_dec-(w)]
 
-                    if args.band != 'All':
-                        fg = aplpy.FITSFigure(img,figure=fig)
-                    else:
-                        fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[b])
-                    try:
-                        fg.recenter(sn_ra,sn_dec,w)
-                    except:
-                        logger.info('Could not recenter to outside the frame')
-
-                    fg.show_lines([ver_line,hor_line],color='r',linewidth=1.5)
-                    fg.show_grayscale(vmin=float(args.vmin),vmax=float(args.vmax))
-                    fg.axis_labels.hide()
-                    fg.tick_labels.hide()
-                    fg.set_theme('publication')
-                    fg.ticks.set_length(0)
-                    if args.paper:
-                        fg.ticks.hide()
-                    fg.add_label(0.1,0.8,b,relative=True,color=color,fontsize=24,weight='bold')
-                    fg.add_scalebar(5/3600,color=color,linewidth=3,fontsize=20,weight='bold')
-                    fg.scalebar.set_label('5"')
-                    # now add some region ellipses and axis_labels
-                    try:
-                        i = sn_res[(sn_res['RA']<host['RA'].values[0]+0.00001)&(sn_res['RA']>host['RA'].values[0]-0.00001)].index
-                        sn_res.drop(i,inplace=True)
-                    except:
-                        pass
-                    try:
-                        j = sn_res[(sn_res['RA']<has_spec['RA'].values[0]+0.00001)&(sn_res['RA']>has_spec['RA'].values[0]-0.00001)].index
-                        sn_res.drop(j,inplace=True)
-                    except:
-                        pass
-
-                    if not args.finder or not args.paper:
-                        try:
-                            As,Bs,thetas = sn_res.A_IMAGE.values*pix_arcsec*4/3600,sn_res.B_IMAGE.values*pix_arcsec*4/3600,sn_res.THETA_IMAGE.values
-                            ras,decs = sn_res.RA.values,sn_res.DEC.values
-                            mags,errs = sn_res['MAG_AUTO_%s'%b.capitalize()].values,sn_res['MAGERR_AUTO_%s'%b.capitalize()].values
-
-                            fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
-                            if len(host)>0:
-                                if not math.isnan(host['SPECZ'].values[0]):
-                                    fg.show_ellipses(host.RA.values,host.DEC.values,4*host.A_IMAGE.values*pix_arcsec/3600,
-        4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=1)
-                                else:
-                                    fg.show_ellipses(host.RA.values,host.DEC.values,4*host.A_IMAGE.values*pix_arcsec/3600,
-        4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
-                                    fg.add_label(host.RA.values[0],host.DEC.values[0]+0.00045,'%.3f +/- %.3f'%(host['MAG_AUTO_%s'%b.capitalize()].values[0],host['MAGERR_AUTO_%s'%b.capitalize()].values[0]),
-                                             size=8,color='b',weight='bold')
-
-                            for obj in range(len(ras)):
-
-                                if decs[obj]+0.00045 < sn_dec+w:
-
-
-                                    fg.add_label(ras[obj],decs[obj]+0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
-                                             size=7,color='g',weight='bold')
-                                else:
-                                    fg.add_label(ras[obj],decs[obj]-0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
-                                             size=7,color='g',weight='bold')
-                            for spec in range(len(has_spec.RA.values)):
-                                row = has_spec.iloc[spec]
-                                if len(host)>0:
-                                    if row['RA']!=host['RA'].values[0]:
-                                        fg.add_label(row.RA,row.DEC+0.001,
-                                                 'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='b',weight='bold')
-                                        fg.add_label(row.RA,row.DEC+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
-                                             size=8,color='b',weight='bold')
-                                        fg.show_ellipses(row.RA,row.DEC,4*row.A_IMAGE*pix_arcsec/3600,
-                 4*row.B_IMAGE*pix_arcsec/3600,row.THETA_IMAGE,edgecolor='b',facecolor='none',linewidth=1)
-                                    else:
-                                        fg.add_label(row.RA,row.DEC+0.001,
-                                                 'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='r',weight='bold')
-                                        fg.add_label(row.RA,row.DEC+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
-                                             size=8,color='r',weight='bold')
-
-                                else:
-                                        fg.add_label(row.RA,row.DEC+0.001,
-                                                 'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='b',weight='bold')
-                                        fg.add_label(row.RA,row.DEC+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
-                                             size=8,color='b',weight='bold')
-
-                        except:
-                            pass
-                    '''if counter in [0,2]:
-                        fg.tick_labels.show_y()
-                    if counter in [2,3]:
-                        fg.tick_labels.show_x()'''
+                img = fits.open(img_fn)
+                if not args.paper:
+                    plot_locs = plot_locs_labeled
                 else:
-                    fg = aplpy.FITSFigure('/media/data3/wiseman/des/coadding/config/blank2.fits',figure=fig,subplot=plot_locs[b])
-                    fg.axis_labels.hide()
-                    fg.tick_labels.hide()
-                    fg.add_label(0.5,0.5,'[Failed to load %s band image]'%b,relative=True,fontsize=12,color='black')
-                if counter ==0 and not args.paper:
-                    fg.add_label(0.99,1.05,sn,relative=True,fontsize=14,color='black')
-            if args.paper:
-                plt.subplots_adjust(left=0.02,right=0.98)
-            #plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)
-            if args.path =='sn_dir':
-                savepath =os.path.join(sn_cap_dir,'%s_stamp.%s'%(sn,args.ftype))
-            else:
-                savepath =os.path.join(args.path,'%s_stamp.%s'%(sn,args.ftype))
+                    plot_locs = plot_locs_paper
 
-            plt.savefig(savepath)
-            plt.close(fig)
-            logger.info("Figure saved to %s"%savepath)
-            logger.info("************* Finished looking up %s! *************"%sn)
+                if args.band != 'All':
+                    fg = aplpy.FITSFigure(img,figure=fig)
+                else:
+                    fg = aplpy.FITSFigure(img,figure=fig,subplot=plot_locs[b])
+                try:
+                    fg.recenter(sn_ra,sn_dec,w)
+                except:
+                    logger.info('Could not recenter to outside the frame')
+
+                fg.show_lines([ver_line,hor_line],color='r',linewidth=1.5)
+                fg.show_grayscale(vmin=float(args.vmin),vmax=float(args.vmax))
+                fg.axis_labels.hide()
+                fg.tick_labels.hide()
+                fg.set_theme('publication')
+                fg.ticks.set_length(0)
+                if args.paper:
+                    fg.ticks.hide()
+                fg.add_label(0.1,0.8,b,relative=True,color=color,fontsize=24,weight='bold')
+                fg.add_scalebar(5/3600,color=color,linewidth=3,fontsize=20,weight='bold')
+                fg.scalebar.set_label('5"')
+                # now add some region ellipses and axis_labels
+                try:
+                    i = sn_res[(sn_res['RA']<host['RA'].values[0]+0.00001)&(sn_res['RA']>host['RA'].values[0]-0.00001)].index
+                    sn_res.drop(i,inplace=True)
+                except:
+                    pass
+                try:
+                    j = sn_res[(sn_res['RA']<has_spec['RA'].values[0]+0.00001)&(sn_res['RA']>has_spec['RA'].values[0]-0.00001)].index
+                    sn_res.drop(j,inplace=True)
+                except:
+                    pass
+
+                if not args.finder or not args.paper:
+                    try:
+                        As,Bs,thetas = sn_res.A_IMAGE.values*pix_arcsec*4/3600,sn_res.B_IMAGE.values*pix_arcsec*4/3600,sn_res.THETA_IMAGE.values
+                        ras,decs = sn_res.RA.values,sn_res.DEC.values
+                        mags,errs = sn_res['MAG_AUTO_%s'%b.capitalize()].values,sn_res['MAGERR_AUTO_%s'%b.capitalize()].values
+
+                        fg.show_ellipses(ras,decs,As,Bs,thetas,edgecolor='g',facecolor='none',linewidth=1,alpha=.8)
+                        if len(host)>0:
+                            if not math.isnan(host['SPECZ'].values[0]):
+                                fg.show_ellipses(host.RA.values,host.DEC.values,4*host.A_IMAGE.values*pix_arcsec/3600,
+    4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='r',facecolor='none',linewidth=1)
+                            else:
+                                fg.show_ellipses(host.RA.values,host.DEC.values,4*host.A_IMAGE.values*pix_arcsec/3600,
+    4*host.B_IMAGE.values*pix_arcsec/3600,host.THETA_IMAGE.values,edgecolor='b',facecolor='none',linewidth=1)
+                                fg.add_label(host.RA.values[0],host.DEC.values[0]+0.00045,'%.3f +/- %.3f'%(host['MAG_AUTO_%s'%b.capitalize()].values[0],host['MAGERR_AUTO_%s'%b.capitalize()].values[0]),
+                                         size=8,color='b',weight='bold')
+
+                        for obj in range(len(ras)):
+
+                            if decs[obj]+0.00045 < sn_dec+w:
+
+
+                                fg.add_label(ras[obj],decs[obj]+0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
+                                         size=7,color='g',weight='bold')
+                            else:
+                                fg.add_label(ras[obj],decs[obj]-0.00045,'%.3f +/- %.3f'%(mags[obj],errs[obj]),
+                                         size=7,color='g',weight='bold')
+                        for spec in range(len(has_spec.RA.values)):
+                            row = has_spec.iloc[spec]
+                            if len(host)>0:
+                                if row['RA']!=host['RA'].values[0]:
+                                    fg.add_label(row.RA,row.DEC+0.001,
+                                             'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='b',weight='bold')
+                                    fg.add_label(row.RA,row.DEC+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
+                                         size=8,color='b',weight='bold')
+                                    fg.show_ellipses(row.RA,row.DEC,4*row.A_IMAGE*pix_arcsec/3600,
+             4*row.B_IMAGE*pix_arcsec/3600,row.THETA_IMAGE,edgecolor='b',facecolor='none',linewidth=1)
+                                else:
+                                    fg.add_label(row.RA,row.DEC+0.001,
+                                             'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='r',weight='bold')
+                                    fg.add_label(row.RA,row.DEC+0.00065,'%.3f +/- %.3f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
+                                         size=8,color='r',weight='bold')
+
+                            else:
+                                    fg.add_label(row.RA,row.DEC+0.001,
+                                             'z = %.3g'%has_spec.SPECZ.values[spec],size=7,color='b',weight='bold')
+                                    fg.add_label(row.RA,row.DEC+0.00065,'%.2f +/- %.2f'%(row['MAG_AUTO_%s'%b.capitalize()],row['MAGERR_AUTO_%s'%b.capitalize()]),
+                                         size=8,color='b',weight='bold')
+
+                    except:
+                        pass
+                '''if counter in [0,2]:
+                    fg.tick_labels.show_y()
+                if counter in [2,3]:
+                    fg.tick_labels.show_x()'''
+            else:
+                fg = aplpy.FITSFigure('/media/data3/wiseman/des/coadding/config/blank2.fits',figure=fig,subplot=plot_locs[b])
+                fg.axis_labels.hide()
+                fg.tick_labels.hide()
+                fg.add_label(0.5,0.5,'[Failed to load %s band image]'%b,relative=True,fontsize=12,color='black')
+            if counter ==0 and not args.paper:
+                fg.add_label(0.99,1.05,sn,relative=True,fontsize=14,color='black')
+        if args.paper:
+            plt.subplots_adjust(left=0.02,right=0.98)
+        #plt.suptitle('Right Ascension (J2000)',x=0.57,y=0.04)
+        if args.path =='sn_dir':
+            savepath =os.path.join(sn_cap_dir,'%s_stamp.%s'%(sn,args.ftype))
+        else:
+            savepath =os.path.join(args.path,'%s_stamp.%s'%(sn,args.ftype))
+
+        plt.savefig(savepath)
+        plt.close(fig)
+        logger.info("Figure saved to %s"%savepath)
+        logger.info("************* Finished looking up %s! *************"%sn)
 if __name__ == "__main__":
     logger = logging.getLogger('sn_host_lookup.py')
     logger.setLevel(logging.DEBUG)

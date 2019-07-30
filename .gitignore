@@ -1,5 +1,6 @@
 *.pdf
 *.csv
+config
 charlotte* 
 __pycache__
 source_lists

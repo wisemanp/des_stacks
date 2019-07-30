@@ -107,7 +107,7 @@ def main(args,logger):
                 from des_stacks import des_stack as stack
                 from des_stacks.utils.stack_tools import make_cap_stamps,get_cuts
                 cuts = [get_cuts(f,b) for b in bands]
-                sg,sr,si,sz = [stack.Stack(f, b, y, [str(chip)] ,'coadding',cuts[counter]) for counter,b in enumerate(bands)]
+                sg,sr,si,sz = [stack.Stack(f, b, 1, [str(chip)] ,'coadding',cuts[counter]) for counter,b in enumerate(bands)]
                 make_cap_stamps(sg,sr,si,sz,chip,'%s_%s'%(f,ccd),ra,dec,float(args.size)/0.264,float(args.size)/0.264)
                 img_fn = glob.glob(os.path.join(capdir,'ccd_%s*%s*_sci.resamp.fits'%(ccd,b)))[0]
 

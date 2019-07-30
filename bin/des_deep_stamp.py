@@ -68,7 +68,7 @@ def find_chip(ra,dec):
         for ccd in the_field.keys():
             if the_field[ccd][0][0] > ra > the_field[ccd][2][0]:
                 if the_field[ccd][0][1] < dec < the_field[ccd][1][1]:
-                    return ('SN-%s'%obj_field,ccd)
+                    return ('SN-%s'%field,ccd)
 
 def main(args,logger):
     if args.ra:

@@ -100,7 +100,7 @@ def main(args,logger):
         logger.info("Season: %s"%y)
         logger.info("Field:  %s"%f)
         logger.info("CCD:    %s"%chip)
-        sngals_deep = pd.read_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v4.csv',index_col=0)
+        sngals_deep = pd.read_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v6.csv',index_col=0)
         sn_res = sngals_deep[sngals_deep['TRANSIENT_NAME']==sn]
         has_spec = sn_res[sn_res['SPECZ']>0]
         if len(has_spec)>0:

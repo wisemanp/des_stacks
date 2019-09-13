@@ -174,7 +174,7 @@ def main(args,logger):
                 fg.ticks.set_length(0)
                 if args.paper:
                     fg.ticks.hide()
-                fg.add_label(0.85,0.8,b,relative=True,color=color,fontsize=26,weight='bold')
+                fg.add_label(0.9,0.8,b,relative=True,color=color,fontsize=26,weight='bold')
                 fg.add_scalebar(5/3600,color=color,linewidth=3,fontsize=20,weight='bold')
                 fg.scalebar.set_label('5"')
                 # now add some region ellipses and axis_labels

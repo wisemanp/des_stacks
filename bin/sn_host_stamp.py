@@ -85,7 +85,7 @@ def get_sn_dat(sn):
 def main(args,logger):
     sn_name = args.sn_name
     match_dist = args.distance
-    
+
     if sn_name:
         l = [sn_name]
     else:
@@ -166,7 +166,7 @@ def main(args,logger):
                 except:
                     logger.info('Could not recenter to outside the frame')
 
-                fg.show_lines([ver_line,hor_line],color='r',linewidth=1.5)
+                fg.show_lines([ver_line,hor_line],color='r',linewidth=4)
                 fg.show_grayscale(vmin=float(args.vmin),vmax=float(args.vmax))
                 fg.axis_labels.hide()
                 fg.tick_labels.hide()
@@ -189,7 +189,7 @@ def main(args,logger):
                 except:
                     pass
 
-                if not args.finder or not args.paper:
+                if not args.finder and not args.paper:
                     try:
                         As,Bs,thetas = sn_res.A_IMAGE.values*pix_arcsec*4/3600,sn_res.B_IMAGE.values*pix_arcsec*4/3600,sn_res.THETA_IMAGE.values
                         ras,decs = sn_res.RA.values,sn_res.DEC.values

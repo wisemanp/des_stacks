@@ -122,8 +122,8 @@ def main(args,logger):
         for loc in ['top','right','left','bottom']:
             ax.spines[loc].set_visible(False)
         #ax.set_ylabel('Declination (J2000)',fontsize=12,labelpad = 30)
-        hor_line = np.array([[sn_ra-(w/10),sn_ra+(w/10)],[sn_dec,sn_dec]])
-        ver_line = np.array([[sn_ra,sn_ra],[sn_dec-(w/10),sn_dec+(w/10)]])
+        hor_line = np.array([[sn_ra-(w/7),sn_ra+(w/7)],[sn_dec,sn_dec]])
+        ver_line = np.array([[sn_ra,sn_ra],[sn_dec-(w/7),sn_dec+(w/7)]])
         if args.band !='All':
             bands = [args.band]
         else:

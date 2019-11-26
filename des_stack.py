@@ -118,14 +118,12 @@ class Stack():
         dessn_ini: (str, optional, default = "snobs_params.ini"). name of
             the .ini file for the DES SN data, including paths for each
             year, plus year lims
-        # sex_files: (string, or list of strings,optional, default =
-            ["default.sex","params.sex","conv.sex"]). List of the default
-            files for SExtractor'''
+        '''
         if os.path.split(dessn_ini)[0]=='':
-            #if only the filename for dessn_ini is given, assume it's in /coadding/config
+            # if only the filename for dessn_ini is given, assume it's in /coadding/config
             ini_fn = os.path.join(self.config_dir,dessn_ini)
         else:
-            #assume I'm being given a totally new path
+            # assume I'm being given a totally new path
             ini_fn = dessn_ini
         cp=configparser.ConfigParser()
         # read the .ini file
@@ -149,12 +147,14 @@ class Stack():
         info_tab['NITE'] = info_tab['NITE'].astype(str)
 
         self.info_df = info_tab.to_pandas()
-        #self.qual_tab = Table.read(os.path.join(self.config_dir,'firstcut_eval.fits')).to_pandas()
+
     def do_my_stack(self, cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
         '''Does a stack defined by the parameters from the Stack object it is passed.
         keyword arguments:
-        zp_cut (float): the zeropoint cut to be used for the stack (default = -0.15)
-        psf_cut (float): the seeing cut to be used for the stack (default = 2.5)
+        cuts:
+            zp (float): the zeropoint cut to be used for the stack (default = None)
+            psf (float): the seeing cut to be used for the stack (default = None)
+            t_eff (float): the teff cut to be used for the stack (default = 0.2)
         final (Bool): whether the stack is final or intermediate (default = True)
         returns:
         none
@@ -175,9 +175,9 @@ class Stack():
         self.logger.info('******************************************************')
         self.logger.info('Initiating stack on {0} in {1} band'.format(field,band))
         self.logger.info('******************************************************')
-        #does list of good frames exist?
+        # does list of good frames exist?
         if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.csv'%(field,band,self.cutstring))):
-            #get the list of good frames
+            # get the list of good frames
             self.logger.info('No good frame list with conditions (%s, %s, %s) yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(field,band,self.cutstring,self.t_cut,self.zp_cut,self.psf_cut))
             self.good_frame = make_good_frame_list(self,field,band,cuts)
 
@@ -220,7 +220,7 @@ class Stack():
                 self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         self.logger.info("Cutstring: %s"%self.cutstring)
         if final ==None:
-            #check to make sure we haven't just forgotten to say this is a temporary run of Sextractor
+            # check to make sure we haven't just forgotten to say this is a temporary run of Sextractor
             try:
                 final = self.final
             except AttributeError:

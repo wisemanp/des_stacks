@@ -172,6 +172,7 @@ class Stack():
         field = self.field
         band = self.band
         my = self.my
+        self.cuts = cuts
         self.logger.info('******************************************************')
         self.logger.info('Initiating stack on {0} in {1} band'.format(field,band))
         self.logger.info('******************************************************')
@@ -179,7 +180,7 @@ class Stack():
         if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.csv'%(field,band,self.cutstring))):
             # get the list of good frames
             self.logger.info('No good frame list with conditions (%s, %s, %s) yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(field,band,self.cutstring,self.t_cut,self.zp_cut,self.psf_cut))
-            self.good_frame = make_good_frame_list(self,field,band,cuts)
+            self.good_frame = make_good_frame_list(self)
 
         else:
             good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s.csv'%(field,band,self.cutstring))
@@ -201,7 +202,7 @@ class Stack():
             if y in 'none':
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
-            multi_stack.multitask(self,y,field,band,cuts,final)
+            multi_stack.multitask(self,final)
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break

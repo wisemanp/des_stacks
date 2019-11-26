@@ -16,7 +16,7 @@ import time
 import subprocess
 import _pickle as cpickle
 
-def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
+def make_good_frame_list(s,cuts={'teff':0.2, 'zp':None,'psf':None}):
     """Returns a list of images for a certain chip that are of quality better than a given cut.
     Arguments:
     s (obj): Stack object
@@ -50,6 +50,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     logger.info('Initiating make_good_frame_list.py')
     info = s.info_df
     import math
+    band,field,cuts = s.field,s.band,s.cuts
     info = info[info['FIELD']==field]
     logger.info('These are the bands available for field {0}'.format(field))
     logger.info(info.BAND.unique())
@@ -188,6 +189,7 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
 def make_swarp_cmds(s,chip,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
     """function to make swarp command to stack Nminus1_year, field chip, band"""
     MY,field,band = s.my,s.field,s.band
+    cuts = self.cuts
     if not os.path.isdir(os.path.join(s.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(s.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)

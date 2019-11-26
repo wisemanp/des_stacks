@@ -4,9 +4,11 @@ import numpy as np
 ###################
 ### DES stuff ###
 def get_des_bands():
+    '''Returns a list of the DES-SN filters'''
     return ['g','r','i','z']
 
 def get_des_bandpasses(bands =['g','r','i','z']):
+    '''Returns a list of the DES-SN filters and their wavelength coverage'''
     bandpasses={
     'g':(4720,1520),
     'r':(6415,1480),
@@ -14,9 +16,10 @@ def get_des_bandpasses(bands =['g','r','i','z']):
     'z':(9260,1520)
     }
     return [bandpasses[i] for i in bands]
-     
-    
+
+
 def get_good_des_chips():
+    '''Returns a list of the good DECam science CCDs'''
     good_des_chips = []
     for c in range(1,63):
         if c not in [2,31,61]:
@@ -32,7 +35,8 @@ def mc_robust_median(dist,
                      return_indices = False,
                      nmad_cut = 4.0,
                      niter_max = 10):
-    '''Credit: Mike Childress'''
+    '''Returns a robust median and its uncertainty
+    Credit: Mike Childress'''
     c = 0.6745
     data = np.copy(dist)
     ind0 = np.arange(len(data))

@@ -357,7 +357,7 @@ def get_des_obs_year(night,logger=None):
     return year
 ###############################################
 
-def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
+def get_dessn_obs(s, night, expnum, chipnum,logger=None):
     '''Function to get the filename for a DES image for a
        given field, band, night, chip, and expnum.
        Uses an object of the Stack class.
@@ -371,6 +371,7 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
         ch.setLevel(logging.DEBUG)
         ch.setFormatter(formatter)
         logger.addHandler(ch)
+    field, band = s.field,s.band
     #------------------------------------
     chipnum = int(chipnum)
     # step 1 - get the year of the observation
@@ -444,35 +445,11 @@ def get_dessn_obs(s, field, band, night, expnum, chipnum,logger=None):
             obs_fns.append(obs_fn)
     return obs_fns
 
-def rn_stack(stack):
-    pass
-def chiplims(stack):
-    import os
-    import astropy.io.fits as fits
-    from astropy.wcs import WCS
+def get_y3a1(path):
+    '''Downloads the Y3A1 catalogue in the DES-SN fields
+    arguments:
+    path (str): the path you want to save the catalogues'''
 
-    root_dir = s.out_dir+'/MYnone'
-    fields = ['E1','E2','S1','S2','C1','C2','C3','X1','X2','X3']
-    chips = range(1,63)
-    chiplims={}
-    for f in fields:
-        chiplims[f]={}
-        for chip in chips:
-
-            if chip not in [2,31,61]:
-                print ('Field:', f,'Chip',chip)
-                try:
-                    img = os.path.join(root_dir,'SN-%s'%f,'r','ccd_%s_r_-0.150_2.5.fits'%chip)
-                    h =fits.getheader(img)
-                except:
-                    img = os.path.join(root_dir,'SN-%s'%f,'r','ccd_%s.fits'%chip)
-                    h =fits.getheader(img)
-                lenra = h['NAXIS1']
-                lendec= h['NAXIS2']
-                wcs = WCS(h)
-                lims =wcs.all_pix2world([[0,0],[0,lendec],[lenra,0],[lenra,lendec]],1)
-                chiplims[f][chip]=lims
-def get_y3a1():
     import easyaccess as ea
     conn = ea.connect()
     fcents ={'C1':(54.2743,-27.1116),
@@ -503,9 +480,10 @@ def get_y3a1():
         order by DEC, RA'%(RAMIN,RAMAX,DECMIN,DECMAX)
 
         dat = conn.query_to_pandas(q)
-        dat.to_csv('/home/wiseman/y3a1_%s_summary.csv'%f)
+        dat.to_csv(path+'/y3a1_%s_summary.csv'%f)
 
 def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4200,stamp_sizey=2200):
+    '''Resamples a list of raw exposures so that they can be coadded'''
 
     img_list = np.genfromtxt(lst,dtype='str',delimiter='\n')
     if len(img_list)==0:
@@ -609,6 +587,9 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4200,stamp_sizey=2200):
     return (weightlist_name,resamplist_name,headerlist)
 
 def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4100,stamp_sizey=2100):
+    '''***Deprecated***
+    Function to make a small stamp around an SN position to do common aperture photometry
+    '''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -681,6 +662,8 @@ def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4100,stamp_sizey
     return
 
 def get_chip_vals(f,chip,vals = 'center'):
+    '''Function to get the ra, dec of the center or corners of one chip in a given field'''
+
     lim_file=open('/media/data3/wiseman/des/coadding/config/chiplims.pkl','rb')
     chiplims = cpickle.load(lim_file)
     short_field = f[-2:]
@@ -694,6 +677,8 @@ def get_chip_vals(f,chip,vals = 'center'):
         return this_chip_lims
 
 def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300,npix_off1 = 0,npix_off2 = 0):
+    '''Function to resample the coadds in each band in order to create a detection image and do common aperture photometry'''
+
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     logger.setLevel(logging.DEBUG)
@@ -787,6 +772,8 @@ def resample_chip_for_cap(sg,sr,si,sz,chip,stamp_sizex=4300,stamp_sizey=2300,npi
     return '%s_%s_%s_riz.fits'%(sg.my,sg.field,chip),n_off1,n_off2
 
 def check_resamps(riz_fn,resamp_frames):
+    '''Convenience function to check if a resample is too big'''
+
     riz_h = fits.getheader(riz_fn)
     n1riz,n2riz = riz_h['NAXIS1'],riz_h['NAXIS2']
     #print ('Length of riz: %s x %s'%(n1riz,n2riz))
@@ -808,8 +795,9 @@ def check_resamps(riz_fn,resamp_frames):
     print ('Returning',n_off1*2,n_off2*2)
     return (n_off1*2,n_off2*2)
 
-
 def get_cuts(f,b):
+    '''Function that returns the adopted teff and psf cuts for a given field and band'''
+
     cp=configparser.ConfigParser()
     # read the .ini file
     cp.read('/media/data3/wiseman/des/coadding/config/snobs_params.ini')
@@ -831,6 +819,8 @@ def get_cuts(f,b):
     return cuts
 
 def combine_mask_weight(s,chip,j):
+    '''Function that combines the outlier masks and weightmaps'''
+    
     maskweightlist,masklist = [],[]
     resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(s.my,s.field,s.band,chip,s.cutstring,j))
     for f in np.genfromtxt(resamplist_name,dtype='str',delimiter='\n'):

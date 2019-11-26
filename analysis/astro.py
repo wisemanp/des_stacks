@@ -29,7 +29,8 @@ sns.set_palette('Dark2')
 sns.set_color_codes(palette='colorblind')
 hashes = "#" *45
 def init_calib(s,chip,sexcat,phot_type='AUTO'):
-    '''Load in the existing DES and the newly SExtracted catalogs'''
+    '''Function to match sources and calculate a zeropoint'''
+
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
@@ -91,6 +92,8 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     return zp,zp_sig,psf,psf_sig
 
 def init_phot(s,chip,cat,pl='n'):
+    '''Function to calibrate photometry and determine limiting magnitudes'''
+
     s.logger.info(hashes)
     s.logger.info("Entered 'init_phot.py' to get Kron and PSF photometry, provide limiting magnitudes, and write out the results file for \n MY%s, %s, %s, %s" %(s.my,s.field,chip,s.band))
     s.logger.info(hashes)
@@ -249,7 +252,7 @@ def init_phot(s,chip,cat,pl='n'):
 
 #####################################################################################################
 def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False,new=True):
-    '''get aperture photometry for a single sn host'''
+    '''Get aperture photometry for a single sn host'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
@@ -435,7 +438,8 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     return res_df
 
 def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
-    '''get aperture photometry for an entire chip'''
+    '''Get aperture photometry for every object in a chip'''
+
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
@@ -593,7 +597,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     return matched_cat_df
 
 def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
-    '''get aperture photometry for a single sn host'''
+    ''' *** Deprecated ***
+    Get aperture photometry for a single SN host'''
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
@@ -735,6 +740,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     return main_res_df
 
 def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
+    '''Function for calculating the DLR of a galaxy - SN pair (taken from dessne)'''
+
     # inputs are arrays
     rad  = np.pi/180                   # convert deg to rad
     pix_arcsec = 0.264                 # pixel scale (arcsec per pixel)
@@ -764,6 +771,8 @@ def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):
     return [d_DLR, A_ARCSEC, B_ARCSEC, rPHI]
 
 def get_zs_box(s,search_ra,search_dec,search_rad):
+    '''Function to get all objects in the OzDES GRC within a search radius'''
+
     survey_flags = {
     'DES_AAOmega':['1','2','3','4','6'],
     'ZFIRE_UDS':['3'],
@@ -823,6 +832,8 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     return gals_with_z,z_gals
 
 def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
+    '''Function to match galaxies to redshifts from the GRC'''
+
     ordered_surveys = [
     'PRIMUS',
     'NED',
@@ -928,6 +939,8 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     return gals
 
 def get_edge_flags(xs,ys,dist=20):
+    '''Flags objects that are near the edge of a chip'''
+    
     flags = np.zeros_like(xs)
     for counter,x in enumerate(xs):
         if x<20 or x>4080:

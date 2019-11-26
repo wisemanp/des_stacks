@@ -8,8 +8,8 @@
 ##############################################################################
 
 __author__ = "Philip Wiseman <p.s.wiseman@soton.ac.uk>"
-__version__ = "0.9"
-__date__ = "12/05/18"
+__version__ = "0.91"
+__date__ = "26/11/19"
 
 import numpy as np
 import pandas as pd

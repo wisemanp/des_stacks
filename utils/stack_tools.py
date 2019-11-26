@@ -15,18 +15,19 @@ import logging
 import time
 import subprocess
 import _pickle as cpickle
-def reduce_info(info,**kwargs):
-    pass
-    #Get a smaller info dataframe based on kwargs
 
 def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     """Returns a list of images for a certain chip that are of quality better than a given cut.
     Arguments:
+    s (obj): Stack object
     field (str): (e.g. 'X2')
     band (str): (e.g. 'g')
 
     Keyword arguments:
-    sig (float): the residual from mean ZP to clip at (float, default = -0.15)
+    cuts:
+        zp (float): the zeropoint cut to be used for the stack (default = None)
+        psf (float): the seeing cut to be used for the stack (default = None)
+        t_eff (float): the teff cut to be used for the stack (default = 0.2)
 
     Returns:
     good_exps (DataFrame): A reduced DataFrame of good exposures for each (field,band)
@@ -184,7 +185,9 @@ def make_good_frame_list(s,field,band,cuts={'teff':0.2, 'zp':None,'psf':None}):
     good_frame.to_csv(good_fn)
     return good_frame
 
-def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
+def make_swarp_cmds(s,chip,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
+    """function to make swarp command to stack Nminus1_year, field chip, band"""
+    MY,field,band = s.my,s.field,s.band
     if not os.path.isdir(os.path.join(s.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(s.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)
@@ -195,7 +198,7 @@ def make_swarp_cmds(s,MY,field,chip,band,logger = None,cuts={'teff':0.2, 'zp':No
     ch.setLevel(logging.DEBUG)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-    """function to make swarp command to stack Nminus1_year, field chip, band"""
+
     logger.info('Preparing the frames for %s, %s band, chip %s'%(field,band, chip))
     #band = band + '    '
     ## Get the list of exposures for MY, field, chip, band.

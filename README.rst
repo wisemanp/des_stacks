@@ -1,9 +1,12 @@
 #des_stacks
 ==========
-#v0.1.0
+#v0.1.1
 ==========
 des_stacks is a simple Python module based on SWarp, SExtractor, and PSFEx
 available for free at https://www.astromatic.net/software
+des_stacks is intended to be used on data from the Dark Energy Survey Supernova Programme (DES-SN). A description of the process is available in Wiseman et al. in prep.
+
+For details about using the software, please contact Phil Wiseman (pacelweb@gmail.com)
 
 For a simple stack, use stack_all.py with command line arguments:
 
@@ -32,3 +35,4 @@ For an optimized stack, some or all of the following parameters are needed in ad
  * pyraf (http://www.stsci.edu/institute/software_hardware/pyraf)
  * pandas
  * configparser
+ * multiprocessing

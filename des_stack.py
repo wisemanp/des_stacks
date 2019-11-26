@@ -202,7 +202,7 @@ class Stack():
             if y in 'none':
                 y = 'none'
             self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(field,band,y))
-            multi_stack.multitask(self,final)
+            multi_stack.multitask(self)
             self.logger.info('Finished stacking chips {0} for MY {1}'.format(self.chips,y))
             if y == 'none':
                 break
@@ -261,7 +261,7 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
             copyfile(os.path.join(self.config_dir,'default.nnw'),os.path.join(ana_dir,'default.nnw'))
 
-        self.sexcats = multi_stack.multitask(self,self.my,self.field,self.band,self.cuts,self.final,w='sex')
+        self.sexcats = multi_stack.multitask(self,w='sex')
     def init_phot(self,pl='n'):
         limmags = {}
         for counter,chip in enumerate(self.chips):

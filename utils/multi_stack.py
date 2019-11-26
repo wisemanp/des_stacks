@@ -30,8 +30,8 @@ def stack_worker(arg_pair):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     chip,args =arg_pair[1],arg_pair[0]
-    s,final,logger2= [args[i]for i in range(len(args))]
-    field,band,y,cuts = s.field,s.band,s.my,s.cuts
+    s,logger2= [args[i]for i in range(len(args))]
+    field,band,y,cuts,final = s.field,s.band,s.my,s.cuts,s.final
     started = float(time.time())
     #logger.info('Stacking chip %s; starting by creating mini-stacks to save time'%chip)
     cmd_list = make_swarp_cmds(s,chip,s.logger,cuts,final)
@@ -192,8 +192,8 @@ def stack_worker(arg_pair):
 def sex_worker(arg_pair):
     print ('Attempting to run a sex worker')
     chip,args =arg_pair[1],arg_pair[0]
-    s,final,logger2= [args[i]for i in range(len(args))]
-    y,field,band,cuts = s.y,s.field,s.band,s.cuts
+    s,logger2= [args[i]for i in range(len(args))]
+    field,band,y,cuts,final = s.field,s.band,s.my,s.cuts,s.final
     started = float(time.time())
 
     sex_for_psfex(s,chip,cuts)
@@ -216,9 +216,9 @@ def sex_worker(arg_pair):
     print("********** Done measuring quality of stack! **********")
     print("******************************************************")
     return sexcat
-def multitask(s,final,w='stack'):
+def multitask(s,w='stack'):
 
-    args = [s,final]
+    args = [s]
     pool_size = multiprocessing.cpu_count()*2
     act = multiprocessing.active_children()
     pool = pp.ProcessPool(processes=pool_size,

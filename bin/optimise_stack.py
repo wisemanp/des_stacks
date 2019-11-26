@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-# Copyright (c) 2018 University of Southampton
+# Copyright (c) 2019 University of Southampton
 # All Rights Reserved.
 # 12/05/2018
 ##############################################################################
 
 __author__ = "Philip Wiseman <p.s.wiseman@soton.ac.uk>"
-__version__ = "0.1"
-__date__ = "12/05/18"
+__version__ = "0.2"
+__date__ = "26/11/19"
 
 import numpy as np
 import pandas as pd

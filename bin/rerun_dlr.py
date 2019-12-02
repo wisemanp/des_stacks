@@ -14,7 +14,7 @@ from astropy import units as u
 from astropy.cosmology import FlatLambdaCDM
 from astropy import wcs
 from des_stacks import des_stack, stack_all
-from des_stacks.utils import stack_tools,sex_tools
+from des_stacks.utils import stack_tools,source_tools
 from des_stacks.analysis import astro
 %matplotlib notebook
 sns.set_color_codes(palette='colorblind')

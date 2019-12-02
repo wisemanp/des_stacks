@@ -22,13 +22,13 @@ from scipy.interpolate import UnivariateSpline as spln
 
 from des_stacks import des_stack as stack
 from des_stacks.utils.stack_tools import make_cap_stamps, resample_chip_for_cap, get_chip_vals, get_cuts
-from des_stacks.utils.sex_tools import cap_sex_sn, cap_sex_chip, get_sn_dat
+from des_stacks.utils.source_tools import cap_source_sn, cap_source_chip, get_sn_dat
 from des_stacks.utils.gen_tools import mc_robust_median as r_median
 
 sns.set_palette('Dark2')
 sns.set_color_codes(palette='colorblind')
 hashes = "#" *45
-def init_calib(s,chip,sexcat,phot_type='AUTO'):
+def init_calib(s,chip,sourcecat,phot_type='AUTO'):
     '''Function to match sources and calculate a zeropoint'''
 
     logger = logging.getLogger(__name__)
@@ -50,8 +50,8 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     cmap = {'PSF':'red','AUTO':'green','cat':'blue','APER':'purple'}
     y3a1_fn = os.path.join(s.cat_dir,'y3a1_%s_%s.csv'%(s.field[3],s.band))
     y3a1 = pd.DataFrame.from_csv(y3a1_fn)
-    logger.info("Reading in sexcat: %s"%sexcat)
-    sexdat = fits.getdata(sexcat,ext=1)
+    logger.info("Reading in sourcecat: %s"%sourcecat)
+    sourcedat = fits.getdata(sourcecat,ext=1)
     logger.info("Successfully read in catalog: %s" %y3a1_fn)
     Band = s.band.capitalize()
     star_inds = ((((y3a1['SPREAD_MODEL_%s'%Band] + 3*y3a1['SPREADERR_MODEL_%s'%Band])<0.003)) & ((y3a1['MAG_AUTO_%s'%Band]>19.5)&(y3a1['MAG_AUTO_%s'%Band]<23.5)))
@@ -59,7 +59,7 @@ def init_calib(s,chip,sexcat,phot_type='AUTO'):
     y3a1_stars = y3a1[star_inds]
 
     logger.info("Matching objects...")
-    new =pd.DataFrame(sexdat)
+    new =pd.DataFrame(sourcedat)
     new_obj = SkyCoord(ra=new['X_WORLD'].values*u.degree,dec =new['Y_WORLD'].values*u.degree)
     old_obj = SkyCoord(ra=y3a1_stars['RA'].values*u.degree,dec =y3a1_stars['DEC'].values*u.degree)
     # match the catalogs
@@ -290,22 +290,22 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
     if not os.path.isfile(det_name):
         logger.info("Couldn't find a detection image, so going to make 300x300 pix stamps of each band plus white")
         det_name = make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,300,300)
-    # check to see if sexcats exist already
-    existing_sexcats = glob.glob(os.path.join(sg.out_dir,'CAP',sn_name,'*.sexcat'))
+    # check to see if sourcecats exist already
+    existing_sourcecats = glob.glob(os.path.join(sg.out_dir,'CAP',sn_name,'*.sourcecat'))
 
-    sexcats = {}
+    sourcecats = {}
     '''for b in bands:
-        sexcat_fn = '%s_%s_cap_sci.sexcat'%(sn_name,b)
-        sexcat_path = os.path.join(sg.out_dir,'CAP',sn_name)
-        full_sexcat_fn = os.path.join(sexcat_path,sexcat_fn)
-        if full_sexcat_fn in existing_sexcats:
-            sexcats[b]=os.path.join(sg.out_dir,'CAP',sn_name,full_sexcat_fn)
-    if len(existing_sexcats)!=4:'''
+        sourcecat_fn = '%s_%s_cap_sci.sourcecat'%(sn_name,b)
+        sourcecat_path = os.path.join(sg.out_dir,'CAP',sn_name)
+        full_sourcecat_fn = os.path.join(sourcecat_path,sourcecat_fn)
+        if full_sourcecat_fn in existing_sourcecats:
+            sourcecats[b]=os.path.join(sg.out_dir,'CAP',sn_name,full_sourcecat_fn)
+    if len(existing_sourcecats)!=4:'''
 
         # do common aperture photometry
-    logger.info("Going to cap_sex to do CAP on each band")
+    logger.info("Going to cap_source to do CAP on each band")
 
-    sexcats =cap_sex_sn(sg,sr,si,sz,chip,sn_name)
+    sourcecats =cap_source_sn(sg,sr,si,sz,chip,sn_name)
     # set up an empty results dataframe
     rescols = ['SN_NAME','X_WORLD', 'Y_WORLD','X_IMAGE','Y_IMAGE',
                'A_IMAGE','B_IMAGE','THETA_IMAGE','CXX_IMAGE','CYY_IMAGE','CXY_IMAGE',
@@ -323,7 +323,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                            'DLR_RANK']
     res_df = pd.DataFrame(columns=rescols)
     for s in [sg,sr,si,sz]:
-        # load in the photometry from sextractor
+        # load in the photometry from sourcetractor
 
         if autocuts:
             quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
@@ -332,7 +332,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
             quals =np.loadtxt(qualfiles[-1])
         zp = float(quals[0])
         av_fwhm = float(quals[2])
-        capcat_fn = os.path.join(sg.out_dir,'CAP',sn_name,'%s_%s_cap_sci.sexcat'%(sn_name,s.band))
+        capcat_fn = os.path.join(sg.out_dir,'CAP',sn_name,'%s_%s_cap_sci.sourcecat'%(sn_name,s.band))
         logger.info('Reading in the catalog from: %s'%capcat_fn)
         capcat = Table.read(capcat_fn).to_pandas()
         capcat['MAG_APER']=capcat['MAG_APER']+zp
@@ -471,12 +471,12 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
                 break
 
     # do common aperture photometry
-    logger.info("Going to cap_sex to do CAP on each band")
-    sexcats =cap_sex_chip(sg,sr,si,sz,chip)
+    logger.info("Going to cap_source to do CAP on each band")
+    sourcecats =cap_source_chip(sg,sr,si,sz,chip)
     '''for s in [sg,sr,si,sz]:
-        sexcat = sexcats[s.band]
-        zp,zp_sig,sex_fwhm,sex_fwhm_sig = init_calib(s,chip,sexcat)
-        qual = np.array([zp,zp_sig,sex_fwhm,sex_fwhm_sig])
+        sourcecat = sourcecats[s.band]
+        zp,zp_sig,source_fwhm,source_fwhm_sig = init_calib(s,chip,sourcecat)
+        qual = np.array([zp,zp_sig,source_fwhm,source_fwhm_sig])
         qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
         np.savetxt(qual_fn,qual)'''
     # set up an empty results dataframe
@@ -512,13 +512,13 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     # find the galaxies that OzDES has redshifts for
     cats, limmags, limfluxes = {},{},{}
     for counter,s in enumerate([sg,sr,si,sz]):
-        # load in the photometry from sextractor
+        # load in the photometry from sourcetractor
         s.cuts = cuts[counter]
-        logger.info('Loading in sexcat with name: %s',sexcats[s.band])
-        capcat = Table.read(sexcats[s.band]).to_pandas()
+        logger.info('Loading in sourcecat with name: %s',sourcecats[s.band])
+        capcat = Table.read(sourcecats[s.band]).to_pandas()
         quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
         if len(quals)!=4:
-            s.run_stack_sex(cuts=cuts[counter],final=True)
+            s.run_stack_source(cuts=cuts[counter],final=True)
             quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
 
         zp,zp_sig,av_fwhm = (float(quals[i]) for i in [0,1,2])
@@ -545,7 +545,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         capcat['MY'] = y
         capcat['PHOTOZ'],capcat['PHOTOZ_ERR']= '',''
         if not os.path.isfile(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init_wgtd.result'%(y,f,s.band,chip))):
-            s.sexcats = [os.path.join(s.band_dir,str(chip),'ana','MY%s_%s_%s_%s_%s_clipweighted_sci.sexcat'%(y,f,s.band,chip,s.cutstring))]
+            s.sourcecats = [os.path.join(s.band_dir,str(chip),'ana','MY%s_%s_%s_%s_%s_clipweighted_sci.sourcecat'%(y,f,s.band,chip,s.cutstring))]
             s.init_phot()
         with open(os.path.join(s.band_dir,str(chip),'ana','%s_%s_%s_%s_init_wgtd.result'%(y,f,s.band,chip)),'r') as res:
                 header = [next(res) for x in range(9)]
@@ -940,7 +940,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
 
 def get_edge_flags(xs,ys,dist=20):
     '''Flags objects that are near the edge of a chip'''
-    
+
     flags = np.zeros_like(xs)
     for counter,x in enumerate(xs):
         if x<20 or x>4080:

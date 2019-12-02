@@ -49,7 +49,7 @@ def source_for_psfex(s,chip,cuts=None):
     os.chdir(os.path.join(band_dir,chip,'psf'))
     #run source extractor
     logger.info('Got as far as starting source extractor')
-    source_cmd = ['source','-CATALOG_NAME',sourcecat,'-CATALOG_TYPE','FITS_LDAC',img]
+    source_cmd = ['sex','-CATALOG_NAME',sourcecat,'-CATALOG_TYPE','FITS_LDAC',img]
     start = float(time.time())
     try:
         logger.info("Running source extractor on {0}".format(img))
@@ -137,7 +137,7 @@ def source_for_cat(s,chip,cuts = None):
             img = os.path.join(band_dir,'ccd_%s_%s_%s_clipweighted_sci.fits'%(chip,s.band,s.cutstring))
     logger.info("Starting source extraction using the modelled PSF")
     start = float(time.time())
-    source_cmd = ['source','-CATALOG_NAME',sourcecat,img]
+    source_cmd = ['sex','-CATALOG_NAME',sourcecat,img]
     try:
         logger.info("Running source extractor on {0}".format(img))
         source_process = subprocess.Popen(source_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -210,7 +210,7 @@ def cap_source_sn(sg,sr,si,sz,chip,sn_name,leave_if_done = False):
         else:
             glob_string = os.path.join(sn_dir,'ccd_%s_%s_*_sci.resamp.fits'%(str(chip),s.band))
             resamp_name = glob.glob(glob_string)[0]
-            source_cmd = ['source','-CATALOG_NAME',sourcecat,'%s,%s'%(white_name,resamp_name)]
+            source_cmd = ['sex','-CATALOG_NAME',sourcecat,'%s,%s'%(white_name,resamp_name)]
             logger.info('Running source extractor in dual image mode in order to get common aperture photometry in the %s band'%s.band)
             source_process = subprocess.Popen(source_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             out,errs = source_process.communicate()
@@ -268,7 +268,7 @@ def cap_source_chip(sg,sr,si,sz,chip):
             resamp_name = glob.glob(glob_string)[0]
             check_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_check_aper.fits'%(s.my,s.field,chip,s.band))
             source_cmd = [
-            'source',
+            'sex',
             '-MAG_ZEROPOINT',str(zp),
             '-CATALOG_NAME',sourcecat,
             '-CHECKIMAGE_TYPE','APERTURES',

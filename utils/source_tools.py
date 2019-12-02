@@ -264,7 +264,9 @@ def cap_source_chip(sg,sr,si,sz,chip):
         if os.path.isfile(sourcecat) and redo ==False:
             pass
         else:
+            
             glob_string = os.path.join(cap_chip_dir,'ccd_%s_%s_%s*_clipweighted*.resamp.fits'%(str(chip),s.band,s.cutstring))
+            logger.debug('Searching for files that look like: \n %s'%glob_string)
             resamp_name = glob.glob(glob_string)[0]
             check_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_check_aper.fits'%(s.my,s.field,chip,s.band))
             source_cmd = [

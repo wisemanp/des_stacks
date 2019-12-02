@@ -13,7 +13,7 @@ import pandas as pd
 import astropy.io.fits as fits
 
 from des_stacks.utils.stack_tools import make_swarp_cmds, combine_mask_weight
-from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
+from des_stacks.utils.source_tools import source_for_psfex, psfex, source_for_cat
 from des_stacks.analysis.astro import init_phot, init_calib
 
 def stack_worker(arg_pair):
@@ -189,36 +189,35 @@ def stack_worker(arg_pair):
     t_tot = float(time.time()) - started
     return t_tot
 
-def sex_worker(arg_pair):
-    print ('Attempting to run a sex worker')
+def source_worker(arg_pair):
+    print ('Attempting to run a source worker')
     chip,args =arg_pair[1],arg_pair[0]
     s,logger2= [args[i]for i in range(len(args))]
     field,band,y,cuts,final = s.field,s.band,s.my,s.cuts,s.final
     started = float(time.time())
 
-    sex_for_psfex(s,chip,cuts)
+    source_for_psfex(s,chip,cuts)
 
     model_fwhm = psfex(s,chip,retval='FWHM',cuts=cuts)
     os.chdir(os.path.join(s.band_dir,str(chip)))
 
-    sexcat = sex_for_cat(s,chip,cuts)
+    sourcecat = source_for_cat(s,chip,cuts)
 
-    zp,zp_sig,sex_fwhm,sex_fwhm_sig = init_calib(s,chip,sexcat)
+    zp,zp_sig,source_fwhm,source_fwhm_sig = init_calib(s,chip,sourcecat)
 
-    qual = np.array([zp,zp_sig,sex_fwhm,sex_fwhm_sig])
+    qual = np.array([zp,zp_sig,source_fwhm,source_fwhm_sig])
     qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
     np.savetxt(qual_fn,qual)
 
     print("Written quality factors to %s" %qual_fn)
-    qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_sex':sex_fwhm}
+    qual_dict = {'zp':zp,'fwhm_psfex':model_fwhm,'fwhm_source':source_fwhm}
     qual_df = pd.DataFrame([qual_dict],index = [chip])
     print("Quality of stack:\n %s" %qual_df)
     print("********** Done measuring quality of stack! **********")
     print("******************************************************")
-    return sexcat
+    return sourcecat
 def multitask(s,w='stack'):
-
-    args = [s]
+    args = [s.chip]
     pool_size = multiprocessing.cpu_count()*2
     act = multiprocessing.active_children()
     pool = pp.ProcessPool(processes=pool_size,
@@ -226,7 +225,6 @@ def multitask(s,w='stack'):
                                 )
     pool._clear()
     pool._serve()
-
     chips = list(s.chips)
     logger = multiprocessing.get_logger()
     logger.setLevel(logging.INFO)
@@ -239,8 +237,8 @@ def multitask(s,w='stack'):
         #p.join()
     if w =='stack':
         results = pool.map(stack_worker,all_args)
-    elif w=='sex':
-        results = pool.map(sex_worker,all_args)
+    elif w=='source':
+        results = pool.map(source_worker,all_args)
     pool.close()
     pool.join()
     return results

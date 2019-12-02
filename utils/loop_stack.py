@@ -1,7 +1,7 @@
 '''loop_stack.py: runs through the iterative process to get the best quality stack'''
 from des_stacks import des_stack as stack
 import numpy as np
-def init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir):
+def init_source_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir):
     #do initial stack
     s = stack.Stack(f,b,my,chips,workdir)
     zpcut = init_cut[0]
@@ -15,17 +15,17 @@ def init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir):
     zp_stringe,zp_gen = zpcut+init_step[0],zpcut-init_step[0]
     psf_stringe,psf_gen= psfcut-init_step[1],psfcut+init_step[1]
     s.do_my_stack(cuts,final=False)
-    qual = s.run_stack_sex(cuts)
+    qual = s.run_stack_source(cuts)
     limmags= s.init_phot()
     # do stack with more generous cut
     cuts['zp'],cuts['psf']=zp_gen,psf_gen
     s.do_my_stack(cuts, final=False)
-    qual_gen = s.run_stack_sex(cuts)
+    qual_gen = s.run_stack_source(cuts)
     limmags_gen = s.init_phot()
     # do stack with more stringent cut
     cuts['zp'],cuts['psf']=zp_stringe,psf_stringe
     s.do_my_stack(cuts,final=False)
-    qual_stringe = s.run_stack_sex(cuts)
+    qual_stringe = s.run_stack_source(cuts)
     limmags_stringe = s.init_phot()
     '''logger.info("Quality of normal stack %s: " %qual)
     logger.info("Limiting magnitudes of normal stack %s: " %limmags)
@@ -37,7 +37,7 @@ def init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir):
 
     return (qual,limmags, qual_stringe, limmags_stringe, qual_gen, limmags_gen)
 
-def iterate_sex_loop(logger,f,b,my,chip,loop_type,init_cut,init_step,workdir,direction,limmag):
+def iterate_source_loop(logger,f,b,my,chip,loop_type,init_cut,init_step,workdir,direction,limmag):
     s = stack.Stack(f,b,my,[chip],workdir)
     if direction == 'ge':
         f = -1
@@ -63,7 +63,7 @@ def iterate_sex_loop(logger,f,b,my,chip,loop_type,init_cut,init_step,workdir,dir
         else:
            cuts = {'zp':zp_start,'psf':psf_start}
         s.do_my_stack(cuts,final=False)
-        new_qual = s.run_stack_sex(cuts)
+        new_qual = s.run_stack_source(cuts)
         new_limmag = np.median(list(s.init_phot()[chip]))
         impr = new_limmag-limmag
 
@@ -79,7 +79,7 @@ def iterate_sex_loop(logger,f,b,my,chip,loop_type,init_cut,init_step,workdir,dir
             logger.info("Iteration %s: New limiting magnitude: %.4f" %(n-1,new_limmag))
             logger.info("Iteration %s didn't improve the limiting magnitude at all; going to re-do the best stack from the initial cuts."% (n-1))
             s.do_my_stack(first_cuts,final=True)
-            new_qual=s.run_stack_sex(cuts)
+            new_qual=s.run_stack_source(cuts)
             new_limmag=np.median(list(s.init_phot()[chip]))
             n=-1
             carryon = False
@@ -93,7 +93,7 @@ def iterate_sex_loop(logger,f,b,my,chip,loop_type,init_cut,init_step,workdir,dir
         psf_start = init_cut[1]+(n*step[1])
         cuts = {'zp':zp_start,'psf':psf_start}
         s.do_my_stack(cuts,final =True)
-        new_qual = s.run_stack_sex(cuts)
+        new_qual = s.run_stack_source(cuts)
         new_limmag = np.median(list(s.init_phot()[chip]))
-    
+
     return (new_limmag,cuts)

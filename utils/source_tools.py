@@ -200,7 +200,7 @@ def cap_source_sn(sg,sr,si,sz,chip,sn_name,leave_if_done = False):
     os.chdir(sn_dir)
     white_name = sn_name+'_white_stamp.fits'
     # get the right config files in the directory
-    for ext in ['source','param','conv','nnw']:
+    for ext in ['sex','param','conv','nnw']:
         copyfile(os.path.join(sg.config_dir,'cap','default.%s'%ext),os.path.join(sn_dir,'default.%s'%ext))
     sourcecats ={}
     for s in [sg,sr,si,sz]:
@@ -235,7 +235,7 @@ def cap_source_chip(sg,sr,si,sz,chip):
         os.mkdir(cap_chip_dir)
     os.chdir(cap_chip_dir)
     # get the right config files in the directory
-    for ext in ['source','param','conv','nnw']:
+    for ext in ['sex','param','conv','nnw']:
         copyfile(os.path.join(sg.config_dir,'cap','default.%s'%ext),os.path.join(cap_chip_dir,'default.%s'%ext))
     sourcecats ={}
     for s in [sg,sr,si,sz]:

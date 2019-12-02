@@ -16,7 +16,7 @@ import logging
 from shutil import copyfile
 import time
 from des_stacks.utils.stack_tools import make_good_frame_list, make_swarp_cmds, get_dessn_obs, get_des_obs_year,resample
-from des_stacks.utils.sex_tools import sex_for_psfex, psfex, sex_for_cat
+from des_stacks.utils.source_tools import source_for_psfex, psfex, source_for_cat
 import des_stacks.utils.multi_stack as multi_stack
 from des_stacks.analysis.astro import init_phot, init_calib
 
@@ -209,7 +209,7 @@ class Stack():
         log.close()
         self.logger.info('Stacking of %s %s %s %s complete!' %(field, band, my, self.chips))
         self.logger.info('******************************************************')
-    def run_stack_sex(self,cuts={'teff':0.2, 'zp':None,'psf':None},final=None):
+    def run_stack_source(self,cuts={'teff':0.2, 'zp':None,'psf':None},final=None):
         self.cuts=cuts
         self.logger.info("******** Preparing to extract and match soures *******")
         if not self.cutstring:
@@ -221,7 +221,7 @@ class Stack():
                 self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         self.logger.info("Cutstring: %s"%self.cutstring)
         if final ==None:
-            # check to make sure we haven't just forgotten to say this is a temporary run of Sextractor
+            # check to make sure we haven't just forgotten to say this is a temporary run of sourcetractor
             try:
                 final = self.final
             except AttributeError:
@@ -235,7 +235,7 @@ class Stack():
             zp_cut,psf_cut,t_cut=None,None,None
         self.zp_cut,self.psf_cut,self.t_cut = zp_cut,psf_cut,t_cut
         qual_df = pd.DataFrame()
-        self.sexcats=[]
+        self.sourcecats=[]
         if type(self.chips)=='int':
             self.chips=[self.chips]
 
@@ -261,15 +261,15 @@ class Stack():
             copyfile(os.path.join(self.config_dir,'default.conv'),os.path.join(ana_dir,'default.conv'))
             copyfile(os.path.join(self.config_dir,'default.nnw'),os.path.join(ana_dir,'default.nnw'))
 
-        self.sexcats = multi_stack.multitask(self,w='sex')
+        self.sourcecats = multi_stack.multitask(self,w='source')
     def init_phot(self,pl='n'):
         limmags = {}
         for counter,chip in enumerate(self.chips):
             chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,chip)
             ana_dir = os.path.join(chip_dir,'ana')
             os.chdir(ana_dir)
-            sexcat = self.sexcats[counter]
-            self.logger.info('Going to init_phot to do photometry on %s'%sexcat)
-            cat = Table.read(sexcat).to_pandas()
+            sourcecat = self.sourcecats[counter]
+            self.logger.info('Going to init_phot to do photometry on %s'%sourcecat)
+            cat = Table.read(sourcecat).to_pandas()
             limmags[chip]=init_phot(self,chip,cat)
         return limmags

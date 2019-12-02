@@ -30,7 +30,7 @@ from astropy.io import fits
 from astropy.time import Time
 
 from des_stacks import des_stack as stack
-from des_stacks.utils.loop_stack import iterate_sex_loop, init_sex_loop
+from des_stacks.utils.loop_stack import iterate_source_loop, init_source_loop
 sns.set_color_codes(palette='colorblind')
 # define some DES specific lists
 all_years = ['none','1','2','3','4'] # add 5 when available
@@ -215,18 +215,18 @@ class optimiser():
             print ('Did not find a file for these cuts; doing stack')
             s.do_my_stack(cuts=cuts,final=True)
         else:
-            print ('Found a stacked file for these cuts; going to sex')
+            print ('Found a stacked file for these cuts; going to source')
         s.ana_dir = os.path.join(s.band_dir,ch[0],'ana')
-        sexname = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%.2f_%s_clipweighted_sci.sexcat' %(y,f,b,ch[0],cuts['teff'],cuts['psf']))
-        print ('Looking for file under the name: %s'%sexname)
-        if os.path.isfile(sexname):
-            print ('Found a sexcat for these cuts at: %s'%sexname)
-            s.sexcats = [sexname]
+        sourcename = os.path.join(s.ana_dir,'MY%s_%s_%s_%s_%.2f_%s_clipweighted_sci.sourcecat' %(y,f,b,ch[0],cuts['teff'],cuts['psf']))
+        print ('Looking for file under the name: %s'%sourcename)
+        if os.path.isfile(sourcename):
+            print ('Found a sourcecat for these cuts at: %s'%sourcename)
+            s.sourcecats = [sourcename]
             s.cuts=cuts
         else:
-            print ('No sexcat yet; running sextractor')
-            print ('Sending %s to run_stack_sex'%cuts)
-            s.run_stack_sex(cuts=cuts,final=True)
+            print ('No sourcecat yet; running source extractor')
+            print ('Sending %s to run_stack_source'%cuts)
+            s.run_stack_source(cuts=cuts,final=True)
         s.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
         #lim = np.median(s.init_phot()[ch[0]][-1])
         skylim = s.init_phot()[ch[0]][2]

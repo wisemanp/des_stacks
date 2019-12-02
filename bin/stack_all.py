@@ -28,7 +28,7 @@ from astropy.io import fits
 from astropy.time import Time
 
 from des_stacks import des_stack as stack
-from des_stacks.utils.loop_stack import iterate_sex_loop, init_sex_loop
+from des_stacks.utils.loop_stack import iterate_source_loop, init_source_loop
 from des_stacks.utils.stack_tools import get_cuts
 # define some DES specific lists
 all_years = ['none','1','2','3','4'] # add 5 when available
@@ -175,7 +175,7 @@ def simple_stack(logger,parsed):
 
                 s = stack.Stack(fi,b,my,chips,workdir,cuts=cuts,db=True)
                 s.do_my_stack(cuts=cuts,final=True)
-                s.run_stack_sex(cuts=cuts,final=True)
+                s.run_stack_source(cuts=cuts,final=True)
                 s.init_phot()
                 tempfiles = glob.glob('/media/data3/wiseman/des/coadding/temp/*%s_%s_%s*'%(my,fi,b))
                 for f in tempfiles:
@@ -196,7 +196,7 @@ def looped_stack(logger,parsed):
         for b in bands:
             for my in mys:
                 logger.info("Doing the initial stack for %s, %s band, MY %s" %(f,b,my))
-                norm,normlim,stringent,stringentlim,generous,generouslim= init_sex_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir)
+                norm,normlim,stringent,stringentlim,generous,generouslim= init_source_loop(logger,f,b,my,chips,loop_type,init_cut,init_step,workdir)
 
                 for chip in chips:
                     logger.info("Looping chip %s" %chip)
@@ -216,12 +216,12 @@ def looped_stack(logger,parsed):
                             logger.info("Generous cut gives deeper stack than stringent stack")
                             logger.info("Heading in the generous direction!")
                             # The generous stack is deepest, so go a bit further
-                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'ge',av_genlim)
+                            cuts,qual = iterate_source_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'ge',av_genlim)
                             logger.info("Saved stack and exiting loop for chip %s" %chip)
                         elif av_genlim<=av_strinlim:
                             logger.info("Generous cut not as deep as stringent stack.")
                             logger.info("Heading in the stringent direction!")
-                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',av_strinlim)
+                            cuts,qual = iterate_source_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',av_strinlim)
                             logger.info("Not been told to do anything, exiting")
                             # explore some options. Unlikely to get to this point.
                     elif av_genlim<av_normlim:
@@ -230,14 +230,14 @@ def looped_stack(logger,parsed):
                             # The stringent cut is deepest, so go more stringent
                             logger.info("Stack with a normal cut also not as deep as the stringent cut")
                             logger.info("Heading in the stringent direction!")
-                            cuts,qual = iterate_sex_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',av_strinlim)
+                            cuts,qual = iterate_source_loop(logger, f, b, my, chip, loop_type,init_cut,init_step,workdir,'st',av_strinlim)
                             logger.info("Saved stack and exiting loop for chip %s" %chip)
                         elif av_normlim>av_strinlim:
                             logger.info("Stack with normal cut is deeper than the stringent cut. Normal is good.\n Doing it again as a final stack.")
                             s = stack.Stack(f,b,my,[chip],workdir)
                             cuts = {'zp':init_cut[0],'psf':init_cut[1]}
                             s.do_my_stack(cuts,final=True)
-                            s.run_stack_sex(cuts)
+                            s.run_stack_source(cuts)
                             s.init_phot()
                     if parsed['tidy']==True:
 
@@ -270,8 +270,8 @@ def check_done(proc,wd):
                 for c in all_chips:
                     if proc =='stack':
                         sci_fn = os.path.join(bd,'ccd_%s_%s_%s_sci.fits'%(str(c),b,tc))
-                    elif proc =='sex':
-                        sci_fn = os.path.join(bd,str(c),'ana','MY%s_%s_%s_%s_%s_sci.sexcat'%(y,f,b,str(c),tc))
+                    elif proc =='source':
+                        sci_fn = os.path.join(bd,str(c),'ana','MY%s_%s_%s_%s_%s_sci.sourcecat'%(y,f,b,str(c),tc))
                     elif proc =='phot':
                         sci_fn = os.path.join(bd,str(c),'ana','%s_%s_%s_%s_init.result'%(y,f,b,str(c)))
                     if os.path.isfile(sci_fn):
@@ -306,5 +306,5 @@ if __name__=="__main__":
         simple_stack(logger,parsed)
     logger.info('############  Done  ############')
     #check_done('stack',parsed['workdir'])
-    #check_done('sex',parsed['workdir'])
+    #check_done('source',parsed['workdir'])
     #check_done('phot',parsed['workdir'])

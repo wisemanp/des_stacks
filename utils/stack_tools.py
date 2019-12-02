@@ -820,7 +820,7 @@ def get_cuts(f,b):
 
 def combine_mask_weight(s,chip,j):
     '''Function that combines the outlier masks and weightmaps'''
-    
+
     maskweightlist,masklist = [],[]
     resamplist_name = os.path.join(s.list_dir,'%s_%s_%s_%s_%s_%s.resamp.lst'%(s.my,s.field,s.band,chip,s.cutstring,j))
     for f in np.genfromtxt(resamplist_name,dtype='str',delimiter='\n'):

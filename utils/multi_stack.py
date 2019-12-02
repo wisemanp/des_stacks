@@ -192,7 +192,7 @@ def stack_worker(arg_pair):
 def source_worker(arg_pair):
     print ('Attempting to run a source worker')
     chip,args =arg_pair[1],arg_pair[0]
-    s,logger2= [args[i]for i in range(len(args))]
+    s,band,logger2= [args[i]for i in range(len(args))]
     field,band,y,cuts,final = s.field,s.band,s.my,s.cuts,s.final
     started = float(time.time())
 
@@ -217,7 +217,7 @@ def source_worker(arg_pair):
     print("******************************************************")
     return sourcecat
 def multitask(s,w='stack'):
-    args = [s.chip]
+    args = [s,s.band]
     pool_size = multiprocessing.cpu_count()*2
     act = multiprocessing.active_children()
     pool = pp.ProcessPool(processes=pool_size,

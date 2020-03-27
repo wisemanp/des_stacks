@@ -523,7 +523,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
 
         zp,zp_sig,av_fwhm = (float(quals[i]) for i in [0,1,2])
         n_calib_stars =np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_stars.qual'%s.cutstring))
-        zp_sig = zp_sig/np.sqrt(n_calib_stars)        
+        zp_sig = zp_sig/np.sqrt(n_calib_stars)
         logger.info('Reading in zeropoint from %s' %os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
 
         capcat = capcat.sort_values(by='X_WORLD')
@@ -813,7 +813,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'VUDS_COSMOS':['3','4','13','14','23','24','43','44'],
     'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
     }
-    grc = Table.read(os.path.join(s.cat_dir,'ozdes_grc.fits'))
+    grc = Table.read(os.path.join(s.cat_dir,'OzDES_GRC_2020_03_25.fits'))
     grc['ID'] = grc['ID'].astype(str)
     grc['flag'] = grc['flag'].astype(str)
     grc['source'] = grc['source'].astype(str)

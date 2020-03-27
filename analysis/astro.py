@@ -522,6 +522,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
             quals= np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
 
         zp,zp_sig,av_fwhm = (float(quals[i]) for i in [0,1,2])
+        n_calib_stars =np.loadtxt(os.path.join(s.band_dir,str(chip),'ana','%s_stars.qual'%s.cutstring))
+        zp_sig = zp_sig/np.sqrt(n_calib_stars)        
         logger.info('Reading in zeropoint from %s' %os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring))
 
         capcat = capcat.sort_values(by='X_WORLD')

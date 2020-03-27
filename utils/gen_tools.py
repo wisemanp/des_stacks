@@ -52,7 +52,7 @@ def mc_robust_median(dist,
         ind0 = ind0[ind]
         niter += 1
     final_median = np.median(data)
-    final_sigma = np.median(np.abs(data - final_median)/c)
+    final_sigma = np.median(np.abs(data - final_median)/c)np.sqrt(len(data))
     if return_sigma == True and return_indices == True:
         return final_median, final_sigma, ind0
     elif return_sigma == True:

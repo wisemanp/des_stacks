@@ -599,24 +599,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     return matched_cat_df
 
 def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
-    ''' *** Deprecated ***
-    Get aperture photometry for a single SN host'''
-    logger = logging.getLogger(__name__)
-    logger.handlers =[]
-    ch = logging.StreamHandler()
-    '''if zp_cut>0:
-        logger.setLevel(logging.DEBUG)
-        ch.setLevel(logging.DEBUG)
-    else:'''
-    logger.setLevel(logging.DEBUG)
-    ch.setLevel(logging.DEBUG)
-    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
 
-    logger.info("Entered 'cap_phot.py' to do common aperture photometry for the host of %s"%sn_name)
-    #logger.info("Will search a radius of %s arcseconds around the SN location"%dist_thresh)
-    # first let's get to the right directory and set up a stack class object for each band_dir
     bands = ['g','r','i','z']
 
     try:
@@ -628,15 +611,11 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
             return None
     my = 'MY'+str(y)
-    logger.info("Found %s in the database SNCAND"%sn_name)
-    logger.info("It's in %s, in Season %s, on chip %s, at coordinates RA = %s, Dec = %s"%(f,y,chip,ra,dec))
-    # Make a Stack instance for each band
     main_res_df = pd.DataFrame()
     for ch in [chip -1, chip,chip+1]:
         if ch not in [0,2,31,61,63]:
             capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
                                  f,'CAP',str(ch),'%s_%s_%s_obj_deep.cat'%(y,f,ch))
-            #logger.info('Searching for %s in %s'%(sn_name,capres_fn))
             capres = pd.read_csv(capres_fn,index_col = 0)
             search_rad = dist_thresh
             capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
@@ -657,13 +636,11 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             dists = d2d[close_inds]
             match = capres.iloc[close_inds]
             angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
-            logger.info("Found %s galaxies within %s arcseconds of %s"%(len(match),dist_thresh,sn_name))
             if len(match)==0:
+                if ch ==chip:
+                    res_df = res_df.append(capres.iloc[0])
 
-                logger.info("Didn't detect a galaxy within %s arcsec of %s; reporting limits only"%(dist_thresh,sn_name))
-                res_df = res_df.append(capres.iloc[0])
-
-                res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
+                    res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
                'MAGERR_AUTO_g', 'MAG_APER_g', 'MAGERR_APER_g', 'FLUX_AUTO_g',
                'FLUXERR_AUTO_g', 'FLUX_APER_g', 'FLUXERR_APER_g', 'FWHM_WORLD_g',
                'ELONGATION', 'KRON_RADIUS', 'CLASS_STAR_g', 'FLUX_RADIUS_g', 'A_IMAGE',
@@ -687,14 +664,15 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
                'MAGERR_STATSYST_APER_z', 'MAG_ZEROPOINT_z', 'MAG_ZEROPOINT_ERR_z','DLR', 'DLR_RANK',
                'ANGSEP','z','z_Err','flag','source']] = np.NaN
-                res_df.SNID = sn_name
+                    res_df.SNID = sn_name
+
 
             else:
 
                 res_df = res_df.append(match)
 
                 res_df['SNID']=sn_name
-                dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
+                dlr = astro.get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
 
                 res_df['ANGSEP'] = angsep
 
@@ -707,19 +685,19 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                 res_df['DLR_RANK']=rank
                 if len(match)>5:
                     res_df = res_df[res_df['DLR']<30]
-                logger.debug(res_df[res_df['DLR_RANK']==1].index)
                 ind = res_df[res_df['DLR_RANK']==1].index
-                try:
+                hashost = 0
+                if len(res_df[res_df['DLR_RANK']==1])>0:
+                    hashost=1
+                if hashost:
                     if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:
                         pass
-                    elif res_df['DLR'].loc[ind]<1:
+                    elif res_df['DLR'].loc[ind].values[0]<1:
                         snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                         snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
-
                         if len (snspecobs)>0:
                             for i in range(len(snspecobs)):
                                 if snspecobs['Z_GAL'].values[i]>0:
-                                    logger.info(snspecobs['Z_GAL'].values[i])
                                     try:
                                         res_df['z'].loc[ind]=snspecobs['Z_GAL'].values[i]
                                         res_df['z_Err'].loc[ind] = -9999.0
@@ -728,17 +706,14 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                         res_df['z'].loc[ind]=snspecobs['Z_GAL']
                                         res_df['z_Err'].loc[ind] = -9999.0
                                         res_df['source'].loc[ind] = 'SNSPECT'
-                except:
+                else:
                     pass
                 res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
             main_res_df = main_res_df.append(res_df)
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
         os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
     save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s.result'%(sn_name,sn_name)
-    logger.info('Saving result of %s to %s'%(sn_name,save_fn))
     main_res_df.to_csv(save_fn)
-
-    #logger.info("Done finding CAP for %s"%sn_name)
     return main_res_df
 
 def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):

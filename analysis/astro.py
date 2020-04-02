@@ -854,7 +854,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     logger.debug('Going through them one-by-one to get the priority right')
 
     stack_gals_with_z['source'] = pd.Categorical(stack_gals_with_z['source'],ordered_surveys)
-    stack_gals_with_z['Z_RANK']= np.NaN
+    stack_gals_with_z['Z_RANK']= 1
     cols.append('Z_RANK')
     total = len(stack_gals_with_z.index.unique())
 

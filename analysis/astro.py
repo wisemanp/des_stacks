@@ -789,10 +789,9 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
     }
     grc = Table.read(os.path.join(s.cat_dir,'OzDES_GRC_2020_03_25.fits'))
-    grc['ID'] = grc['ID'].astype(str)
-    grc['flag'] = grc['flag'].astype(str)
-    grc['source'] = grc['source'].astype(str)
-    grc['comments'] = grc['comments'].astype(str)
+    for col in ['ID','flag','source','comments','objtype_ozdes','transtype_ozdes']:
+        grc[col] = grc[col].astype(str)
+
     grc = grc.to_pandas()
     grc['flag'] = grc['flag'].str.strip(' ')
     good_redshifts = pd.DataFrame()
@@ -811,107 +810,125 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
 def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     '''Function to match galaxies to redshifts from the GRC'''
 
-    ordered_surveys = [
-    'PRIMUS',
-    'NED',
-    'UDS_FORS2',
-    'UDS_VIMOS',
-    'ZFIRE_UDS',
-    'ACES',
-    'SDSS',
-    '6dF',
-    'ATLAS',
-    '2dFGRS',
-    'GAMA',
-    'SNLS_FORS           ',
-    'CDB',
-    'VVDS_DEEP',
-    'VVDS_CDFS',
-    'MUSE',
-    'SAGA',
-    'DEEP2_DR4',
-    'VUDS_COSMOS',
-    'VUDS_ECDFS',
-    'NOAO_0522',
-    'NOAO_0334',
-    'N17B331',
-    'MOSDEF',
-    'SpARCS',
-    'VIPERS',
-    'PanSTARRS_AAOmega   ',
-    'PanSTARRS_MMT',
-    'SNLS_AAOmega',
-    'DES_AAOmega']
+    ordered_surveys = [    'PRIMUS',    'NED',    'UDS_FORS2',    'UDS_VIMOS',    'ZFIRE_UDS',    'ACES',    'SDSS',
+    '6dF',    'ATLAS',    '2dFGRS',    'GAMA',    'SNLS_FORS           ',    'CDB',    'VVDS_DEEP',    'VVDS_CDFS',
+        'MUSE',    'SAGA',    'DEEP2_DR4',    'VUDS_COSMOS',    'VUDS_ECDFS',    'NOAO_0522',    'NOAO_0334',
+           'N17B331',    'MOSDEF',    'SpARCS',    'VIPERS',    'PanSTARRS_AAOmega   ',    'PanSTARRS_MMT',
+              'SNLS_AAOmega',    'DES_AAOmega']
+    good_surveys = ['NED',    'UDS_FORS2',    'UDS_VIMOS',    'ZFIRE_UDS',    'ACES',    'SDSS',
+    '6dF',    'ATLAS',    '2dFGRS',    'GAMA',    'SNLS_FORS           ',    'CDB',    'VVDS_DEEP',    'VVDS_CDFS',
+        'MUSE',    'SAGA',    'DEEP2_DR4',    'VUDS_COSMOS',    'VUDS_ECDFS',    'NOAO_0522',    'NOAO_0334',
+           'N17B331',    'MOSDEF',    'SpARCS',    'VIPERS',    'PanSTARRS_AAOmega   ',    'PanSTARRS_MMT',
+              'SNLS_AAOmega',    'DES_AAOmega']
 
 
 
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.DEBUG)
-    ch.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+    gals['z']= ''
+    gals['ez']= ''
+    gals['flag']= ''
+    gals['source'] = ''
+    gals['objtype_ozdes'] = ''
+    gals['transtype_ozdes'] = ''
+    gals['Z_RANK'] = np.NaN
+    stack_gals_with_z = pd.DataFrame(columns=gals.columns)
+    cols = ['z','ez','flag','source','objtype_ozdes','transtype_ozdes']
+    for n in range(1,10):
+        inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord,nthneighbor=n)
+        init_matches = cat.iloc[inds]
+        close_match_inds = d2d< dist_thresh*u.arcsec
+        stack_gal_zs = init_matches[close_match_inds]
+        stack_gals_with_z_sub =gals.iloc[close_match_inds]
+        stack_gals_with_z_sub[cols]= stack_gal_zs[cols].set_index(stack_gals_with_z_sub.index)
+        stack_gals_with_z = stack_gals_with_z.append(stack_gals_with_z_sub)
 
-    inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord)
-    init_matches = cat.iloc[inds]
-    close_match_inds = d2d< dist_thresh*u.arcsec
-    stack_gals_with_z = gals.iloc[close_match_inds]
-    stack_gal_zs = init_matches[close_match_inds]
 
     logger.info('Matched %s galaxies with redshifts'%len(stack_gals_with_z))
     logger.debug('Going through them one-by-one to get the priority right')
-    gals['z']= ''
-    gals['z_Err']= ''
-    gals['flag']= ''
-    gals['source'] = ''
-    stack_gals_with_z[['z','z_Err','flag','source']]=stack_gal_zs[['z','z_Err','flag','source']].set_index(stack_gals_with_z.index)
 
-    for c,i in enumerate(stack_gals_with_z.index):
-        try:
-            g = stack_gals_with_z.iloc[c:c+1]
-        except:
-            g = stack_gals_with_z.iloc[c:]
-        gobj= SkyCoord(ra=g['X_WORLD'].values*u.deg,dec = g['Y_WORLD'].values*u.deg)
-        idxc,idxgals,d2d,d3d = gobj.search_around_sky(catcoord,1*u.arcsec)
-        hereitis=False
-        grcres_full = cat.iloc[idxc]
-        #print('So, around that galaxy, I found this: \n',grcres_full)
-        '''if g['X_WORLD'].values<34.718 and g['X_WORLD'].values>34.716 and g['Y_WORLD'].values<-4.032 and g['Y_WORLD'].values>-4.034:
-            hereitis=True
-            logger.info(grcres)'''
+    stack_gals_with_z['source'] = pd.Categorical(stack_gals_with_z['source'],ordered_surveys)
+    stack_gals_with_z['Z_RANK']= np.NaN
+    cols.append('Z_RANK')
+    total = len(stack_gals_with_z.index.unique())
+    # v1, took 9 minutes
+    '''for counter,i in enumerate(stack_gals_with_z.index.unique()):
+        this_match = stack_gals_with_z.loc[i]
+        logger.info('Processing match %s of %s'%(counter,total))
+        if type(this_match)==pd.DataFrame:
+            this_match.sort_values('source',ascending=False,inplace=True)
+            z_rank_cum=0
+            for j in range(len(this_match)):
+                logger.debug('Match row %s'%j)
+                match_row = this_match.iloc[j]
+                if match_row['source']=='DES_AAOmega' and match_row['flag'] in ['3','4']:
 
-        for survey in ordered_surveys:
-            grcres = grcres_full[grcres_full['source']==survey]
-            canskip = True
-            for row in grcres[grcres['source']=='DES_AAOmega'].index:
+                    this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
+                    z_rank_cum+=1
+                    logger.debug('Adding %s'%this_match[cols].iloc[j])
 
-                if grcres['ID'].loc[row][:10] =='SVA1_COADD':
-                    ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                    stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
+                elif match_row['z']>0 and match_row['source'] != 'PRIMUS':
+                    this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
+                    logger.debug('Adding %s'%this_match[cols].iloc[j])
+                    z_rank_cum+=1
 
-                    if grcres['flag'].loc[row] in ['3','4']:
-                        canskip=False
-                    else:
-                        canskip = True
-                        #print('There is an ozdes source with name SVA1_COADD, but it has flag 1 or 2, so allowing further searching')
-                else:
-                    if canskip ==True:
-                        if grcres['flag'].loc[row] in ['3','4']:
-                            #print('I am going to insert an OzDES source that does not have name SVA1_COADD but does have a good flag')
-                            ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                            stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
+                elif match_row['source']=='PRIMUS':
+                    logger.debug('Going with PRIMUS...')
+                    this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
+                    logger.debug('Adding %s'%this_match.iloc[j])
+                    z_rank_cum+=1
+            duplicator = copy.deepcopy(gals.loc[i])
+            for n in range(len(this_match.index)-1):
+                gals = gals.append(duplicator)
 
-            for row in grcres[grcres['source']!='DES_AAOmega'].index:
-                bad_ozdes = 0
-                for ozrow in grcres[grcres['source']=='DES_AAOmega'].index:
-                    if grcres['flag'].loc[ozrow] in ['1','2']:
-                        bad_ozdes =1
-                if bad_ozdes ==1:
-                    ins = grcres[['z','z_Err','flag','source']].loc[row].values
-                    stack_gals_with_z.loc[i,['z','z_Err','flag','source']] = ins
-    gals.loc[stack_gals_with_z.index]=stack_gals_with_z
+            logger.debug('Final match to add to gals: %s'%this_match[cols])
+            gals.loc[i,cols] = this_match[cols]
+
+        else:
+            this_match['Z_RANK'] = 1
+            gals.loc[i,cols]=this_match[cols]'''
+    #v2
+    gals.loc[stack_gals_with_z.index,cols] = stack_gals_with_z[cols]
+
+    multi_ind = stack_gals_with_z.index[stack_gals_with_z.index.duplicated(keep=False)].unique()
+    total =len(multi_ind.unique())
+    for counter,i in enumerate(multi_ind.unique()):
+        this_match = stack_gals_with_z.loc[i]
+        logger.info('Processing match %s of %s'%(counter,total))
+        this_match.sort_values('source',ascending=False,inplace=True)
+        z_rank_cum=0
+        for j in range(len(this_match)):
+            logger.debug('Match row %s'%j)
+            match_row = this_match.iloc[j]
+            if match_row['source']=='DES_AAOmega' and match_row['flag'] in ['3','4']:
+
+                this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
+                z_rank_cum+=1
+                logger.debug('Adding %s'%this_match[cols].iloc[j])
+
+            elif match_row['z']>0 and match_row['source'] != 'PRIMUS':
+                this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
+                logger.debug('Adding %s'%this_match[cols].iloc[j])
+                z_rank_cum+=1
+
+            elif match_row['source']=='PRIMUS':
+                logger.debug('Going with PRIMUS...')
+                this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
+                logger.debug('Adding %s'%this_match.iloc[j])
+                z_rank_cum+=1
+        duplicator = copy.deepcopy(gals.loc[i])
+        for n in range(len(this_match.index)-1):
+            gals = gals.append(duplicator)
+
+        logger.debug('Final match to add to gals: %s'%this_match[cols])
+        gals.loc[i,cols] = this_match[cols]
+    #gals.loc[stack_gals_with_z.index]=stack_gals_with_z
 
     return gals
 

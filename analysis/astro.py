@@ -592,8 +592,8 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     matched_cat_df['z'].loc[low_conf_z.index] = -9.9900
     matched_cat_df['ez'].loc[low_conf_z.index] = -9999
 
-    matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip)))
-    logger.info("Done CAP on %s, MY%s, CCD %s. Saved result to %s "%(f,y,chip,os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep.cat'%(sg.my,sg.field,chip))))
+    matched_cat_df.to_csv(os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep_v7.cat'%(sg.my,sg.field,chip)))
+    logger.info("Done CAP on %s, MY%s, CCD %s. Saved result to %s "%(f,y,chip,os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_obj_deep_v7.cat'%(sg.my,sg.field,chip))))
 
     logger.info(hashes)
     return matched_cat_df

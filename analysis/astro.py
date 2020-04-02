@@ -857,50 +857,14 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     stack_gals_with_z['Z_RANK']= np.NaN
     cols.append('Z_RANK')
     total = len(stack_gals_with_z.index.unique())
-    # v1, took 9 minutes
-    '''for counter,i in enumerate(stack_gals_with_z.index.unique()):
-        this_match = stack_gals_with_z.loc[i]
-        logger.info('Processing match %s of %s'%(counter,total))
-        if type(this_match)==pd.DataFrame:
-            this_match.sort_values('source',ascending=False,inplace=True)
-            z_rank_cum=0
-            for j in range(len(this_match)):
-                logger.debug('Match row %s'%j)
-                match_row = this_match.iloc[j]
-                if match_row['source']=='DES_AAOmega' and match_row['flag'] in ['3','4']:
 
-                    this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
-                    z_rank_cum+=1
-                    logger.debug('Adding %s'%this_match[cols].iloc[j])
-
-                elif match_row['z']>0 and match_row['source'] != 'PRIMUS':
-                    this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
-                    logger.debug('Adding %s'%this_match[cols].iloc[j])
-                    z_rank_cum+=1
-
-                elif match_row['source']=='PRIMUS':
-                    logger.debug('Going with PRIMUS...')
-                    this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
-                    logger.debug('Adding %s'%this_match.iloc[j])
-                    z_rank_cum+=1
-            duplicator = copy.deepcopy(gals.loc[i])
-            for n in range(len(this_match.index)-1):
-                gals = gals.append(duplicator)
-
-            logger.debug('Final match to add to gals: %s'%this_match[cols])
-            gals.loc[i,cols] = this_match[cols]
-
-        else:
-            this_match['Z_RANK'] = 1
-            gals.loc[i,cols]=this_match[cols]'''
-    #v2
     gals.loc[stack_gals_with_z.index,cols] = stack_gals_with_z[cols]
 
     multi_ind = stack_gals_with_z.index[stack_gals_with_z.index.duplicated(keep=False)].unique()
     total =len(multi_ind.unique())
     for counter,i in enumerate(multi_ind.unique()):
         this_match = stack_gals_with_z.loc[i]
-        logger.info('Processing match %s of %s'%(counter,total))
+        logger.debug('Processing match %s of %s'%(counter,total))
         this_match.sort_values('source',ascending=False,inplace=True)
         z_rank_cum=0
         for j in range(len(this_match)):

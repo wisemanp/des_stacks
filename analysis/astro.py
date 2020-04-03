@@ -636,9 +636,9 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             capres = pd.read_csv(capres_fn,index_col = 0)
             logger.debug('Managed to read in the catalog %s'%capres_fn)
             search_rad = dist_thresh
-            capres = capres[(capres['X_WORLD']< ra+(search_rad/3600))&(capres['X_WORLD']> ra-(search_rad/3600)) & (capres['Y_WORLD']> dec-(search_rad/3600)) & (capres['Y_WORLD']< dec+(search_rad/3600))]
-            logger.debug('Found %s galaxies within a search box %.2f arsecs wide'%(len(capres.index.unique()),search_rad*2))
-            cols = capres.columns.tolist() + [
+            capres_box = capres[(capres['X_WORLD']< ra+(search_rad/3600))&(capres['X_WORLD']> ra-(search_rad/3600)) & (capres['Y_WORLD']> dec-(search_rad/3600)) & (capres['Y_WORLD']< dec+(search_rad/3600))]
+            logger.debug('Found %s galaxies within a search box %.2f arsecs wide'%(len(capres_box.index.unique()),search_rad*2))
+            cols = capres_box.columns.tolist() + [
                 'SNID',
                  'DLR',
                  'DLR_RANK',
@@ -648,11 +648,11 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             res_df = pd.DataFrame(columns=cols)
             res_df['EDGE_FLAG'] = 0
             sncoord = SkyCoord(ra = ra*u.deg,dec = dec*u.deg)
-            catalog = SkyCoord(ra = capres.X_WORLD.values*u.deg,dec = capres.Y_WORLD.values*u.deg)
+            catalog = SkyCoord(ra = capres_box.X_WORLD.values*u.deg,dec = capres_box.Y_WORLD.values*u.deg)
             d2d= sncoord.separation(catalog)
             close_inds = d2d <dist_thresh*u.arcsec
             dists = d2d[close_inds]
-            match = capres.iloc[close_inds]
+            match = capres_box.iloc[close_inds]
             angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
             hashost = 0
             lims = True

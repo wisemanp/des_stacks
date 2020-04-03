@@ -636,7 +636,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             capres = pd.read_csv(capres_fn,index_col = 0)
             logger.debug('Managed to read in the catalog %s'%capres_fn)
             search_rad = dist_thresh
-            capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
+            capres = capres[(capres['X_WORLD']< ra+(search_rad/3600))&(capres['X_WORLD']> ra-(search_rad/3600)) & (capres['Y_WORLD']> dec-(search_rad/3600)) & (capres['Y_WORLD']< dec+(search_rad/3600))]
             logger.debug('Found %s galaxies within a search box %.2f arsecs wide'%(len(capres.index.unique()),search_rad*2))
             cols = capres.columns.tolist() + [
                 'SNID',

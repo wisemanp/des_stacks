@@ -617,7 +617,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger.info("Entered 'cap_sn_lookup' to do find host galaxy candidates for %s"%sn_name)
     logger.info(hashes)
     bands = ['g','r','i','z']
-
+    
     try:
         ra,dec,f,y,chip = get_sn_dat(snid =int(sn_name))
     except:

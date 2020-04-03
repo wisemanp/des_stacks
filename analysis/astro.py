@@ -663,7 +663,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                'FWHM_WORLD_z', 'CLASS_STAR_z', 'FLUX_RADIUS_z', 'MAGERR_SYST_AUTO_z',
                'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
                'MAGERR_STATSYST_APER_z', 'MAG_ZEROPOINT_z', 'MAG_ZEROPOINT_ERR_z','DLR', 'DLR_RANK',
-               'ANGSEP','z','z_Err','flag','source']] = np.NaN
+               'ANGSEP','z','ez','flag','source','objtype_ozdes','transtype_ozdes','Z_RANK']] = np.NaN
                     res_df.SNID = sn_name
 
 

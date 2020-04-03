@@ -723,7 +723,9 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                     snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                     snspecobs = snspect[snspect['SNID']==int(sn_name)]
 
+
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
+                        snspecobs.sort_values('Z_GAL',inplace=True,ascending=False)
                         for i in range(len(snspecobs)):
                             if snspecobs['Z_GAL'].values[i]>0:
                                 res_df.sort_values('Z_RANK',inplace=True)
@@ -778,16 +780,14 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
                                 if snspecobs['SPEC_EVAL'] not in [ 'nospec', 'uncertain','notclass',
                                                                    'pending', 'none', 'unknown', '-9999'] or i == len(snspecobs)-1:
-                                    res_df[res_df['source']=='PRIMUS']['source'].loc[ind] +=1
+                                    res_df[res_df['source']=='PRIMUS']['Z_RANK'].loc[ind] +=1
                                     break
 
                                 else:
                                     pass
 
                         res_df=res_df.append(spec_entry)
-                        if lims:
-
-                            res_df = res_df.iloc[1]
+                     
             else:
                 pass
             if type(res_df)==pd.DataFrame:

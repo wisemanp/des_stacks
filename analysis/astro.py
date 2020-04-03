@@ -458,21 +458,31 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     else:
         cuts = [{'teff': 0.15, 'psf':2.2},{'teff': 0.2,'psf':2.2},{'teff': 0.24,'psf':2.4},{'teff': 0.4,'psf':2.6}]
     sg,sr,si,sz = [stack.Stack(f, b, y, [str(chip)] ,wd,cuts[counter]) for counter,b in enumerate(bands)]
+    # First checking if I already ran source extractor!
+    sourcecats = {}
+    n_sourcecats = 0
     for counter,s in enumerate([sg,sr,si,sz]):
         s.cuts = cuts[counter]
-    # if there is no white image, make one
-    det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_riz.fits'%(y,f,chip))
-    if not os.path.isfile(det_name):
-        logger.info("Couldn't find a detection image, so going to resample each band plus a riz combo to the same pixels")
-        noff1,noff2 = 0,0
-        while True:
-            det_name,noff1,noff2 = resample_chip_for_cap(sg,sr,si,sz,chip,npix_off1=noff1,npix_off2 = noff2)
-            if noff1 == 0 and noff2 == 0:
-                break
+        scat_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sourcecat'%(s.my,s.field,chip,s.band))
+        if os.path.isfile(scat_name):
+            n_sourcecats+=1
+        else:
+            # if there is no detection image, make one
+            det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_riz.fits'%(y,f,chip))
+            if not os.path.isfile(det_name):
+                logger.info("Couldn't find a detection image, so going to resample each band plus a riz combo to the same pixels")
+                noff1,noff2 = 0,0
+                while True:
+                    det_name,noff1,noff2 = resample_chip_for_cap(sg,sr,si,sz,chip,npix_off1=noff1,npix_off2 = noff2)
+                    if noff1 == 0 and noff2 == 0:
+                        break
 
-    # do common aperture photometry
-    logger.info("Going to cap_source to do CAP on each band")
-    sourcecats =cap_source_chip(sg,sr,si,sz,chip)
+    # if there aren't sourcecats in all bands, do common aperture photometry
+    if n_courcecats !=4:
+        logger.info("Going to cap_source to do CAP on each band")
+    else:
+        logger.info("Already did CAP on this chip, going to matching!")
+        sourcecats =cap_source_chip(sg,sr,si,sz,chip)
     '''for s in [sg,sr,si,sz]:
         sourcecat = sourcecats[s.band]
         zp,zp_sig,source_fwhm,source_fwhm_sig = init_calib(s,chip,sourcecat)
@@ -874,7 +884,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                 this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
                 logger.debug('Adding %s'%this_match[cols].iloc[j])
                 z_rank_cum+=1
-                
+
             elif match_row['source'] != 'PRIMUS':
                 this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
                 logger.debug('Adding %s'%this_match[cols].iloc[j])

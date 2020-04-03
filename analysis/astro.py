@@ -605,7 +605,17 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     return matched_cat_df
 
 def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
-
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    ch = logging.StreamHandler()
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    logger.info(hashes)
+    logger.info("Entered 'cap_sn_lookup' to do find host galaxy candidates for %s"%sn_name)
+    logger.info(hashes)
     bands = ['g','r','i','z']
 
     try:
@@ -618,14 +628,16 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             return None
     my = 'MY'+str(y)
     main_res_df = pd.DataFrame()
+    logger.debug('Looking in chips %s, %s, %s'%(chip -1, chip,chip+1))
     for ch in [chip -1, chip,chip+1]:
         if ch not in [0,2,31,61,63]:
             capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
                                  f,'CAP',str(ch),'%s_%s_%s_obj_deep_v7.cat'%(y,f,ch))
             capres = pd.read_csv(capres_fn,index_col = 0)
+            logger.debug('Managed to read in the catalog %s'%capres_fn)
             search_rad = dist_thresh
             capres = capres[(capres['X_WORLD']< ra+search_rad)&(capres['X_WORLD']> ra-search_rad) & (capres['Y_WORLD']> dec-search_rad) & (capres['Y_WORLD']< dec+search_rad)]
-
+            logger.debug('Found %s galaxies within a search box %.2f arsecs wide'%(len(capres.index.unique()),search_rad*2))
             cols = capres.columns.tolist() + [
                 'SNID',
                  'DLR',
@@ -642,7 +654,10 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             dists = d2d[close_inds]
             match = capres.iloc[close_inds]
             angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
+            hashost = 0
+            lims = True
             if len(match)==0:
+                logger.debug('Didnt find a host! Reporting limits')
                 if ch ==chip:
                     res_df = res_df.append(capres.iloc[0])
 
@@ -652,33 +667,34 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                'ELONGATION', 'KRON_RADIUS', 'CLASS_STAR_g', 'FLUX_RADIUS_g', 'A_IMAGE',
                'B_IMAGE', 'THETA_IMAGE', 'CXX_IMAGE', 'CYY_IMAGE', 'CXY_IMAGE',
                'MAGERR_SYST_AUTO_g', 'MAGERR_SYST_APER_g', 'MAGERR_STATSYST_AUTO_g',
-               'MAGERR_STATSYST_APER_g', 'MAG_ZEROPOINT_g', 'MAG_ZEROPOINT_ERR_g',
-               'CCDNUM', 'FIELD', 'MY', 'PHOTOZ', 'PHOTOZ_ERR', 'MAG_AUTO_r',
+               'MAGERR_STATSYST_APER_g',
+               'PHOTOZ', 'PHOTOZ_ERR', 'MAG_AUTO_r',
                'MAGERR_AUTO_r', 'MAG_APER_r', 'MAGERR_APER_r', 'FLUX_AUTO_r',
                'FLUXERR_AUTO_r', 'FLUX_APER_r', 'FLUXERR_APER_r', 'FWHM_WORLD_r',
                'CLASS_STAR_r', 'FLUX_RADIUS_r', 'MAGERR_SYST_AUTO_r',
                'MAGERR_SYST_APER_r', 'MAGERR_STATSYST_AUTO_r',
-               'MAGERR_STATSYST_APER_r', 'MAG_ZEROPOINT_r', 'MAG_ZEROPOINT_ERR_r',
+               'MAGERR_STATSYST_APER_r',
                'MAG_AUTO_i', 'MAGERR_AUTO_i', 'MAG_APER_i', 'MAGERR_APER_i',
                'FLUX_AUTO_i', 'FLUXERR_AUTO_i', 'FLUX_APER_i', 'FLUXERR_APER_i',
                'FWHM_WORLD_i', 'CLASS_STAR_i', 'FLUX_RADIUS_i', 'MAGERR_SYST_AUTO_i',
                'MAGERR_SYST_APER_i', 'MAGERR_STATSYST_AUTO_i',
-               'MAGERR_STATSYST_APER_i', 'MAG_ZEROPOINT_i', 'MAG_ZEROPOINT_ERR_i',
+               'MAGERR_STATSYST_APER_i',
                'MAG_AUTO_z', 'MAGERR_AUTO_z', 'MAG_APER_z', 'MAGERR_APER_z',
                'FLUX_AUTO_z', 'FLUXERR_AUTO_z', 'FLUX_APER_z', 'FLUXERR_APER_z',
                'FWHM_WORLD_z', 'CLASS_STAR_z', 'FLUX_RADIUS_z', 'MAGERR_SYST_AUTO_z',
                'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
-               'MAGERR_STATSYST_APER_z', 'MAG_ZEROPOINT_z', 'MAG_ZEROPOINT_ERR_z','DLR', 'DLR_RANK',
+               'MAGERR_STATSYST_APER_z','DLR', 'DLR_RANK',
                'ANGSEP','z','ez','flag','source','objtype_ozdes','transtype_ozdes','Z_RANK']] = np.NaN
                     res_df.SNID = sn_name
 
 
             else:
-
+                logger.debug('Found a host!')
+                lims = False
                 res_df = res_df.append(match)
 
                 res_df['SNID']=sn_name
-                dlr = astro.get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
+                dlr = get_DLR_ABT(ra,dec, match.X_WORLD, match.Y_WORLD, match['A_IMAGE'], match['B_IMAGE'],  match['THETA_IMAGE'], angsep)[0]
 
                 res_df['ANGSEP'] = angsep
 
@@ -691,34 +707,86 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                 res_df['DLR_RANK']=rank
                 if len(match)>5:
                     res_df = res_df[res_df['DLR']<30]
+
+            if lims:
+                ind = res_df.index
+            else:
                 ind = res_df[res_df['DLR_RANK']==1].index
-                hashost = 0
-                if len(res_df[res_df['DLR_RANK']==1])>0:
-                    hashost=1
-                if hashost:
-                    if res_df[res_df['DLR_RANK']==1]['z'].values[0]>0:
-                        pass
-                    elif res_df['DLR'].loc[ind].values[0]<1:
-                        snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
-                        snspecobs = snspect[snspect['TRANSIENT_NAME']==sn_name]
-                        if len (snspecobs)>0:
-                            for i in range(len(snspecobs)):
-                                if snspecobs['Z_GAL'].values[i]>0:
-                                    try:
-                                        res_df['z'].loc[ind]=snspecobs['Z_GAL'].values[i]
-                                        res_df['z_Err'].loc[ind] = -9999.0
-                                        res_df['source'].loc[ind] = 'SNSPECT'
-                                    except:
-                                        res_df['z'].loc[ind]=snspecobs['Z_GAL']
-                                        res_df['z_Err'].loc[ind] = -9999.0
-                                        res_df['source'].loc[ind] = 'SNSPECT'
-                else:
-                    pass
+
+            if len(ind)>0:
+                logger.debug('Went to go and see if there are transient spectra observations around the object')
+
+                if res_df['DLR'].loc[ind].values[0]<1 or lims:
+                    logger.debug('There is a host with DLR <1, or there are limits')
+                    snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
+                    snspecobs = snspect[snspect['SNID']==sn_name]
+                    logger.debug('Here is snspect for this transient')
+                    logger.debug(snspecobs)
+                    if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
+                        for i in range(len(snspecobs)):
+                            if snspecobs['Z_GAL'].values[i]>0:
+                                res_df.sort_values('Z_RANK',inplace=True)
+                                if len(res_df['z'].loc[ind])>1:
+                                    spec_entry = copy.deepcopy(res_df.loc[ind].iloc[0])
+                                else:
+                                    spec_entry = copy.deepcopy(res_df.loc[ind])
+
+                                if len(snspecobs)>1:
+                                    snspecobs = snspecobs.iloc[i]
+
+                                if not np.isnan(spec_entry['source'].iloc[0]):
+                                    if spec_entry['source'].iloc[0]=='DES_AAOmega' and spec_entry['z'].iloc[0]>0:
+                                        z_rank = 2.
+                                else:
+                                    z_rank = 1.
+                                spec_entry['z']=snspecobs['Z_GAL']
+                                spec_entry['ez'] = -9999.0
+                                spec_entry['source'] = 'SNSPECT_GAL'
+                                spec_entry['Z_RANK'] = z_rank
+                                res_df[res_df['Z_RANK']>=z_rank]['Z_RANK']+=1
+                                break
+
+                            elif snspecobs['Z_SN'].values[i]>0:
+                                res_df.sort_values('Z_RANK',inplace=True)
+                                if len(res_df['z'].loc[ind])>1:
+                                    spec_entry = copy.deepcopy(res_df.loc[ind].iloc[0])
+                                else:
+                                    spec_entry = copy.deepcopy(res_df.loc[ind])
+                                if len(snspecobs)>1:
+                                    snspecobs = snspecobs.iloc[i]
+                                z_rank = len(res_df[~pd.isna['source']].loc[ind])+1
+                                nprimus = len(res_df[res_df['source']=='PRIMUS'].loc[ind])
+                                z_rank -=nprimus
+
+                                spec_entry['z']=snspecobs['Z_SN']
+                                spec_entry['z_Err'] = -9999.0
+                                spec_entry['source'] = 'SNSPECT_SN'
+
+                                if snspecobs['SPEC_EVAL'] not in [ 'nospec', 'uncertain','notclass',
+                                                                   'pending', 'none', 'unknown', '-9999'] or i == len(snspecobs)-1:
+                                    res_df[res_df['source']=='PRIMUS']['source'].loc[ind] +=1
+                                    break
+
+                                else:
+                                    pass
+
+                        res_df=res_df.append(spec_entry)
+                        if lims:
+
+                            res_df = res_df.iloc[1]
+            else:
+                pass
+            if type(res_df)==pd.DataFrame:
                 res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
+            else:
+                res_df['EDGE_FLAG'] = get_edge_flags(np.array([res_df.X_IMAGE]),np.array([res_df.Y_IMAGE]))[0]
             main_res_df = main_res_df.append(res_df)
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
         os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
-    save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s.result'%(sn_name,sn_name)
+    if not savename:
+        save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s.result'%(sn_name,sn_name)
+    else:
+        save_fn = '/media/data3/wiseman/des/coadding/results/tests/%s'%savename
     main_res_df.to_csv(save_fn)
     return main_res_df
 

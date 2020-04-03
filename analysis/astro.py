@@ -608,8 +608,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    ch.setLevel(logging.DEBUG)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -730,6 +730,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                     spec_entry = copy.deepcopy(res_df.loc[ind].iloc[0])
                                 else:
                                     spec_entry = copy.deepcopy(res_df.loc[ind])
+                                logger.debug("This is the spec_entry for %s: \n %s"%(sn_name,spec_entry))
 
                                 if len(snspecobs)>1:
                                     snspecobs = snspecobs.iloc[i]

@@ -480,7 +480,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
                         break
 
     # if there aren't sourcecats in all bands, do common aperture photometry
-    if n_courcecats !=4:
+    if n_sourcecats !=4:
         logger.info("Going to cap_source to do CAP on each band")
     else:
         logger.info("Already did CAP on this chip, going to matching!")

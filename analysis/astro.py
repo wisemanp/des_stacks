@@ -738,7 +738,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                         if spec_entry['source'].iloc[0]=='DES_AAOmega' and spec_entry['z'].iloc[0]>0:
                                             z_rank = 2.
                                 except:
-                                    if not np.isnan(spec_entry['source']):
+                                    if spec_entry['source']:
                                         if spec_entry['source']=='DES_AAOmega' and spec_entry['z']>0:
                                             z_rank = 2.
 

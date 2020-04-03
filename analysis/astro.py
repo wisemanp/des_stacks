@@ -742,7 +742,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                         if  spec_entry['z'].iloc[0]>0:
                                             z_rank = 2.
                                 except:
-                                    
+
                                     if spec_entry['source']=='DES_AAOmega':
                                         if  spec_entry['z']>0:
                                             z_rank = 2.
@@ -776,10 +776,10 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                 z_rank -=nprimus
 
                                 spec_entry['z']=snspecobs['Z_SN']
-                                spec_entry['z_Err'] = -9999.0
+                                spec_entry['ez'] = -9999.0
                                 spec_entry['source'] = 'SNSPECT_SN'
 
-                                if snspecobs['SPEC_EVAL'] not in [ 'nospec', 'uncertain','notclass',
+                                if snspecobs['SPEC_EVAL'].loc[i] not in [ 'nospec', 'uncertain','notclass',
                                                                    'pending', 'none', 'unknown', '-9999'] or i == len(snspecobs)-1:
                                     try:
                                         res_df[res_df['source']=='PRIMUS']['Z_RANK'].loc[ind] +=1

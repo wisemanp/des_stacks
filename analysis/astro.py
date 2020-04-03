@@ -720,8 +720,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                     logger.debug('There is a host with DLR <1, or there are limits')
                     snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                     snspecobs = snspect[snspect['SNID']==int(sn_name)]
-                    logger.debug('Here is snspect for this transient for %s'%sn_name)
-                    logger.debug(snspecobs)
+
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
                         for i in range(len(snspecobs)):
                             if snspecobs['Z_GAL'].values[i]>0:
@@ -730,14 +729,19 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                     spec_entry = copy.deepcopy(res_df.loc[ind].iloc[0])
                                 else:
                                     spec_entry = copy.deepcopy(res_df.loc[ind])
-                                logger.debug("This is the spec_entry for %s: \n %s"%(sn_name,spec_entry))
 
                                 if len(snspecobs)>1:
                                     snspecobs = snspecobs.iloc[i]
 
-                                if not np.isnan(spec_entry['source'].iloc[0]):
-                                    if spec_entry['source'].iloc[0]=='DES_AAOmega' and spec_entry['z'].iloc[0]>0:
-                                        z_rank = 2.
+                                try:
+                                    if not np.isnan(spec_entry['source'].iloc[0]):
+                                        if spec_entry['source'].iloc[0]=='DES_AAOmega' and spec_entry['z'].iloc[0]>0:
+                                            z_rank = 2.
+                                except:
+                                    if not np.isnan(spec_entry['source']):
+                                        if spec_entry['source']=='DES_AAOmega' and spec_entry['z']>0:
+                                            z_rank = 2.
+
                                 else:
                                     z_rank = 1.
                                 spec_entry['z']=snspecobs['Z_GAL']

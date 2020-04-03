@@ -762,12 +762,12 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                 if len(snspecobs)>1:
                                     snspecobs = snspecobs.iloc[i]
                                 try:
-                                    z_rank = len(res_df[~pd.isna(res_df['source'])].loc[ind])+1
+                                    z_rank = len(res_df['source']].loc[ind].dropna())+1
                                     nprimus = len(res_df[res_df['source']=='PRIMUS'].loc[ind])
                                 except:
                                     z_rank = 2
-                                    if res_df['source']=='PRIMUS':
-                                        nprimus+=1
+                                    if res_df['source'].iloc[i]=='PRIMUS':
+                                        nprimus=1
 
                                 z_rank -=nprimus
 

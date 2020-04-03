@@ -634,6 +634,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
                                  f,'CAP',str(ch),'%s_%s_%s_obj_deep_v7.cat'%(y,f,ch))
             capres = pd.read_csv(capres_fn,index_col = 0)
+            if len(capres)==0:
+                logger.debug('The capres  %s has no length'%capres_fn)
             logger.debug('Managed to read in the catalog %s'%capres_fn)
             search_rad = dist_thresh
             capres_box = capres[(capres['X_WORLD']< ra+(search_rad/3600))&(capres['X_WORLD']> ra-(search_rad/3600)) & (capres['Y_WORLD']> dec-(search_rad/3600)) & (capres['Y_WORLD']< dec+(search_rad/3600))]

@@ -766,7 +766,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                     nprimus = len(res_df[res_df['source']=='PRIMUS'].loc[ind])
                                 except:
                                     z_rank = 2
-                                    if res_df['source']=='PRIMUS']:
+                                    if res_df['source']=='PRIMUS':
                                         nprimus+=1
 
                                 z_rank -=nprimus

@@ -23,7 +23,7 @@ def parser():
     parser.add_argument('-wd','--workdir',help='Path to directory to work in',default = '/media/data3/wiseman/des/coadding')
     parser.add_argument('-sf','--savename',help='Filename to save results to',default=None)
     parser.add_argument('-ow','--overwrite',help='Overwrite existing results?',action = 'store_true')
-    parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=15)
+    parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=25)
     parser.add_argument('-v','--version',help='Way of getting photometry. 1 = Do own CAP; 2 = Go into chip results file',default=2)
     return parser.parse_args()
 
@@ -35,7 +35,7 @@ def cap_worker(arg_pair):
     cap_sn_lookup(sn, wd = wd,savename = savename, dist_thresh = dist_thresh,autocuts=True)
 
 
-def cap(args,logger): 
+def cap(args,logger):
     avoid_list = []
     args.version = int(args.version)
     if args.avoid:
@@ -93,7 +93,7 @@ def cap(args,logger):
             elif args.overwrite == True:
                 if sn_name not in avoid_list:
                     if not args.savename:
-                        
+
                         all_args.append([worker_args,sn_name])
                     else:
                         all_args.append([worker_args,sn_name])
@@ -101,7 +101,7 @@ def cap(args,logger):
             else:
                 logger.info("Result for %s already in result file, and you told me not to overwrite it. Going to next one!"%sn_name)
         results = pool.map(cap_worker,all_args)
-    
+
         pool.close()
         pool.join()
         return results

@@ -461,8 +461,10 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     # First checking if I already ran source extractor!
     sourcecats = {}
     n_sourcecats = 0
+    cap_chip_dir = os.path.join(sg.out_dir,'MY%s'%sg.my,sg.field,'CAP',str(chip))
     for counter,s in enumerate([sg,sr,si,sz]):
         s.cuts = cuts[counter]
+
         scat_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sourcecat'%(s.my,s.field,chip,s.band))
         if os.path.isfile(scat_name):
             n_sourcecats+=1

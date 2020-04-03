@@ -778,8 +778,11 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                 spec_entry['z']=snspecobs['Z_SN']
                                 spec_entry['ez'] = -9999.0
                                 spec_entry['source'] = 'SNSPECT_SN'
-
-                                if snspecobs['SPEC_EVAL'].loc[i] not in [ 'nospec', 'uncertain','notclass',
+                                try:
+                                    this_eval = snspecobs['SPEC_EVAL'].iloc[i]
+                                except:
+                                    this_eval = snspecobs['SPEC_EVAL']
+                                if this_eval not in [ 'nospec', 'uncertain','notclass',
                                                                    'pending', 'none', 'unknown', '-9999'] or i == len(snspecobs)-1:
                                     try:
                                         res_df[res_df['source']=='PRIMUS']['Z_RANK'].loc[ind] +=1

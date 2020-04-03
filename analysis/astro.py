@@ -720,7 +720,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                     logger.debug('There is a host with DLR <1, or there are limits')
                     snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                     snspecobs = snspect[snspect['SNID']==int(sn_name)]
-                    logger.debug('Here is snspect for this transient')
+                    logger.debug('Here is snspect for this transient for %s'%sn_name)
                     logger.debug(snspecobs)
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
                         for i in range(len(snspecobs)):

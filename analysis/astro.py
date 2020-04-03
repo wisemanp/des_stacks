@@ -780,14 +780,17 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
                                 if snspecobs['SPEC_EVAL'] not in [ 'nospec', 'uncertain','notclass',
                                                                    'pending', 'none', 'unknown', '-9999'] or i == len(snspecobs)-1:
-                                    res_df[res_df['source']=='PRIMUS']['Z_RANK'].loc[ind] +=1
+                                    try:
+                                        res_df[res_df['source']=='PRIMUS']['Z_RANK'].loc[ind] +=1
+                                    except:
+                                        logger.debug("res_df doesn't have index: %s, %s"%(res_df,ind))
                                     break
 
                                 else:
                                     pass
 
                         res_df=res_df.append(spec_entry)
-                     
+
             else:
                 pass
             if type(res_df)==pd.DataFrame:

@@ -608,8 +608,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.DEBUG)
-    ch.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -617,7 +617,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger.info("Entered 'cap_sn_lookup' to do find host galaxy candidates for %s"%sn_name)
     logger.info(hashes)
     bands = ['g','r','i','z']
-    
+
     try:
         ra,dec,f,y,chip = get_sn_dat(snid =int(sn_name))
     except:
@@ -719,7 +719,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                 if res_df['DLR'].loc[ind].values[0]<1 or lims:
                     logger.debug('There is a host with DLR <1, or there are limits')
                     snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
-                    snspecobs = snspect[snspect['SNID']==sn_name]
+                    snspecobs = snspect[snspect['SNID']==int(sn_name)]
                     logger.debug('Here is snspect for this transient')
                     logger.debug(snspecobs)
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:

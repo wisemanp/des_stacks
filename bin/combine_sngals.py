@@ -7,7 +7,7 @@ good_des_chips = get_good_des_chips()
 
 def parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l','--list',default = '/home/wiseman/code/des_stacks/source_lists/all_tranisents.txt')
+    parser.add_argument('-l','--list',default = '/home/wiseman/code/des_stacks/source_lists/all_transients.txt')
     parser.add_argument('-sf','--savename',default = 'sngals_deep_v7.result')
     parser.add_argument('-df','--df',default = 'none')
     return parser.parse_args()

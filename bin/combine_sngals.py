@@ -21,7 +21,7 @@ def main(args):
     resdir = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/'
     snlist = np.genfromtxt(args.list,dtype=str,delimiter='\n')
     for sn in snlist:
-        main_f = open(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename),'a')
+        main_f = open(os.path.join('/media/data3/wiseman/des/coadding/results/deep',args.savename),'a')
         cat = os.path.join(resdir,sn,'%s.result'%sn)
         try:
             c = open(cat,'r')
@@ -34,7 +34,7 @@ def main(args):
         except:
             print ('Couldnt read cat: %s'%cat)
             main_f.close()
-    print ('Saved new file to %s'%os.path.join('/media/data3/wiseman/des/coadding/deep/results',args.savename))
+    print ('Saved new file to %s'%os.path.join('/media/data3/wiseman/des/coadding/results/deep',args.savename))
 if __name__=="__main__":
     args=parser()
     main(args)

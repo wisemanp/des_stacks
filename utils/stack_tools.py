@@ -189,7 +189,7 @@ def make_good_frame_list(s,cuts={'teff':0.2, 'zp':None,'psf':None}):
 def make_swarp_cmds(s,chip,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None},final=True):
     """function to make swarp command to stack Nminus1_year, field chip, band"""
     MY,field,band = s.my,s.field,s.band
-    cuts = self.cuts
+    cuts = s.cuts
     if not os.path.isdir(os.path.join(s.out_dir,'MY%s'%MY,field,band)):
         os.mkdir(os.path.join(s.out_dir,'MY%s'%MY,field,band))
     logger = logging.getLogger(__name__)

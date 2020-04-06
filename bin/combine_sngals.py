@@ -34,7 +34,7 @@ def main(args):
         except:
             print ('Couldnt read cat: %s'%cat)
             main_f.close()
-    print ('Saved new file to %s'%os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
+    print ('Saved new file to %s'%os.path.join('/media/data3/wiseman/des/coadding/deep/results',args.savename))
 if __name__=="__main__":
     args=parser()
     main(args)

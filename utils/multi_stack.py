@@ -217,7 +217,7 @@ def source_worker(arg_pair):
     print("******************************************************")
     return sourcecat
 def multitask(s,w='stack'):
-    args = [s,s.band]
+    args = [s]
     pool_size = multiprocessing.cpu_count()*2
     act = multiprocessing.active_children()
     pool = pp.ProcessPool(processes=pool_size,

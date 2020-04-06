@@ -741,14 +741,21 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                     if spec_entry['source'].iloc[0]=='DES_AAOmega':
                                         if  spec_entry['z'].iloc[0]>0:
                                             z_rank = 2.
+                                        else:
+                                            z_rank = 1.
+                                    else:
+                                        z_rank = 1.
                                 except:
 
                                     if spec_entry['source']=='DES_AAOmega':
                                         if  spec_entry['z']>0:
                                             z_rank = 2.
+                                        else:
+                                            z_rank = 1.
+                                    else:
+                                        z_rank = 1.
 
-                                else:
-                                    z_rank = 1.
+
                                 spec_entry['z']=snspecobs['Z_GAL']
                                 spec_entry['ez'] = -9999.0
                                 spec_entry['source'] = 'SNSPECT_GAL'

@@ -226,7 +226,7 @@ def make_swarp_cmds(s,chip,logger = None,cuts={'teff':0.2, 'zp':None,'psf':None}
         night = str(first['NITE'])
         #chip = first['CCDNUM']
 
-        this_exp_fn = get_dessn_obs(s,field,band,night,exp,chip,logger)
+        this_exp_fn = get_dessn_obs(s,night,exp,chip,logger)
         #logger.info("Adding file from %s" %night)
         if night not in nights:
             if this_exp_fn:

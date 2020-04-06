@@ -112,7 +112,7 @@ res = res.rename(index=str,columns={'X_WORLD':'RA','Y_WORLD':'DEC',
 
 res = res.drop([
                 'FLUX_RADIUS_g','FLUX_RADIUS_r','FLUX_RADIUS_i','FLUX_RADIUS_z',
-               'FWHM_WORLD_g','FWHM_WORLD_r','FWHM_WORLD_i','FWHM_WORLD_z','EDGE_FLAG'],axis=1)
+               'FWHM_WORLD_g','FWHM_WORLD_r','FWHM_WORLD_i','FWHM_WORLD_z'],axis=1)
 
 sngals = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sngals_db.csv',index_col=0)
 sngals.replace(-9999,np.NaN,inplace=True)
@@ -160,4 +160,4 @@ deep['GALFLAG']=1
 deep['HOST']= 0
 deep['HOST'].loc[deep[(deep['GALFLAG']==1) &(deep['DLR_RANK']==1)].index]=1
 deep = deep.replace(np.NaN, -9.998)
-deep.to_csv('/media/data3/wiseman/des/coadding/results/sngals_deep_v%s.csv'%version,index=False)
+deep.to_csv('/media/data3/wiseman/des/coadding/results/deep/sngals_deep_v%s.csv'%version,index=False)

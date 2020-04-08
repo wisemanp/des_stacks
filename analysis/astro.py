@@ -984,9 +984,9 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
                 z_rank_cum+=1
 
             elif match_row['source'] != 'PRIMUS':
-                this_match['Z_RANK'].iloc[j] = 1+z_rank_cum
+                this_match['Z_RANK'].iloc[j] = len(this_match)
                 logger.debug('Adding %s'%this_match[cols].iloc[j])
-                z_rank_cum+=1
+
 
             elif match_row['source']=='PRIMUS':
                 logger.debug('Going with PRIMUS...')

@@ -23,7 +23,7 @@ def parser():
     parser.add_argument('-wd','--workdir',help='Path to directory to work in',default = '/media/data3/wiseman/des/coadding')
     parser.add_argument('-sf','--savename',help='Filename to save results to',default=None)
     parser.add_argument('-ow','--overwrite',help='Overwrite existing results?',action = 'store_true')
-    parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=25)
+    parser.add_argument('-th','--threshold',help='Distance threshold for host galaxy searching (arcsecs)',default=60)
     parser.add_argument('-v','--version',help='Way of getting photometry. 1 = Do own CAP; 2 = Go into chip results file',default=2)
     return parser.parse_args()
 

@@ -748,8 +748,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                                         z_rank = 1.
                                 except:
 
-                                    if spec_entry['source']=='DES_AAOmega':
-                                        if  spec_entry['z']>0:
+                                    if underlying_host['source']=='DES_AAOmega':
+                                        if  underlying_host['z']>0:
                                             z_rank = 2.
                                         else:
                                             z_rank = 1.

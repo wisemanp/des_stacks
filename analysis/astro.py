@@ -604,7 +604,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     logger.info(hashes)
     return matched_cat_df
 
-def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
+def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocuts=False):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()

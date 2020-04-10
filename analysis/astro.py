@@ -701,7 +701,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                 res_df['ANGSEP'] = angsep
 
                 res_df['DLR'] = np.array(dlr)
-                rank = res_df['DLR'].rank().astype(int)
+                rank = res_df['DLR'].rank(method='dense').astype(int)
 
                 for counter, r in enumerate(res_df['DLR'].values):
                     if r >4:

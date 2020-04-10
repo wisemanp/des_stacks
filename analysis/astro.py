@@ -723,6 +723,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                     snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                     snspecobs = snspect[snspect['SNID']==int(sn_name)]
 
+underlying_host = res_df.loc[ind[0]]
 
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
                         snspecobs.sort_values('Z_GAL',inplace=True,ascending=False)
@@ -738,9 +739,14 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                                     snspecobs = snspecobs.iloc[i]
 
                                 try:
-                                    if spec_entry['source'].iloc[0]=='DES_AAOmega':
-                                        if  spec_entry['z'].iloc[0]>0:
-                                            z_rank = 2.
+
+                                    logger.debug(underlying_host['source'].iloc[0])
+                                    if underlying_host['source'].iloc[0]=='DES_AAOmega':
+                                        logger.debug(spec_entry['source'])
+                                        if  underlying_host['z'].iloc[0]>0:
+                                            z_rank = len(underlying_host[(underlying_host['source']=='DES_AAOmega')&\
+                                                                    (underlying_host['z']>0)&\
+                                                                        (underlying_host['DLR_RANK']==1)])+1.
                                         else:
                                             z_rank = 1.
                                     else:
@@ -755,9 +761,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                                     else:
                                         z_rank = 1.
 
-
                                 spec_entry['z']=snspecobs['Z_GAL'].values[i]
-                                spec_entry['ez'] = -9999.0
+                                spec_entry['ez'] = -9.99
                                 spec_entry['source'] = 'SNSPECT_GAL'
                                 spec_entry['Z_RANK'] = z_rank
                                 res_df[res_df['Z_RANK']>=z_rank]['Z_RANK']+=1
@@ -783,7 +788,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                                 z_rank -=nprimus
 
                                 spec_entry['z']=snspecobs['Z_SN']
-                                spec_entry['ez'] = -9999.0
+                                spec_entry['ez'] = -9.99
                                 spec_entry['source'] = 'SNSPECT_SN'
                                 try:
                                     this_eval = snspecobs['SPEC_EVAL'].iloc[i]

@@ -817,6 +817,12 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
             else:
                 res_df['EDGE_FLAG'] = get_edge_flags(np.array([res_df.X_IMAGE]),np.array([res_df.Y_IMAGE]))[0]
             main_res_df = main_res_df.append(res_df)
+    rank = main_res_df['DLR'].rank(method='dense').astype(int)
+
+    for counter, r in enumerate(main_res_df['DLR'].values):
+        if r >4:
+            rank.iloc[counter]*=-1
+    main_res_df['DLR_RANK']=rank
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
         os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
     if not savename:

@@ -723,7 +723,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                     snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                     snspecobs = snspect[snspect['SNID']==int(sn_name)]
 
-underlying_host = res_df.loc[ind[0]]
+                    underlying_host = res_df.loc[ind[0]]
 
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
                         snspecobs.sort_values('Z_GAL',inplace=True,ascending=False)

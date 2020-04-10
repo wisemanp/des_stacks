@@ -734,15 +734,10 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                                     spec_entry = copy.deepcopy(res_df.loc[ind].iloc[0])
                                 else:
                                     spec_entry = copy.deepcopy(res_df.loc[ind])
-
                                 if len(snspecobs)>1:
                                     snspecobs = snspecobs.iloc[i]
-
                                 try:
-
-                                    logger.debug(underlying_host['source'].iloc[0])
                                     if underlying_host['source'].iloc[0]=='DES_AAOmega':
-                                        logger.debug(spec_entry['source'])
                                         if  underlying_host['z'].iloc[0]>0:
                                             z_rank = len(underlying_host[(underlying_host['source']=='DES_AAOmega')&\
                                                                     (underlying_host['z']>0)&\

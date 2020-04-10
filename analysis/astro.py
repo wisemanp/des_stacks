@@ -756,7 +756,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                         z_rank = 1.
 
 
-                                spec_entry['z']=snspecobs['Z_GAL']
+                                spec_entry['z']=snspecobs['Z_GAL'].values[i]
                                 spec_entry['ez'] = -9999.0
                                 spec_entry['source'] = 'SNSPECT_GAL'
                                 spec_entry['Z_RANK'] = z_rank

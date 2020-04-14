@@ -863,13 +863,14 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
 
     survey_flags = {
     'DES_AAOmega':['1','2','3','4','6'],
+    'DEVILS':['1','2','3','4','6'],
     'ZFIRE_UDS':['3'],
     'NOAO_0522':['3','4','6'],
     'NOAO_0334':['3','4','6'],
     'N17B331':['4','6'],
     'MOSDEF':['Any'],
     'SpARCS':['1','2'],
-    'PanSTARRS_AAOmega   ':['3','4','6'],
+    'PanSTARRS_AAOmega':['3','4','6'],
     'PanSTARRS_MMT': ['3','4','6'],
     'PRIMUS': ['3','4'],
     'NED': ['Any'],
@@ -881,7 +882,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'ATLAS':['Any'],
     '2dFGRS':['3','4'],
     'GAMA':['4'],
-    'SNLS_FORS           ':['1','2'],
+    'SNLS_FORS':['1','2'],
     'CDB':['Any'],
     'VVDS_DEEP':['3','4','13','14','23','24','213','214'],
     'VVDS_CDFS':['3','4','13','14','23','24'],
@@ -898,6 +899,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'DEEP2_DR4':['-1','3','4'],
     'VUDS_COSMOS':['3','4','13','14','23','24','43','44'],
     'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
+    'XMM__Stalin':['1']
     }
     grc = Table.read(os.path.join(s.cat_dir,'OzDES_GRC_2020_03_25.fits'))
     for col in ['ID','flag','source','comments','objtype_ozdes','transtype_ozdes']:
@@ -921,15 +923,15 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
 def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     '''Function to match galaxies to redshifts from the GRC'''
 
-    ordered_surveys = [    'PRIMUS',    'NED',    'UDS_FORS2',    'UDS_VIMOS',    'ZFIRE_UDS',    'ACES',    'SDSS',
-    '6dF',    'ATLAS',    '2dFGRS',    'GAMA',    'SNLS_FORS           ',    'CDB',    'VVDS_DEEP',    'VVDS_CDFS',
+    ordered_surveys = [    'PRIMUS',    'NED','XMM__Stalin',   'UDS_FORS2',    'UDS_VIMOS',    'ZFIRE_UDS',    'ACES',    'SDSS',
+    '6dF',    'ATLAS',    '2dFGRS',    'GAMA',    'SNLS_FORS',    'CDB',    'VVDS_DEEP',    'VVDS_CDFS',
         'MUSE',    'SAGA',    'DEEP2_DR4',    'VUDS_COSMOS',    'VUDS_ECDFS',    'NOAO_0522',    'NOAO_0334',
-           'N17B331',    'MOSDEF',    'SpARCS',    'VIPERS',    'PanSTARRS_AAOmega   ',    'PanSTARRS_MMT',
+           'N17B331',    'MOSDEF',    'SpARCS',    'VIPERS',    'PanSTARRS_AAOmega',    'PanSTARRS_MMT',
               'SNLS_AAOmega',    'DES_AAOmega']
-    good_surveys = ['NED',    'UDS_FORS2',    'UDS_VIMOS',    'ZFIRE_UDS',    'ACES',    'SDSS',
-    '6dF',    'ATLAS',    '2dFGRS',    'GAMA',    'SNLS_FORS           ',    'CDB',    'VVDS_DEEP',    'VVDS_CDFS',
+    good_surveys = ['NED','XMM__Stalin',   'UDS_FORS2',    'UDS_VIMOS',    'ZFIRE_UDS',    'ACES',    'SDSS',
+    '6dF',    'ATLAS',    '2dFGRS',    'GAMA',    'SNLS_FOR',    'CDB',    'VVDS_DEEP',    'VVDS_CDFS',
         'MUSE',    'SAGA',    'DEEP2_DR4',    'VUDS_COSMOS',    'VUDS_ECDFS',    'NOAO_0522',    'NOAO_0334',
-           'N17B331',    'MOSDEF',    'SpARCS',    'VIPERS',    'PanSTARRS_AAOmega   ',    'PanSTARRS_MMT',
+           'N17B331',    'MOSDEF',    'SpARCS',    'VIPERS',    'PanSTARRS_AAOmega',    'PanSTARRS_MMT',
               'SNLS_AAOmega',    'DES_AAOmega']
 
 

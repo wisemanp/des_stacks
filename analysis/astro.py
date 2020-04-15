@@ -711,6 +711,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
                     res_df[limcols] = np.NaN
                     res_df.SNID = sn_name
+                    res_df.name=0
 
             if lims:
                 ind = res_df.index

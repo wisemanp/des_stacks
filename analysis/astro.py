@@ -608,8 +608,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
-    logger.setLevel(logging.DEBUG)
-    ch.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
     formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -717,11 +717,14 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
             else:
                 ind = res_df[res_df['DLR_RANK']==1].index
 
-            if len(res_df[res_df['DLR_RANK']==1])==0 and ch == chip:
+            if len(res_df[res_df['DLR_RANK']==1])==0 and ch == chip and not lims:
                 add_lim =True
                 ind = [res_df.index.max()+1]
                 logger.debug(ind)
-                lim_row = res_df.iloc[0]
+                try:
+                    lim_row = res_df.iloc[0]
+                except:
+                    pass
                 lim_row.name=ind[0]
                 lim_row[limcols] = np.NaN
                 lim_row['SNID'] = sn_name

@@ -736,7 +736,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                         logger.debug('res_df = lim_row')
                         res_df = res_df.append(lim_row)
                         res_df = res_df.append(lim_row)
-                        res_df = res_df.drop(res_df.iloc[0].index)
+                        res_df = res_df.drop(res_df.index[0])
                     else:
                         res_df = res_df.append(lim_row)
                 else:

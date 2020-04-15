@@ -718,23 +718,20 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                 ind = res_df[res_df['DLR_RANK']==1].index
 
             if len(res_df[res_df['DLR_RANK']==1])==0 and ch == chip and not lims:
-                add_lim =True
-                ind = [res_df.index.max()+1]
-                logger.debug(ind)
                 try:
+                    add_lim =True
+                    ind = [res_df.index.max()+1]
+                    logger.debug(ind)
                     lim_row = res_df.iloc[0]
+                    lim_row.name=ind[0]
+                    lim_row[limcols] = np.NaN
+                    lim_row['SNID'] = sn_name
+                    lim_row['DLR'] = 0
+                    lim_row['ANGSEP'] = 0
+                    lim_row['DLR_RANK'] =100
+                    res_df = res_df.append(lim_row)
                 except:
-                    ind=1
-                    lim_row = pd.DataFrame(columns = cols)
-
-                lim_row.name=ind[0]
-                lim_row[limcols] = np.NaN
-                lim_row['SNID'] = sn_name
-                lim_row['DLR'] = 0
-                lim_row['ANGSEP'] = 0
-                lim_row['DLR_RANK'] =100
-                res_df = res_df.append(lim_row)
-
+                    pass
             #logger.debug('Current res_df is:\n %s'%res_df[['X_WORLD','Y_WORLD','ANGSEP',
             #                                         'MAG_AUTO_r','DLR','DLR_RANK',
             #                                         'z','ez','source','flag','Z_RANK']].sort_values('DLR'))

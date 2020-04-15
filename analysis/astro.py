@@ -604,7 +604,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     logger.info(hashes)
     return matched_cat_df
 
-def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocuts=False):
+def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh = 5,autocuts=False):
     logger = logging.getLogger(__name__)
     logger.handlers =[]
     ch = logging.StreamHandler()
@@ -629,6 +629,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
     my = 'MY'+str(y)
     main_res_df = pd.DataFrame()
     logger.debug('Looking in chips %s, %s, %s'%(chip -1, chip,chip+1))
+    add_lim=False
     for ch in [chip -1, chip,chip+1]:
         if ch not in [0,2,31,61,63]:
             capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
@@ -658,12 +659,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
             angsep = np.array([float(d2d[close_inds][j].to_string(unit=u.arcsec,decimal=True)) for j in range(len(d2d[close_inds]))])
             hashost = 0
             lims = True
-            if len(match)==0:
-                logger.debug('Didnt find a host! Reporting limits')
-                if ch ==chip:
-                    res_df = res_df.append(capres.iloc[0])
-
-                    res_df[['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
+            limcols = ['X_WORLD', 'Y_WORLD', 'X_IMAGE', 'Y_IMAGE', 'MAG_AUTO_g',
                'MAGERR_AUTO_g', 'MAG_APER_g', 'MAGERR_APER_g', 'FLUX_AUTO_g',
                'FLUXERR_AUTO_g', 'FLUX_APER_g', 'FLUXERR_APER_g', 'FWHM_WORLD_g',
                'ELONGATION', 'KRON_RADIUS', 'CLASS_STAR_g', 'FLUX_RADIUS_g', 'A_IMAGE',
@@ -686,9 +682,14 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                'FWHM_WORLD_z', 'CLASS_STAR_z', 'FLUX_RADIUS_z', 'MAGERR_SYST_AUTO_z',
                'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
                'MAGERR_STATSYST_APER_z','DLR', 'DLR_RANK',
-               'ANGSEP','z','ez','flag','source','objtype_ozdes','transtype_ozdes','Z_RANK']] = np.NaN
-                    res_df.SNID = sn_name
+               'ANGSEP','z','ez','flag','source','objtype_ozdes','transtype_ozdes','Z_RANK']
+            if len(match)==0:
+                logger.debug('Didnt find a host! Reporting limits')
+                if ch ==chip:
+                    res_df = res_df.append(capres.iloc[0])
 
+                    res_df[limcols] = np.NaN
+                    res_df.SNID = sn_name
 
             else:
                 logger.debug('Found a host!')
@@ -712,32 +713,61 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
 
             if lims:
                 ind = res_df.index
+
             else:
                 ind = res_df[res_df['DLR_RANK']==1].index
+
+            if len(res_df[res_df['DLR_RANK']==1])==0 and ch == chip:
+                add_lim =True
+                ind = [res_df.index.max()+1]
+                logger.debug(ind)
+                lim_row = res_df.iloc[0]
+                lim_row.name=ind[0]
+                lim_row[limcols] = np.NaN
+                lim_row['SNID'] = sn_name
+                lim_row['DLR'] = 0
+                lim_row['ANGSEP'] = 0
+                lim_row['DLR_RANK'] =100
+                res_df = res_df.append(lim_row)
+
+            #logger.debug('Current res_df is:\n %s'%res_df[['X_WORLD','Y_WORLD','ANGSEP',
+            #                                         'MAG_AUTO_r','DLR','DLR_RANK',
+            #                                         'z','ez','source','flag','Z_RANK']].sort_values('DLR'))
 
             if len(ind)>0:
                 logger.debug('Went to go and see if there are transient spectra observations around the object')
 
-                if res_df['DLR'].loc[ind].values[0]<1 or lims:
+                if type(res_df['DLR'].loc[ind])==np.float64:
+                    dlr = res_df['DLR'].loc[ind]
+
+                else:
+                    dlr = res_df['DLR'].loc[ind].iloc[0]
+                if dlr<4 or lims:
                     logger.debug('There is a host with DLR <1, or there are limits')
+
                     snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                     snspecobs = snspect[snspect['SNID']==int(sn_name)]
 
-                    underlying_host = res_df.loc[ind[0]]
+                    underlying_host = res_df.loc[ind]
 
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
                         snspecobs.sort_values('Z_GAL',inplace=True,ascending=False)
-                        for i in range(len(snspecobs)):
+                        for i in range(len(snspecobs.index)):
                             if snspecobs['Z_GAL'].values[i]>0:
                                 res_df.sort_values('Z_RANK',inplace=True)
-                                if len(res_df['z'].loc[ind])>1:
-                                    spec_entry = copy.deepcopy(res_df.loc[ind].iloc[0])
+                                if type(res_df['z'].loc[ind[0]])==np.float64:
+                                    spec_entry = copy.deepcopy(res_df.loc[ind[0]])
                                 else:
-                                    spec_entry = copy.deepcopy(res_df.loc[ind])
-                                if len(snspecobs)>1:
+                                    spec_entry = copy.deepcopy(res_df.loc[ind[0]].iloc[0])
+
+                                if len(snspecobs.index)>1:
                                     snspecobs = snspecobs.iloc[i]
+
                                 try:
+
+                                    logger.debug(underlying_host['source'].iloc[0])
                                     if underlying_host['source'].iloc[0]=='DES_AAOmega':
+                                        logger.debug(spec_entry['source'])
                                         if  underlying_host['z'].iloc[0]>0:
                                             z_rank = len(underlying_host[(underlying_host['source']=='DES_AAOmega')&\
                                                                     (underlying_host['z']>0)&\
@@ -747,23 +777,29 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                                     else:
                                         z_rank = 1.
                                 except:
-
+                                    logger.debug(underlying_host['source'])
                                     if underlying_host['source']=='DES_AAOmega':
-                                        if  underlying_host['z']>0:
+                                        if  spec_entry['z']>0:
                                             z_rank = 2.
                                         else:
                                             z_rank = 1.
                                     else:
                                         z_rank = 1.
 
-                                try:
-                                    spec_entry['z']=snspecobs['Z_GAL'].values[i]
-                                except:
-                                    spec_entry['z']=snspecobs['Z_GAL']
+
+                                spec_entry['z']=snspecobs['Z_GAL']
                                 spec_entry['ez'] = -9.99
+                                spec_entry['flag'] = 4
                                 spec_entry['source'] = 'SNSPECT_GAL'
                                 spec_entry['Z_RANK'] = z_rank
-                                res_df[res_df['Z_RANK']>=z_rank]['Z_RANK']+=1
+                                for k in range(len(res_df)):
+
+                                    if res_df.iloc[k].name==ind[0]:
+                                        if res_df.iloc[k]['Z_RANK']>=z_rank:
+                                            if res_df.iloc[k]['source']=='DES_AAOmega' and res_df.iloc[k]['flag'] in ['1','2',1,2]:
+                                                pass
+                                            else:
+                                                res_df['Z_RANK'].iloc[k] = res_df.iloc[k]['Z_RANK']+1
                                 break
 
                             elif snspecobs['Z_SN'].values[i]>0:
@@ -776,34 +812,56 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                                     snspecobs = snspecobs.iloc[i]
                                 nprimus=0
                                 try:
-                                    z_rank = len(res_df['source'].loc[ind].dropna())+1
-                                    nprimus = len(res_df[res_df['source']=='PRIMUS'].loc[ind])
-                                except:
-                                    z_rank = 2
-                                    if res_df['source'].iloc[i]=='PRIMUS':
-                                        nprimus=1
+                                    if underlying_host['source'].iloc[0]!='PRIMUS':
 
-                                z_rank -=nprimus
+                                        if  underlying_host['z'].iloc[0]>0:
+                                            z_rank = len(underlying_host[(underlying_host['source']!='PRIMUS')&\
+                                                                    (underlying_host['z']>0)&\
+                                                                        (underlying_host['DLR_RANK']==1)])+1.
+                                            logger.debug('z_rank: %i'%z_rank)
+                                        else:
+                                            z_rank = 1.
+                                    else:
+                                        z_rank = 1.
+
+                                except:
+                                    z_rank = 1
 
                                 spec_entry['z']=snspecobs['Z_SN']
                                 spec_entry['ez'] = -9.99
+                                spec_entry['flag'] = 3
                                 spec_entry['source'] = 'SNSPECT_SN'
+                                spec_entry['Z_RANK'] = z_rank
                                 try:
                                     this_eval = snspecobs['SPEC_EVAL'].iloc[i]
                                 except:
                                     this_eval = snspecobs['SPEC_EVAL']
+
                                 if this_eval not in [ 'nospec', 'uncertain','notclass',
                                                                    'pending', 'none', 'unknown', '-9999'] or i == len(snspecobs)-1:
-                                    try:
-                                        res_df[res_df['source']=='PRIMUS']['Z_RANK'].loc[ind] +=1
-                                    except:
+                                    if 1==1:
+                                        for k in range(len(res_df)):
+
+                                            if res_df.iloc[k].name==ind[0]:
+                                                if res_df.iloc[k]['source']=='PRIMUS':
+
+                                                    res_df['Z_RANK'].iloc[k] = res_df.iloc[k]['Z_RANK']+1
+
+
+                                    else:
                                         logger.debug("res_df doesn't have index: %s, %s"%(res_df,ind))
                                     break
 
                                 else:
                                     pass
+                        if len(res_df.loc[ind])==1:
+                            res_df.loc[ind] = spec_entry.values
+                        else:
+                            res_df=res_df.append(spec_entry)
 
-                        res_df=res_df.append(spec_entry)
+                        if add_lim:
+                            res_df = res_df.dropna(subset=['X_WORLD','z'],axis=0,how='all')
+
 
             else:
                 pass
@@ -811,17 +869,25 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = None,dist_thresh = 5,autocu
                 res_df['EDGE_FLAG'] = get_edge_flags(res_df.X_IMAGE.values,res_df.Y_IMAGE.values)
             else:
                 res_df['EDGE_FLAG'] = get_edge_flags(np.array([res_df.X_IMAGE]),np.array([res_df.Y_IMAGE]))[0]
+
             main_res_df = main_res_df.append(res_df)
-    rank = main_res_df['DLR'].rank(method='dense')
+    if add_lim:
+        main_res_df.loc[ind,['DLR']] = 0
+        logger.debug(main_res_df[['ANGSEP','DLR','DLR_RANK']])
+        rank = main_res_df['DLR'].rank(method='dense').astype(int)
+    else:
+        rank = main_res_df['DLR'].rank(method='dense').astype(int)
 
     for counter, r in enumerate(main_res_df['DLR'].values):
         if r >4:
             rank.iloc[counter]*=-1
     main_res_df['DLR_RANK']=rank
+
+
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
         os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
     if not savename:
-        save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s_v7.result'%(sn_name,sn_name)
+        save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s_v7.5.result'%(sn_name,sn_name)
     else:
         save_fn = '/media/data3/wiseman/des/coadding/results/tests/%s'%savename
     main_res_df.to_csv(save_fn)

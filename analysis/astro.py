@@ -683,15 +683,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
                'MAGERR_STATSYST_APER_z','DLR', 'DLR_RANK',
                'ANGSEP','z','ez','flag','source','objtype_ozdes','transtype_ozdes','Z_RANK']
-            if len(match)==0:
-                logger.debug('Didnt find a host! Reporting limits')
-                if ch ==chip:
-                    res_df = res_df.append(capres.iloc[0])
-
-                    res_df[limcols] = np.NaN
-                    res_df.SNID = sn_name
-
-            else:
+            if len(match)>0:
                 logger.debug('Found a host!')
                 lims = False
                 res_df = res_df.append(match)
@@ -711,17 +703,26 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                 if len(match)>5:
                     res_df = res_df[res_df['DLR']<30]
 
+            if len(match)==0 or len(res_df)==0:
+                lims=True
+                logger.debug('Didnt find a host! Reporting limits')
+                if ch ==chip:
+                    res_df = res_df.append(capres.iloc[0])
+
+                    res_df[limcols] = np.NaN
+                    res_df.SNID = sn_name
+
             if lims:
                 ind = res_df.index
 
             else:
                 ind = res_df[res_df['DLR_RANK']==1].index
 
-            if len(res_df[res_df['DLR_RANK']==1])==0 and ch == chip and not lims:
-                try:
+            if len(res_df[res_df['DLR_RANK']==1])==0 and ch == chip:
+                if 1==1:
                     add_lim =True
                     ind = [res_df.index.max()+1]
-                    logger.debug(ind)
+                    logger.debug('Adding a single row with ind %s'%ind)
                     lim_row = res_df.iloc[0]
                     lim_row.name=ind[0]
                     lim_row[limcols] = np.NaN
@@ -729,8 +730,15 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                     lim_row['DLR'] = 0
                     lim_row['ANGSEP'] = 0
                     lim_row['DLR_RANK'] =100
-                    res_df = res_df.append(lim_row)
-                except:
+
+                    if lims:
+                        logger.debug('res_df = lim_row')
+                        res_df = res_df.append(lim_row)
+                        res_df = res_df.append(lim_row)
+                        res_df = res_df.drop(0)
+                    else:
+                        res_df = res_df.append(lim_row)
+                else:
                     pass
             #logger.debug('Current res_df is:\n %s'%res_df[['X_WORLD','Y_WORLD','ANGSEP',
             #                                         'MAG_AUTO_r','DLR','DLR_RANK',
@@ -738,10 +746,9 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
             if len(ind)>0:
                 logger.debug('Went to go and see if there are transient spectra observations around the object')
-                if np.isnan(ind[0]):
-                    logger.info(sn_name)
-                if type(res_df['DLR'].loc[ind])==np.float64:
-                    dlr = res_df['DLR'].loc[ind]
+
+                if type(res_df.loc[ind]['DLR'])==np.float64:
+                    dlr = res_df.loc[ind]['DLR']
 
                 else:
                     dlr = res_df['DLR'].loc[ind].iloc[0]

@@ -738,7 +738,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
             if len(ind)>0:
                 logger.debug('Went to go and see if there are transient spectra observations around the object')
-
+                if np.isna(ind[0]):
+                    logger.info(sn_name)
                 if type(res_df['DLR'].loc[ind])==np.float64:
                     dlr = res_df['DLR'].loc[ind]
 

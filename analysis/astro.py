@@ -724,7 +724,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                 try:
                     lim_row = res_df.iloc[0]
                 except:
-                    lim_row = pd.DataFrame(cols)
+                    lim_row = pd.DataFrame(columns = cols)
                 lim_row.name=ind[0]
                 lim_row[limcols] = np.NaN
                 lim_row['SNID'] = sn_name

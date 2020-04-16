@@ -759,7 +759,12 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                     snspect = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/snspect.csv')
                     snspecobs = snspect[snspect['SNID']==int(sn_name)]
 
-                    underlying_host = res_df.loc[ind]
+                    if type(ind)==int:
+                        underlying_host = res_df.loc[ind]
+                    else:
+                        logger.debug('ind is a list')
+                        underlying_host = res_df.loc[ind[0]]
+
 
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
                         snspecobs.sort_values('Z_GAL',inplace=True,ascending=False)
@@ -815,10 +820,10 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
                             elif snspecobs['Z_SN'].values[i]>0:
                                 res_df.sort_values('Z_RANK',inplace=True)
-                                if len(res_df['z'].loc[ind])>1:
-                                    spec_entry = copy.deepcopy(res_df.loc[ind].iloc[0])
+                                if type(res_df['z'].loc[ind[0]])==np.float64:
+                                    spec_entry = copy.deepcopy(res_df.loc[ind[0]])
                                 else:
-                                    spec_entry = copy.deepcopy(res_df.loc[ind])
+                                    spec_entry = copy.deepcopy(res_df.loc[ind[0]].iloc[0])
                                 if len(snspecobs)>1:
                                     snspecobs = snspecobs.iloc[i]
                                 nprimus=0
@@ -838,7 +843,10 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                 except:
                                     z_rank = 1
 
-                                spec_entry['z']=snspecobs['Z_SN']
+                                try:
+                                    spec_entry['z']=snspecobs['Z_SN'].values[0]
+                                except:
+                                    spec_entry['z']=snspecobs['Z_SN']
                                 spec_entry['ez'] = -9.99
                                 spec_entry['flag'] = 3
                                 spec_entry['source'] = 'SNSPECT_SN'

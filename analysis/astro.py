@@ -803,7 +803,10 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                         z_rank = 1.
 
 
-                                spec_entry['z']=snspecobs['Z_GAL']
+                                try:
+                                    spec_entry['z']=snspecobs['Z_GAL'].values[0]
+                                except:
+                                    spec_entry['z']=snspecobs['Z_GAL']
                                 spec_entry['ez'] = -9.99
                                 spec_entry['flag'] = 4
                                 spec_entry['source'] = 'SNSPECT_GAL'

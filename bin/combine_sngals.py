@@ -22,7 +22,7 @@ def main(args):
     snlist = np.genfromtxt(args.list,dtype=str,delimiter='\n')
     for sn in snlist:
         main_f = open(os.path.join('/media/data3/wiseman/des/coadding/results/deep',args.savename),'a')
-        cat = os.path.join(resdir,sn,'%s.result'%sn)
+        cat = os.path.join(resdir,sn,'%s_v7.5.result'%sn)
         try:
             c = open(cat,'r')
             #print ('Adding cat: %s'%cat, ' of length ',len(c.readlines()))

@@ -32,8 +32,17 @@ def main(args):
             main_f.close()
 
         except:
-            print ('Couldnt read cat: %s'%cat)
-            main_f.close()
+            cat = os.path.join(resdir,sn,'%s_v7.result'%sn)
+            try:
+                c = open(cat,'r')
+                #print ('Adding cat: %s'%cat, ' of length ',len(c.readlines()))
+                for counter,l in enumerate(c.readlines()):
+                    if counter!=0:
+                        main_f.write(l)
+                main_f.close()
+            except:
+                print ('Couldnt read cat: %s'%cat)
+                main_f.close()
     print ('Saved new file to %s'%os.path.join('/media/data3/wiseman/des/coadding/results/deep',args.savename))
 if __name__=="__main__":
     args=parser()

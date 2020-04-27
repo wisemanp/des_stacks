@@ -731,6 +731,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                     lim_row['DLR'] = 0
                     lim_row['ANGSEP'] = 0
                     lim_row['DLR_RANK'] =100
+                    lim_row['X_WORLD'] = ra
+                    lim_row['Y_WORLD'] = dec
 
                     if lims:
                         logger.debug('res_df = lim_row')
@@ -770,7 +772,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                         snspecobs.sort_values('Z_GAL',inplace=True,ascending=False)
                         for i in range(len(snspecobs.index)):
                             if snspecobs['Z_GAL'].values[i]>0:
-                                res_df.sort_values('Z_RANK',inplace=True)
+                                underlying_host.sort_values('Z_RANK',inplace=True)
                                 if type(res_df['z'].loc[ind[0]])==np.float64:
                                     spec_entry = copy.deepcopy(res_df.loc[ind[0]])
                                 else:
@@ -822,7 +824,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                 break
 
                             elif snspecobs['Z_SN'].values[i]>0:
-                                res_df.sort_values('Z_RANK',inplace=True)
+                                underlying_host.sort_values('Z_RANK',inplace=True)
                                 if type(res_df['z'].loc[ind[0]])==np.float64:
                                     spec_entry = copy.deepcopy(res_df.loc[ind[0]])
                                 else:
@@ -866,6 +868,10 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
                                             if res_df.iloc[k].name==ind[0]:
                                                 if res_df.iloc[k]['source']=='PRIMUS':
+
+                                                    res_df['Z_RANK'].iloc[k] = res_df.iloc[k]['Z_RANK']+1
+
+                                                if res_df.iloc[k]['source']=='DES_AAOmega' and res_df.iloc[k]['flag']in ['1','2',1,2]:
 
                                                     res_df['Z_RANK'].iloc[k] = res_df.iloc[k]['Z_RANK']+1
 

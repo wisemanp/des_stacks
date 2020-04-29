@@ -770,9 +770,12 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
                     if len (snspecobs)>0 and len(snspecobs[snspecobs['Z_GAL']>0])+len(snspecobs[snspecobs['Z_SN']>0])>0:
                         snspecobs.sort_values('Z_GAL',inplace=True,ascending=False)
+                        try:
+                            underlying_host.sort_values('Z_RANK',inplace=True)
+                        except:
+                            pass
                         for i in range(len(snspecobs.index)):
                             if snspecobs['Z_GAL'].values[i]>0:
-                                underlying_host.sort_values('Z_RANK',inplace=True)
                                 if type(res_df['z'].loc[ind[0]])==np.float64:
                                     spec_entry = copy.deepcopy(res_df.loc[ind[0]])
                                 else:
@@ -780,9 +783,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
                                 if len(snspecobs.index)>1:
                                     snspecobs = snspecobs.iloc[i]
-
                                 try:
-
                                     logger.debug(underlying_host['source'].iloc[0])
                                     if underlying_host['source'].iloc[0]=='DES_AAOmega':
                                         logger.debug(spec_entry['source'])
@@ -824,7 +825,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                 break
 
                             elif snspecobs['Z_SN'].values[i]>0:
-                                underlying_host.sort_values('Z_RANK',inplace=True)
+
                                 if type(res_df['z'].loc[ind[0]])==np.float64:
                                     spec_entry = copy.deepcopy(res_df.loc[ind[0]])
                                 else:

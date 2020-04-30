@@ -42,7 +42,7 @@ def main(args):
             for ch in good_des_chips:
                 ch = int(ch)
                 cap_chip_dir = '/media/data3/wiseman/des/coadding/5yr_stacks/MY%s/%s/CAP/%s'%(my,f,ch)
-                cat = os.path.join(cap_chip_dir,'%s_%s_%s_obj_deep.cat'%(my,f,ch))
+                cat = os.path.join(cap_chip_dir,'%s_%s_%s_obj_deep_v7.cat'%(my,f,ch))
                 cat_df = pd.read_csv(cat,index_col=0)
                 print ('Adding cat: %s'%cat, ' of length ',len(cat_df))
                 main_df = main_df.append(cat_df)

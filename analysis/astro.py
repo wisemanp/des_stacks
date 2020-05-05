@@ -1086,7 +1086,7 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     for counter,i in enumerate(multi_ind.unique()):
         this_match = stack_gals_with_z.loc[i]
         logger.debug('Processing match %s of %s'%(counter,total))
-        this_match.sort_values('source',ascending=False,inplace=True)
+        this_match.sort_values(['source','flag'],ascending=[False,False],inplace=True)
         z_rank_cum=0
         for j in range(len(this_match)):
             logger.debug('Match row %s'%j)

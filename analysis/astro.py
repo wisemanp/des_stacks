@@ -848,7 +848,13 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                         z_rank = 1.
 
                                 except:
-                                    z_rank = 1
+                                    try:
+                                        if underlying_host['source']!='PRIMUS' and underlying_host['z']>0:
+                                            z_rank=2
+                                        else:
+                                            z_rank = 1
+                                    except:
+                                        z_rank=1
 
                                 try:
                                     spec_entry['z']=snspecobs['Z_SN'].values[0]
@@ -865,27 +871,29 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
 
                                 if this_eval not in [ 'nospec', 'uncertain','notclass',
                                                                    'pending', 'none', 'unknown', '-9999'] or i == len(snspecobs)-1:
-                                    if 1==1:
+                                    try:
                                         for k in range(len(res_df)):
 
                                             if res_df.iloc[k].name==ind[0]:
                                                 if res_df.iloc[k]['source']=='PRIMUS':
 
                                                     res_df['Z_RANK'].iloc[k] = res_df.iloc[k]['Z_RANK']+1
-
-                                                if res_df.iloc[k]['source']=='DES_AAOmega' and res_df.iloc[k]['flag']in ['1','2',1,2]:
+                                                if res_df.iloc[k]['source']=='DES_AAOmega' and res_df.iloc[k]['flag']in [1,2]:
 
                                                     res_df['Z_RANK'].iloc[k] = res_df.iloc[k]['Z_RANK']+1
 
 
-                                    else:
+                                    except:
                                         logger.debug("res_df doesn't have index: %s, %s"%(res_df,ind))
                                     break
 
                                 else:
                                     pass
                         if len(res_df.loc[ind])==1:
-                            res_df.loc[ind] = spec_entry.values
+                            if not res_df['z'].loc[ind].values[0]>0:
+                                res_df.loc[ind] = spec_entry.values
+                            else:
+                                res_df=res_df.append(spec_entry)
                         else:
                             res_df=res_df.append(spec_entry)
 

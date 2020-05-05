@@ -632,6 +632,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     add_lim=False
     for ch in [chip -1, chip,chip+1]:
         if ch not in [0,2,31,61,63]:
+            add_lim=False
             capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
                                  f,'CAP',str(ch),'%s_%s_%s_obj_deep_v7.cat'%(y,f,ch))
             capres = pd.read_csv(capres_fn,index_col = 0)

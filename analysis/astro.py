@@ -482,9 +482,10 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
     # if there aren't sourcecats in all bands, do common aperture photometry
     if n_sourcecats !=4:
         logger.info("Going to cap_source to do CAP on each band")
+        sourcecats =cap_source_chip(sg,sr,si,sz,chip)
     else:
         logger.info("Already did CAP on this chip, going to matching!")
-        sourcecats =cap_source_chip(sg,sr,si,sz,chip)
+
     '''for s in [sg,sr,si,sz]:
         sourcecat = sourcecats[s.band]
         zp,zp_sig,source_fwhm,source_fwhm_sig = init_calib(s,chip,sourcecat)

@@ -468,6 +468,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
         scat_name = os.path.join(cap_chip_dir,'%s_%s_%s_%s_cap_sci.sourcecat'%(s.my,s.field,chip,s.band))
         if os.path.isfile(scat_name):
             n_sourcecats+=1
+            sourcecats[s.band] = scat_name
         else:
             # if there is no detection image, make one
             det_name = os.path.join(sg.out_dir,'MY%s'%y,f,'CAP',str(chip),'%s_%s_%s_riz.fits'%(y,f,chip))

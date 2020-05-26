@@ -192,7 +192,7 @@ def stack_worker(arg_pair):
 def source_worker(arg_pair):
     print ('Attempting to run a source worker')
     chip,args =arg_pair[1],arg_pair[0]
-    s,band,logger2= [args[i]for i in range(len(args))]
+    s,logger2= [args[i]for i in range(len(args))]
     field,band,y,cuts,final = s.field,s.band,s.my,s.cuts,s.final
     started = float(time.time())
 

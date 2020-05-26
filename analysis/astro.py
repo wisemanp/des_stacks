@@ -243,8 +243,8 @@ def init_phot(s,chip,cat,pl='n'):
     reshead +='# FWHM of the source (arcsec)\n'
     reshead +='# Elongation of source\n'
     reshead +='# Flux Radius\n'
-    resfile.write(reshead)
-    resfile.write(psfstring)
+    #resfile.write(reshead)
+    #resfile.write(psfstring)
     savestring = os.path.join(ana_dir,'%s_%s_%s_%s_init.result'%(s.my,s.field,s.band,chip))
     s.logger.info("Saved result file to: %s"%savestring)
     s.logger.info(hashes)

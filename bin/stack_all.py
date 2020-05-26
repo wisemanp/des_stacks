@@ -176,7 +176,7 @@ def simple_stack(logger,parsed):
                 s = stack.Stack(fi,b,my,chips,workdir,cuts=cuts,db=True)
                 #s.do_my_stack(cuts=cuts,final=True)
                 s.run_stack_source(cuts=cuts,final=True)
-                s.init_phot()
+                #s.init_phot()
                 tempfiles = glob.glob('/media/data3/wiseman/des/coadding/temp/*%s_%s_%s*'%(my,fi,b))
                 for f in tempfiles:
                     os.remove(f)

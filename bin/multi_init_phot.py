@@ -33,8 +33,8 @@ good_des_chips = []
 for c in range(1,63):
     if c not in [2,31,61]:
         good_des_chips.append(c)
-fields = ['E1','E2','S1','S2','C1','C2','C3','X1','X2','X3']
-bands = ['g','r','i','z']
+fields = ['E1']#,'E2','S1','S2','C1','C2','C3','X1','X2','X3']
+bands = ['g','r']#,'i','z']
 
 def init_phot_worker(arg_pair):
     args, chip = arg_pair[0],arg_pair[1]
@@ -43,7 +43,7 @@ def init_phot_worker(arg_pair):
     bd = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/MY%s/'%my,f,b)
     
     cat_fn = os.path.join(bd,str(chip),'ana',
-                       'MY%s_%s_%s_%s_%.2f_%.1f_clipweighted_sci.sexcat'%(my,f,b,
+                       'MY%s_%s_%s_%s_%.2f_%.1f_clipweighted_sci.sourcecat'%(my,f,b,
                                                                         str(ch),cuts['teff'],cuts['psf']))
     cat = Table.read(cat_fn).to_pandas()
     s = stack.Stack(f,b,my,ch,'coadding',cuts,db=False,new=True)
@@ -83,7 +83,7 @@ def main():
         f = 'SN-'+f
         for b in bands:
             cuts =stack_tools.get_cuts(f,b) 
-            for y in [1,2,3,4,5]:
+            for y in ['1']:#,2,3,4,5]:
                 #cuts = {'teff':0.02,'psf':1.3}
                 
             

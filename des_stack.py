@@ -243,7 +243,8 @@ class Stack():
         self.sourcecats=[]
         if type(self.chips)=='int':
             self.chips=[self.chips]
-
+        self.logger.info("Chips :")
+        self.logger.info(self.chips)
         for chip in self.chips:
             # create file structure and copy defaults accross
             chip_dir = os.path.join(self.out_dir,'MY%s'%self.my,self.field,self.band,str(chip))

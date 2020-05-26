@@ -215,7 +215,7 @@ class Stack():
             self.chips = []
             for c in range(1,63):
                 if c not in [2,31,61]:
-                    self.chips.append(c)
+                    self.chips.append(str(c))
         self.logger.info("******** Preparing to extract and match soures *******")
         if not self.cutstring:
             if cuts['zp'] and cuts['psf'] and not cuts['teff']:

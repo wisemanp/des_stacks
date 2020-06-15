@@ -636,7 +636,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         if ch not in [0,2,31,61,63]:
             add_lim=False
             capres_fn = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks',my,
-                                 f,'CAP',str(ch),'%s_%s_%s_obj_deep_v7.cat'%(y,f,ch))
+                                 f,'CAP',str(ch),'%s_%s_%s_obj_deep_v7_1asec.cat'%(y,f,ch))
             capres = pd.read_csv(capres_fn,index_col = 0)
             if len(capres)==0:
                 logger.debug('The capres  %s has no length'%capres_fn)
@@ -931,7 +931,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
         os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
     if not savename:
-        save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%s_v7.5.result'%(sn_name,sn_name)
+        save_fn = '/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s/%10_1asec.result'%(sn_name,sn_name)
     else:
         save_fn = '/media/data3/wiseman/des/coadding/results/tests/%s'%savename
     main_res_df.to_csv(save_fn)

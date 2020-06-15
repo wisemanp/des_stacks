@@ -37,7 +37,7 @@ def phot_worker(arg_pair):
                n_bad+=1
     if n_bad<2:
         capdir = '/media/data3/wiseman/des/coadding/5yr_stacks/MY%s/%s/CAP/%s'%(my,f,ch)
-        done_phot = os.path.isfile(os.path.join(capdir,'%s_%s_%s_obj_deep.cat'%(my,f,ch)))
+        done_phot = os.path.isfile(os.path.join(capdir,'%s_%s_%s_obj_deep_v7_1asec.cat'%(my,f,ch)))
         if not parsed_args.skipdone:
             cap_phot_all(my,f,ch,autocuts=True)
             return

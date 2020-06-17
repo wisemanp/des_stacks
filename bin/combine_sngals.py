@@ -8,7 +8,7 @@ good_des_chips = get_good_des_chips()
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l','--list',default = '/home/wiseman/code/des_stacks/source_lists/all_transients.txt')
-    parser.add_argument('-sf','--savename',default = 'sngals_deep_v7.result')
+    parser.add_argument('-sf','--savename',default = 'sngals_deep_v10_1asec.result')
     parser.add_argument('-df','--df',default = 'none')
     return parser.parse_args()
 
@@ -22,7 +22,7 @@ def main(args):
     snlist = np.genfromtxt(args.list,dtype=str,delimiter='\n')
     for sn in snlist:
         main_f = open(os.path.join('/media/data3/wiseman/des/coadding/results/deep',args.savename),'a')
-        cat = os.path.join(resdir,sn,'%s_v7.5.result'%sn)
+        cat = os.path.join(resdir,sn,'%s_v10_1asec.result'%sn)
         try:
             c = open(cat,'r')
             #print ('Adding cat: %s'%cat, ' of length ',len(c.readlines()))

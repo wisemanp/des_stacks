@@ -41,6 +41,8 @@ def init_phot_worker(arg_pair):
     args, chip = arg_pair[0],arg_pair[1]
     my,f,b,cuts = [args[i] for i in range(len(args))]
     ch = int(chip)
+    s = stack.Stack(f,b,my,ch,'coadding',cuts,db=False,new=True)
+    s.cuts = cuts
     bd = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/MY%s/'%my,f,b)
     qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual_check'%s.cutstring)
     if os.path.isfile(qual_fn):
@@ -51,8 +53,8 @@ def init_phot_worker(arg_pair):
                            'MY%s_%s_%s_%s_0.02_1.3_clipweighted_sci.sexcat'%(my,f,b,
                                                                             str(ch)))
 
-        s = stack.Stack(f,b,my,ch,'coadding',cuts,db=False,new=True)
-        s.cuts = cuts
+
+
         try:
             zp,zp_sig,source_fwhm,source_fwhm_sig = astro.init_calib(s,str(chip),cat_fn)
 

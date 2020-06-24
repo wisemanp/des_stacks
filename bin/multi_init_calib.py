@@ -83,7 +83,7 @@ def multi_init_calib(my,f,b,chips):
         #p.start()
         #p.join()
     results = []
-    for _ in tqdm.tqdm(pool.imap_unordered(init_phot_worker,all_args),total=len(all_args):
+    for _ in tqdm.tqdm(pool.imap_unordered(init_phot_worker,all_args),total=len(all_args)):
         results.append(_)
 
     pool.close()

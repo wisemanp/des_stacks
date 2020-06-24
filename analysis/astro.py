@@ -86,7 +86,7 @@ def init_calib(s,chip,sourcecat,phot_type='AUTO'):
     # subtract to get the frame ZP
     diffs = good_cat_mag.values - good_new_mag.values
     zp,zp_sig = r_median(diffs,return_sigma=True)
-    psf,psf_sig = r_median(new['FWHM_WORLD']*3600,return_sigma=True)
+    psf,psf_sig = r_median(new['FWHM_WORLD'].iloc[good_inds]*3600,return_sigma=True)
     logger.info("Successfully calbirated this DES stack of: %s, MY %s, %s band, CCD %s" %(s.field,s.my,s.band,chip))
     logger.info(hashes)
     return zp,zp_sig,psf,psf_sig

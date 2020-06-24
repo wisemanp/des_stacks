@@ -57,7 +57,7 @@ def init_phot_worker(arg_pair):
         bad_cats.append([my,f,b,chip])
 
     qual = np.array([zp,zp_sig,source_fwhm,source_fwhm_sig])
-    qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual'%s.cutstring)
+    qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual_check'%s.cutstring)
     np.savetxt(qual_fn,qual)
 
     print("Written quality factors to %s" %qual_fn)

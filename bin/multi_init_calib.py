@@ -34,7 +34,7 @@ good_des_chips = []
 for c in range(1,63):
     if c not in [2,31,61]:
         good_des_chips.append(c)
-fields = ['E1','E2','S1','S2','C1','C2','C3','X1','X2','X3']
+fields = ['X1','X2','X3'] #'E1','E2','S1','S2','C1','C2','C3',
 bands = ['g','r','i','z']
 bad_cats = []
 def init_phot_worker(arg_pair):
@@ -49,12 +49,8 @@ def init_phot_worker(arg_pair):
 
     s = stack.Stack(f,b,my,ch,'coadding',cuts,db=False,new=True)
     s.cuts = cuts
+    zp,zp_sig,source_fwhm,source_fwhm_sig = astro.init_calib(s,str(chip),cat_fn)
 
-    try:
-
-        zp,zp_sig,source_fwhm,source_fwhm_sig = astro.init_calib(s,str(chip),cat_fn)
-    except:
-        bad_cats.append([my,f,b,chip])
 
     qual = np.array([zp,zp_sig,source_fwhm,source_fwhm_sig])
     qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual_check'%s.cutstring)
@@ -71,7 +67,7 @@ def multi_init_calib(my,f,b,chips):
     pool = multiprocessing.Pool(processes=pool_size,
                                 maxtasksperchild=2,
                                 )
-    
+
     chips = list(chips)
 
     all_args = []

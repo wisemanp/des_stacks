@@ -26,6 +26,7 @@ import itertools
 import multiprocessing
 from multiprocessing import Process
 import pathos.pools as pp
+import tqdm
 bands = gen_tools.get_des_bands()
 
 

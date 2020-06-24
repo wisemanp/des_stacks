@@ -25,7 +25,7 @@ import _pickle as cpickle
 import itertools
 import multiprocessing
 from multiprocessing import Process
-import pathos.pools as pp
+
 import tqdm
 bands = gen_tools.get_des_bands()
 
@@ -67,13 +67,11 @@ def multi_init_calib(my,f,b,chips):
     cuts ={'psf':1.3,'teff':0.02}
     args = [my,f,b,cuts]
     pool_size = multiprocessing.cpu_count()*2
-    act = multiprocessing.active_children()
-    pool = pp.ProcessPool(processes=pool_size,
+
+    pool = multiprocessing.Pool(processes=pool_size,
                                 maxtasksperchild=2,
                                 )
-    pool._clear()
-    pool._serve()
-
+    
     chips = list(chips)
 
     all_args = []

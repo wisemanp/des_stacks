@@ -34,7 +34,7 @@ good_des_chips = []
 for c in range(1,63):
     if c not in [2,31,61]:
         good_des_chips.append(c)
-fields = ['X1','X2','X3'] #'E1','E2','S1','S2','C1','C2','C3',
+fields = ['X1','X2','X3','C3'] #'E1','E2','S1','S2','C1','C2','C3',
 bands = ['g','r','i','z']
 bad_cats = []
 def init_phot_worker(arg_pair):
@@ -42,22 +42,28 @@ def init_phot_worker(arg_pair):
     my,f,b,cuts = [args[i] for i in range(len(args))]
     ch = int(chip)
     bd = os.path.join('/media/data3/wiseman/des/coadding/5yr_stacks/MY%s/'%my,f,b)
-
-    cat_fn = os.path.join(bd,str(chip),'ana',
-                       'MY%s_%s_%s_%s_0.02_1.3_clipweighted_sci.sexcat'%(my,f,b,
-                                                                        str(ch)))
-
-    s = stack.Stack(f,b,my,ch,'coadding',cuts,db=False,new=True)
-    s.cuts = cuts
-    zp,zp_sig,source_fwhm,source_fwhm_sig = astro.init_calib(s,str(chip),cat_fn)
-
-
-    qual = np.array([zp,zp_sig,source_fwhm,source_fwhm_sig])
     qual_fn = os.path.join(s.band_dir,str(chip),'ana','%s_ana.qual_check'%s.cutstring)
-    np.savetxt(qual_fn,qual)
+    if os.path.isfile(qual_fn):
+        return
+    else:
 
-    print("Written quality factors to %s" %qual_fn)
+        cat_fn = os.path.join(bd,str(chip),'ana',
+                           'MY%s_%s_%s_%s_0.02_1.3_clipweighted_sci.sexcat'%(my,f,b,
+                                                                            str(ch)))
 
+        s = stack.Stack(f,b,my,ch,'coadding',cuts,db=False,new=True)
+        s.cuts = cuts
+        try:
+            zp,zp_sig,source_fwhm,source_fwhm_sig = astro.init_calib(s,str(chip),cat_fn)
+
+
+            qual = np.array([zp,zp_sig,source_fwhm,source_fwhm_sig])
+
+            np.savetxt(qual_fn,qual)
+
+            print("Written quality factors to %s" %qual_fn)
+        except:
+            pass
 def multi_init_calib(my,f,b,chips):
     #cuts = {'psf':1.3,'teff':0.02}
     cuts ={'psf':1.3,'teff':0.02}

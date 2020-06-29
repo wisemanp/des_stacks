@@ -68,7 +68,7 @@ def init_phot_worker(arg_pair):
             pass
 def multi_init_calib(my,f,b,chips):
     #cuts = {'psf':1.3,'teff':0.02}
-    cuts ={'psf':1.3,'teff':0.02}
+    cuts = stack_tools.get_cuts(f,b)
     args = [my,f,b,cuts]
     pool_size = multiprocessing.cpu_count()*2
 

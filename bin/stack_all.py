@@ -43,7 +43,7 @@ def parser():
     parser.add_argument('-my','--minusyears', help = 'Which minus years to stack (e.g. 1,2,3,4,none)',nargs='?',required=False,default='1')
     parser.add_argument('-ch','--chips', help = 'Which chips to stack (e.g. [1,5] = 1,3,4)',nargs=1,required=False,default='All')
     parser.add_argument('-wd','--workdir', help = 'Working directory', default = './')
-    parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "teff", "b"/"both")',required = False, default = 'teff')
+    parser.add_argument('-l','--looptype', help ='Type of loop (can be "psf", "teff", "b"/"both")',required = False, default = None)
     parser.add_argument('-ps','--psfstep', help ='The size of the cut step if using psf',required=False, default =0.25)
     parser.add_argument('-zs','--zpstep', help ='Size of the cut step for zeropoint cuts',required=False,default = 0.025)
     parser.add_argument('-ts','--teffstep',help = 'Size of cut step for teff cuts',required=False,default = 0.02)

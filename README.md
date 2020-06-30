@@ -31,7 +31,7 @@ For an optimized stack, some or all of the following parameters are needed in ad
 
 # Requirements:
 
-## python packages
+## python packages:
  * numpy
  * matplotlib
  * scipy
@@ -41,3 +41,8 @@ For an optimized stack, some or all of the following parameters are needed in ad
  * subprocess
  * multiprocessing
  * pathos
+
+## AstroMatic software:
+ * SWarp
+ * Source Extractor
+ * PSFex

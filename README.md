@@ -17,7 +17,7 @@ For details about using the software, please contact Phil Wiseman (pacelweb@gmai
 4. Download the snobsinfo table from DESDB into the config/ directory using easyaccess
 5. Hope!
 
-For a simple stack, use stack_all.py with command line arguments:
+For a simple stack, use *stack_all.py* with command line arguments:
 
   -f: field (e.g. -f X2,X3)
   -b: band (e.g. -b g,r,i,z, default = all)

@@ -9,6 +9,14 @@ des_stacks is intended to be used on data from the Dark Energy Survey Supernova 
 
 For details about using the software, please contact Phil Wiseman (pacelweb@gmail.com)
 
+# installation
+
+1. Clone the repository 
+2. Set up a root directory (COADDING_ROOT/), ideally on a disk with a lot of space. 
+3. Copy the config/ directory from this repo into COADDING_ROOT/
+4. Download the snobsinfo table from DESDB into the config/ directory using easyaccess
+5. Hope!
+
 For a simple stack, use stack_all.py with command line arguments:
 
   -f: field (e.g. -f X2,X3)

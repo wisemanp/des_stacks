@@ -1,6 +1,5 @@
 *.pdf
-*.csv
-config 
+*.csv 
 __pycache__
 source_lists
 .DS_Store

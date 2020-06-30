@@ -26,13 +26,13 @@ For an optimized stack, some or all of the following parameters are needed in ad
   -ic: init_cuts - Initial cuts in (residual) zeropoint and seeing. Default is [-0.150,2.5].
 
 # Requirements:
+
 ## python packages
  * numpy
  * matplotlib
  * scipy
  * astropy
- * aplpy
- * pyraf (http://www.stsci.edu/institute/software_hardware/pyraf)
  * pandas
  * configparser
  * multiprocessing
+ * pathos

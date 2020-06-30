@@ -1,6 +1,9 @@
 *.pdf
 *.csv
-config
-charlotte* 
+config 
 __pycache__
 source_lists
+.DS_Store
+setup.py
+swarp.xml
+test

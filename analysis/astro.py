@@ -1021,7 +1021,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     '2dF Archive'
     }
     grc = Table.read(os.path.join(s.cat_dir,'OzDES_GRC_2020_03_25.fits'))
-    for col in ['ID','flag','source','comments','objtype_ozdes','transtype_ozdes']:
+    for col in ['ID','flag','source','Comment','Object_types','Transient_type']:
         grc[col] = grc[col].astype(str)
 
     grc = grc.to_pandas()

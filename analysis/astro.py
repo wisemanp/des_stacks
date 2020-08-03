@@ -414,7 +414,7 @@ def cap_phot_sn(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thresh
                 print ('fk5; circle(%s,%s,1") # text={%.2f +/- %.2f}'%(capcat['X_WORLD'].iloc[i],capcat['Y_WORLD'].iloc[i],capcat['MAG_AUTO'].iloc[i],capcat['MAGERR_AUTO'].iloc[i]),file=reg)
             print ('fk5; point %s %s # point=cross text={%s} color=red'%(ra,dec,sn_name),file=reg)
             reg.close()
-    for col in ['z','z_Err','flag','source']:
+    for col in ['z','z_err','flag','source']:
         res_df[col] = ''
     if len(match)>0:
         nearby_grc,grc_coords = get_zs_box(sg,ra,dec,30)
@@ -685,7 +685,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                'FWHM_WORLD_z', 'CLASS_STAR_z', 'FLUX_RADIUS_z', 'MAGERR_SYST_AUTO_z',
                'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
                'MAGERR_STATSYST_APER_z','DLR', 'DLR_RANK',
-               'ANGSEP','z','ez','flag','source','Object_types','Transient_type','Z_RANK']
+               'ANGSEP','z','z_err','flag','source','Object_types','Transient_type','Z_RANK']
             if len(match)>0:
                 logger.debug('Found a host!')
                 lims = False
@@ -748,7 +748,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                     pass
             #logger.debug('Current res_df is:\n %s'%res_df[['X_WORLD','Y_WORLD','ANGSEP',
             #                                         'MAG_AUTO_r','DLR','DLR_RANK',
-            #                                         'z','ez','source','flag','Z_RANK']].sort_values('DLR'))
+            #                                         'z','z_err','source','flag','Z_RANK']].sort_values('DLR'))
 
             if len(ind)>0:
                 logger.debug('Went to go and see if there are transient spectra observations around the object')
@@ -813,7 +813,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                     spec_entry['z']=snspecobs['Z_GAL'].values[0]
                                 except:
                                     spec_entry['z']=snspecobs['Z_GAL']
-                                spec_entry['ez'] = -9.99
+                                spec_entry['z_err'] = -9.99
                                 spec_entry['flag'] = 4
                                 spec_entry['source'] = 'SNSPECT_GAL'
                                 spec_entry['Z_RANK'] = z_rank
@@ -862,7 +862,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                                     spec_entry['z']=snspecobs['Z_SN'].values[0]
                                 except:
                                     spec_entry['z']=snspecobs['Z_SN']
-                                spec_entry['ez'] = -9.99
+                                spec_entry['z_err'] = -9.99
                                 spec_entry['flag'] = 3
                                 spec_entry['source'] = 'SNSPECT_SN'
                                 spec_entry['Z_RANK'] = z_rank
@@ -1064,14 +1064,14 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     gals['z']= ''
-    gals['ez']= ''
+    gals['z_err']= ''
     gals['flag']= ''
     gals['source'] = ''
     gals['Object_types'] = ''
     gals['Transient_type'] = ''
     gals['Z_RANK'] = np.NaN
     stack_gals_with_z = pd.DataFrame(columns=gals.columns)
-    cols = ['z','ez','flag','source','Object_types','Transient_type']
+    cols = ['z','z_err','flag','source','Object_types','Transient_type']
     for n in range(1,10):
         inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord,nthneighbor=n)
         init_matches = cat.iloc[inds]

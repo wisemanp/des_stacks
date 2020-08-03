@@ -1018,7 +1018,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'VUDS_ECDFS':['3','4','13','14','23','24','43','44'],
     'XMM__Stalin':['1'],
     'KMOS':['0'],
-    '2dF Archive'
+    '2dF Archive':['1','2','3','4','6'],
     }
     grc = Table.read('/media/data3/wiseman/des/coadding/catalogs/OzDES_GRC_2020_08_01.fits')
     for col in ['ID','flag','source','Comment','Object_types','Transient_type']:

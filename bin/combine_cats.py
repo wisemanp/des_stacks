@@ -46,7 +46,7 @@ def main(args):
                 cat_df = pd.read_csv(cat,index_col=0)
                 print ('Adding cat: %s'%cat, ' of length ',len(cat_df))
                 main_df = main_df.append(cat_df)
-    main_df.to_csv(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
+    main_df.to_hdf(os.path.join('/media/data3/wiseman/des/coadding/results',args.savename),key='main')
     print ('Saved new file to %s'%os.path.join('/media/data3/wiseman/des/coadding/results',args.savename))
 if __name__=="__main__":
     args=parser()

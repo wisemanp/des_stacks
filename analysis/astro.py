@@ -685,7 +685,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
                'FWHM_WORLD_z', 'CLASS_STAR_z', 'FLUX_RADIUS_z', 'MAGERR_SYST_AUTO_z',
                'MAGERR_SYST_APER_z', 'MAGERR_STATSYST_AUTO_z',
                'MAGERR_STATSYST_APER_z','DLR', 'DLR_RANK',
-               'ANGSEP','z','ez','flag','source','objtype_ozdes','transtype_ozdes','Z_RANK']
+               'ANGSEP','z','ez','flag','source','Object_types','Transient_type','Z_RANK']
             if len(match)>0:
                 logger.debug('Found a host!')
                 lims = False
@@ -1067,11 +1067,11 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     gals['ez']= ''
     gals['flag']= ''
     gals['source'] = ''
-    gals['objtype_ozdes'] = ''
-    gals['transtype_ozdes'] = ''
+    gals['Object_types'] = ''
+    gals['Transient_type'] = ''
     gals['Z_RANK'] = np.NaN
     stack_gals_with_z = pd.DataFrame(columns=gals.columns)
-    cols = ['z','ez','flag','source','objtype_ozdes','transtype_ozdes']
+    cols = ['z','ez','flag','source','Object_types','Transient_type']
     for n in range(1,10):
         inds,d2d,d3d = galscoord.match_to_catalog_sky(catcoord,nthneighbor=n)
         init_matches = cat.iloc[inds]

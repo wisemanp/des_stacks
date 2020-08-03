@@ -1020,7 +1020,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'KMOS':['0'],
     '2dF Archive'
     }
-    grc = Table.read(os.path.join(s.cat_dir,'OzDES_GRC_2020_03_25.fits'))
+    grc = Table.read('/media/data3/wiseman/des/coadding/catalogs/OzDES_GRC_2020_08_01.fits')
     for col in ['ID','flag','source','Comment','Object_types','Transient_type']:
         grc[col] = grc[col].astype(str)
 

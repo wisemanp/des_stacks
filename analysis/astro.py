@@ -1046,12 +1046,12 @@ def match_gals(catcoord,galscoord,cat,gals,dist_thresh = 2):
     '6dF',    'ATLAS',    '2dFGRS',    'GAMA',    'SNLS_FORS',    'CDB',    'VVDS_DEEP',    'VVDS_CDFS',
         'MUSE',    'SAGA',    'DEEP2_DR4',    'VUDS_COSMOS',    'VUDS_ECDFS',    'NOAO_0522',    'NOAO_0334',
            'N17B331',    'MOSDEF',    'SpARCS',    'VIPERS',    'PanSTARRS_AAOmega',    'PanSTARRS_MMT',
-              'SNLS_AAOmega','VIPERS_private_communication','SNLS','KMOS','2dF_Archive',    'DES_AAOmega']
+              'SNLS_AAOmega','VIPERS_private_communication','SNLS','KMOS','2dF Archive',    'DES_AAOmega']
     good_surveys = ['NED','XMM__Stalin',   'UDS_FORS2',    'UDS_VIMOS',    'ZFIRE_UDS',    'ACES',    'SDSS',
     '6dF',    'ATLAS',    '2dFGRS',    'GAMA',    'SNLS_FOR',    'CDB',    'VVDS_DEEP',    'VVDS_CDFS',
         'MUSE',    'SAGA',    'DEEP2_DR4',    'VUDS_COSMOS',    'VUDS_ECDFS',    'NOAO_0522',    'NOAO_0334',
            'N17B331',    'MOSDEF',    'SpARCS',    'VIPERS',    'PanSTARRS_AAOmega',    'PanSTARRS_MMT',
-              'SNLS_AAOmega','VIPERS_private_communication','SNLS','KMOS', '2dF_Archive',   'DES_AAOmega']
+              'SNLS_AAOmega','VIPERS_private_communication','SNLS','KMOS', '2dF Archive',   'DES_AAOmega']
 
 
 

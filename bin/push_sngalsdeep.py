@@ -2,18 +2,19 @@ import os
 import sys
 import pandas as pd
 import easyaccess as ea
+import tqdm
 
 deep = pd.read_csv(sys.argv[1])
 new_sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/all_snids.csv')
 
-new_snids = new_sncand[new_sncand['SNFAKE_ID']==0]['SNID'].values
+#new_snids = new_sncand[new_sncand['SNFAKE_ID']==0]['SNID'].values
 conn = ea.connect('desoper')
 cursor = conn.cursor()
 try:
     start = sys.argv[2]
 except:
     start = 0
-for i in range(int(start),len(deep)): #len(deep)
+for i in tqdm(range(int(start),len(deep))): #len(deep)
 
     query =("INSERT INTO SNGALS_DEEP "
       "( A_IMAGE, B_IMAGE, CCDNUM, CLASS_STAR_G, CLASS_STAR_I,"
@@ -41,7 +42,8 @@ for i in range(int(start),len(deep)): #len(deep)
        "MAG_ZEROPOINT_Z, SEASON, PHOTOZ, PHOTOZ_ERR, TRANSIENT_NAME,"
        "THETA_IMAGE, X_IMAGE, RA, Y_IMAGE, DEC, SPECZ_FLAG,"
        "SPECZ_CATALOG, SPECZ, SPECZ_ERR, COADD_OBJECTS_ID, SNGALID,"
-       "VERSION, SNID, GALFLAG, HOST, SEPARATION ) "
+       "VERSION, SNID, GALFLAG, HOST, SEPARATION,"
+       "SFR, SPECSFR ) "
        "VALUES ("
        "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %i, %f, '%-20s',"
        "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f,"
@@ -52,7 +54,8 @@ for i in range(int(start),len(deep)): #len(deep)
        "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f,"
        "%f, %f, %f, %f, %f, %5.0g, %f, %f, '%-11s',"
        "%f, %f, %9.6f, %f, %9.6f, '%-8s', '%-20s', %f,"
-       "%f, %11.0f, %7.0f, '%-40s', %9.0f, %4.0g, %4.0g, %f )"%(
+       "%f, %11.0f, %7.0f, '%-40s', %9.0f, %4.0g, %4.0g, %f, )"
+       "%f, %f"%(
        deep['A_IMAGE'].iloc[i], deep['B_IMAGE'].iloc[i], deep['CCDNUM'].iloc[i], deep['CLASS_STAR_G'].iloc[i], deep['CLASS_STAR_I'].iloc[i],
        deep['CLASS_STAR_R'].iloc[i], deep['CLASS_STAR_Z'].iloc[i], deep['CXX_IMAGE'].iloc[i], deep['CXY_IMAGE'].iloc[i], deep['CYY_IMAGE'].iloc[i],
        deep['DLR'].iloc[i], deep['DLR_RANK'].iloc[i], deep['ELONGATION'].iloc[i], deep['FIELD'].iloc[i], deep['FLUXERR_APER_4_G'].iloc[i],
@@ -78,12 +81,13 @@ for i in range(int(start),len(deep)): #len(deep)
        deep['MAG_ZEROPOINT_Z'].iloc[i], deep['SEASON'].iloc[i], deep['PHOTOZ'].iloc[i], deep['PHOTOZ_ERR'].iloc[i], deep['TRANSIENT_NAME'].iloc[i],
        deep['THETA_IMAGE'].iloc[i], deep['X_IMAGE'].iloc[i], deep['RA'].iloc[i], deep['Y_IMAGE'].iloc[i], deep['DEC'].iloc[i], deep['SPECZ_FLAG'].iloc[i],
        deep['SPECZ_CATALOG'].iloc[i], deep['SPECZ'].iloc[i], deep['SPECZ_ERR'].iloc[i], deep['COADD_OBJECTS_ID'].iloc[i], deep['SNGALID'].iloc[i],
-       deep['VERSION'].iloc[i], deep['SNID'].iloc[i], deep['GALFLAG'].iloc[i], deep['HOST'].iloc[i],deep['SEPARATION'].iloc[i]))
+       deep['VERSION'].iloc[i], deep['SNID'].iloc[i], deep['GALFLAG'].iloc[i], deep['HOST'].iloc[i],deep['SEPARATION'].iloc[i],
+       deep['EDGE_FLAG'].iloc[i], deep['Z_RANK'].iloc[i]))
     #print (int(deep['SNID'].iloc[i]))
-    if not int(deep['SNID'].iloc[i]) in new_snids:
+    '''if not int(deep['SNID'].iloc[i]) in new_snids:
         print(deep['SNID'].iloc[i],'Fuck')
     else:
         print ('Inserting: \n %s'%query)
         cursor.execute(query)
-        print ('Successfully pushed row %s of %s to SNGALS_DEEP'%(i,len(deep)))
+        print ('Successfully pushed row %s of %s to SNGALS_DEEP'%(i,len(deep)))'''
 print ('DONE!')

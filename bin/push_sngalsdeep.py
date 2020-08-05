@@ -43,7 +43,7 @@ for i in tqdm(range(int(start),len(deep))): #len(deep)
        "THETA_IMAGE, X_IMAGE, RA, Y_IMAGE, DEC, SPECZ_FLAG,"
        "SPECZ_CATALOG, SPECZ, SPECZ_ERR, COADD_OBJECTS_ID, SNGALID,"
        "VERSION, SNID, GALFLAG, HOST, SEPARATION,"
-       "SFR, SPECSFR ) "
+       "SFR, SPECSFR, SPECSFR_ERRMINUS ) "
        "VALUES ("
        "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %i, %f, '%-20s',"
        "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f,"
@@ -55,7 +55,7 @@ for i in tqdm(range(int(start),len(deep))): #len(deep)
        "%f, %f, %f, %f, %f, %5.0g, %f, %f, '%-11s',"
        "%f, %f, %9.6f, %f, %9.6f, '%-8s', '%-20s', %f,"
        "%f, %11.0f, %7.0f, '%-40s', %9.0f, %4.0g, %4.0g, %f, "
-       "%f, %f)"%(
+       "%f, %f, %f)"%(
        deep['A_IMAGE'].iloc[i], deep['B_IMAGE'].iloc[i], deep['CCDNUM'].iloc[i], deep['CLASS_STAR_G'].iloc[i], deep['CLASS_STAR_I'].iloc[i],
        deep['CLASS_STAR_R'].iloc[i], deep['CLASS_STAR_Z'].iloc[i], deep['CXX_IMAGE'].iloc[i], deep['CXY_IMAGE'].iloc[i], deep['CYY_IMAGE'].iloc[i],
        deep['DLR'].iloc[i], deep['DLR_RANK'].iloc[i], deep['ELONGATION'].iloc[i], deep['FIELD'].iloc[i], deep['FLUXERR_APER_4_G'].iloc[i],
@@ -82,7 +82,7 @@ for i in tqdm(range(int(start),len(deep))): #len(deep)
        deep['THETA_IMAGE'].iloc[i], deep['X_IMAGE'].iloc[i], deep['RA'].iloc[i], deep['Y_IMAGE'].iloc[i], deep['DEC'].iloc[i], deep['SPECZ_FLAG'].iloc[i],
        deep['SPECZ_CATALOG'].iloc[i], deep['SPECZ'].iloc[i], deep['SPECZ_ERR'].iloc[i], deep['COADD_OBJECTS_ID'].iloc[i], deep['SNGALID'].iloc[i],
        deep['VERSION'].iloc[i], deep['SNID'].iloc[i], deep['GALFLAG'].iloc[i], deep['HOST'].iloc[i],deep['SEPARATION'].iloc[i],
-       deep['EDGE_FLAG'].iloc[i], deep['Z_RANK'].iloc[i]))
+       deep['EDGE_FLAG'].iloc[i], deep['Z_RANK'].iloc[i],deep['Z_USE'].iloc[i]))
     #print (int(deep['SNID'].iloc[i]))
     cursor.execute(query)
         #print ('Successfully pushed row %s of %s to SNGALS_DEEP'%(i,len(deep)))

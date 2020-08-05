@@ -2,7 +2,7 @@ import os
 import sys
 import pandas as pd
 import easyaccess as ea
-import tqdm
+from tqdm import tqdm
 
 deep = pd.read_hdf(sys.argv[1],key='main')
 new_sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/all_snids.csv')

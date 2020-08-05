@@ -4,7 +4,7 @@ import pandas as pd
 import easyaccess as ea
 import tqdm
 
-deep = pd.read_csv(sys.argv[1])
+deep = pd.read_hdf(sys.argv[1],key='main')
 new_sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/all_snids.csv')
 
 #new_snids = new_sncand[new_sncand['SNFAKE_ID']==0]['SNID'].values

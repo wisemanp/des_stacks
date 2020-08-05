@@ -70,7 +70,7 @@ for i in tqdm(range(int(start),len(deep))): #len(deep)
        deep['MAGERR_STATSYST_APER_4_G'].iloc[i], deep['MAGERR_STATSYST_APER_4_I'].iloc[i],
        deep['MAGERR_STATSYST_APER_4_R'].iloc[i], deep['MAGERR_STATSYST_APER_4_Z'].iloc[i],
        deep['MAGERR_STATSYST_AUTO_G'].iloc[i], deep['MAGERR_STATSYST_AUTO_I'].iloc[i],
-       deep['MAGERR_STATSYST_AUTO_R'].iloc[i], deep['MAGERR_STATSYST_AUTO_z'].iloc[i],
+       deep['MAGERR_STATSYST_AUTO_R'].iloc[i], deep['MAGERR_STATSYST_AUTO_Z'].iloc[i],
        deep['MAGERR_SYST_APER_4_G'].iloc[i], deep['MAGERR_SYST_APER_4_I'].iloc[i], deep['MAGERR_SYST_APER_4_R'].iloc[i],
        deep['MAGERR_SYST_APER_4_Z'].iloc[i], deep['MAGERR_SYST_AUTO_G'].iloc[i], deep['MAGERR_SYST_AUTO_I'].iloc[i],
        deep['MAGERR_SYST_AUTO_R'].iloc[i], deep['MAGERR_SYST_AUTO_Z'].iloc[i], deep['MAG_APER_4_G'].iloc[i],

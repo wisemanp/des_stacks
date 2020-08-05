@@ -84,6 +84,9 @@ for i in tqdm(range(int(start),len(deep))): #len(deep)
        deep['VERSION'].iloc[i], deep['SNID'].iloc[i], deep['GALFLAG'].iloc[i], deep['HOST'].iloc[i],deep['SEPARATION'].iloc[i],
        deep['EDGE_FLAG'].iloc[i], deep['Z_RANK'].iloc[i],deep['Z_USE'].iloc[i]))
     #print (int(deep['SNID'].iloc[i]))
-    cursor.execute(query)
+    try:
+        cursor.execute(query)
+    except:
+        pass
         #print ('Successfully pushed row %s of %s to SNGALS_DEEP'%(i,len(deep)))
 print ('DONE!')

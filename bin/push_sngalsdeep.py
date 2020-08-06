@@ -87,6 +87,6 @@ for i in tqdm(range(int(start),len(deep))): #len(deep)
     try:
         cursor.execute(query)
     except:
-        pass
+        print('Failed on %s'%deep['SNID'].iloc[i])
         #print ('Successfully pushed row %s of %s to SNGALS_DEEP'%(i,len(deep)))
 print ('DONE!')

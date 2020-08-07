@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 import easyaccess as ea
 from tqdm import tqdm
+import numpy as np
 
 deep = pd.read_hdf(sys.argv[1],key='main')
 new_snids = np.loadtxt('/media/data3/wiseman/des/coadding/results/failed_snids.txt')

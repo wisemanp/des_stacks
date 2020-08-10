@@ -987,7 +987,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'UDS_FORS2':['A','B'],
     'UDS_VIMOS':['3','4'],
     'ACES': ['3','4'],
-    'SDSS': ['0'],
+    'SDSS': ['0','4'],
     '6dF': ['4'],
     'ATLAS':['Any'],
     '2dFGRS':['3','4'],

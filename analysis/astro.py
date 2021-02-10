@@ -1020,7 +1020,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
     'KMOS':['0'],
     '2dF Archive':['1','2','3','4','6'],
     }
-    grc = Table.read('/media/data3/wiseman/des/coadding/catalogs/OzDES_GRC_2020_09_03.fits')
+    grc = Table.read('/media/data3/wiseman/des/coadding/catalogs/OzDES_GRC_2021_02_01.fits')
     for col in ['ID','flag','source','Comment','Object_types','Transient_type']:
         grc[col] = grc[col].astype(str)
 

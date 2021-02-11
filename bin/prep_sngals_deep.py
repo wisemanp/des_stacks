@@ -144,7 +144,7 @@ deep['COADD_OBJECTS_ID']=np.NaN
 deep['COADD_OBJECTS_ID'].loc[good_deep.index] = good_sngals['coadd_objects_id'].values
 sncand = pd.read_csv('/media/data3/wiseman/des/coadding/catalogs/sncand_db.csv',index_col=0)
 ids = sncand[sncand['snfake_id']==0][['transient_name','snid']]
-ids=ids.rename(str,columns={'transient_name':'TRANSIENT_NAME','snid':'SNID'})
+ids=ids.rename(columns={'transient_name':'TRANSIENT_NAME','snid':'SNID'})
 #ids = ids[ids['TRANSIENT_NAME']!='-9999']
 deep = deep.merge(ids,on='SNID',how='inner')
 deep['VERSION']=''

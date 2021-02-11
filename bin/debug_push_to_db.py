@@ -6,7 +6,6 @@ from tqdm import tqdm
 import numpy as np
 
 deep = pd.read_hdf(sys.argv[1],key='main')
-new_snids = np.loadtxt('/media/data3/wiseman/des/coadding/results/failed_snids.txt')
 
 #new_snids = new_sncand[new_sncand['SNFAKE_ID']==0]['SNID'].values
 conn = ea.connect('desoper')
@@ -15,7 +14,7 @@ try:
     start = sys.argv[2]
 except:
     start = 0
-deep = deep.merge(pd.DataFrame(new_snids,columns=['SNID']),on='SNID',how='inner')
+#deep = deep.merge(pd.DataFrame(new_snids,columns=['SNID']),on='SNID',how='inner')
 for i in tqdm(range(int(start),len(deep))): #len(deep)
 
     query =("INSERT INTO SNGALS_DEEP "

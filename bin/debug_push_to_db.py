@@ -16,7 +16,8 @@ except:
     start = 0
 #deep = deep.merge(pd.DataFrame(new_snids,columns=['SNID']),on='SNID',how='inner')
 for i in tqdm(range(int(start),len(deep))): #len(deep)
-
+    if i==0:
+        print(i)
     query =("INSERT INTO SNGALS_DEEP "
       "( A_IMAGE, B_IMAGE, CCDNUM, CLASS_STAR_G, CLASS_STAR_I,"
        "CLASS_STAR_R, CLASS_STAR_Z, CXX_IMAGE, CXY_IMAGE, CYY_IMAGE,"

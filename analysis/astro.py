@@ -575,7 +575,7 @@ def cap_phot_all(y,f,chip,wd='coadding',autocuts = False):
 
     main_cat_df = cats['g']
     for counter, b in enumerate(bands[:3]):
-        main_cat_df = main_cat_df.merge(cats[bands[counter+1]],left_index=True,right_index=True,how='outer',
+        main_cat_df = main_cat_df.merge(cats[bands[counter+1]],how='outer',
         on=['X_WORLD','Y_WORLD',
         'X_IMAGE','Y_IMAGE',
         'KRON_RADIUS','ELONGATION',

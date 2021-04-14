@@ -48,7 +48,7 @@ def phot_worker(arg_pair):
 def multi_phot(my,f,chips,parsed_args):
 
     args = [my,f,parsed_args]
-    pool_size = multiprocessing.cpu_count()*2
+    pool_size = 8 #multiprocessing.cpu_count()*2
     act = multiprocessing.active_children()
     pool = pp.ProcessPool(processes=pool_size,
                                 maxtasksperchild=2,

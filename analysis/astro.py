@@ -1026,6 +1026,7 @@ def get_zs_box(s,search_ra,search_dec,search_rad):
 
     grc = grc.to_pandas()
     grc['flag'] = grc['flag'].str.strip(' ')
+    grc['source'] = grc['source'].str.strip(' ')
     good_redshifts = pd.DataFrame()
     for survey,flags in survey_flags.items():
         if flags !=['Any']:

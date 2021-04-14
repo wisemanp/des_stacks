@@ -54,7 +54,7 @@ def cap(args,logger):
         sn_list = np.genfromtxt(args.namelist,dtype=str,delimiter='\n')
         logger.info("Doing CAP on following input list")
         logger.info(sn_list)
-        pool_size = multiprocessing.cpu_count()*2
+        pool_size = 8#multiprocessing.cpu_count()*2
         act = multiprocessing.active_children()
         pool = pp.ProcessPool(processes=pool_size,
                                 maxtasksperchild=2,

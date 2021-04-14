@@ -1,4 +1,4 @@
-#!/home/wiseman/anaconda3/bin/python
+#!/media/data3/wiseman/anaconda3/bin/python
 'Tiny wrapper to do common aperture photometry on everything'
 #Note: import this first else it crashes importing sub-modules
 import argparse

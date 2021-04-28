@@ -57,7 +57,7 @@ def cap(args,logger):
         pool_size = 8#multiprocessing.cpu_count()*2
         act = multiprocessing.active_children()
         pool = pp.ProcessPool(processes=pool_size,
-                                maxtasksperchild=2,
+                                maxtasksperchild=1,
                                 )
         pool._clear()
         pool._serve()

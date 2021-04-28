@@ -936,6 +936,7 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
     else:
         save_fn = '/media/data3/wiseman/des/coadding/results/tests/%s'%savename
     main_res_df.to_csv(save_fn)
+    print('Saved to %s'%save_fn)
     return main_res_df
 
 def get_DLR_ABT(RA_SN, DEC_SN, RA, DEC, A_IMAGE, B_IMAGE, THETA_IMAGE, angsep):

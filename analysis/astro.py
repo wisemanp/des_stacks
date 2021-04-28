@@ -927,8 +927,8 @@ def cap_sn_lookup(sn_name,wd = 'coadding',savename = 'all_sn_phot.csv',dist_thre
         main_res_df.sort_values('DLR',inplace=True)
         main_res_df['DLR_RANK'] = main_res_df['DLR_RANK'] - (main_res_df['DLR_RANK']/np.abs(main_res_df['DLR_RANK']))
         main_res_df['DLR_RANK'].iloc[0] = 0
-    main_res_df.drop(['ISOAREA_IMAGE_%s'%b for b in ['g','r','r','z']],axis=1,inplace=True)
-    main_res_df.drop(['ISOAREA_WORLD_%s'%b for b in ['g','r','r','z']],axis=1,inplace=True)
+    main_res_df.drop(['ISOAREA_IMAGE_%s'%b for b in ['g','r','i','z']],axis=1,inplace=True)
+    main_res_df.drop(['ISOAREA_WORLD_%s'%b for b in ['g','r','i','z']],axis=1,inplace=True)
     if not os.path.isdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name):
         os.mkdir('/media/data3/wiseman/des/coadding/5yr_stacks/CAP/%s'%sn_name)
     if not savename:

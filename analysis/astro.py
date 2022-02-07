@@ -15,7 +15,7 @@ import time
 import seaborn as sns
 import matplotlib
 import glob
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import copy
 from scipy.interpolate import UnivariateSpline as spln

@@ -857,3 +857,141 @@ def combine_mask_weight(s,chip,j):
     for mn in masklist:
         os.remove(mn)
     return maskweightlist
+
+def cut_out(fn,ra,dec,width,height,savename):
+
+    '''Makes a cut-out of width and height in arcsec and saves to file savename'''
+    from astropy.wcs import WCS
+    import astropy.units as u
+    pixscale=0.263
+    hdu = fits.open(fn)
+    h = hdu[0].header
+    d = hdu[0].data
+    wcs = WCS(h)
+    cent_pixs = [int(x) for x in  wcs.world_to_pixel(ra*u.deg,dec*u.deg)]
+    from astropy.nddata.utils import Cutout2D
+    cutout = Cutout2D(d, position=cent_pixs, wcs=wcs, size=[width * u.arcsec,height*u.arcsec])
+    hdu[0].data = cutout.data
+    hdu[0].header.update(cutout.wcs.to_header())
+    hdu[0].writeto(savename, overwrite=True)
+
+def make_swarp_cmds_single_season(s,y):
+    """function to make swarp command to stack Nminus1_year, field chip, band"""
+    cuts = s.cuts
+    if not os.path.isdir(os.path.join(s.out_dir,'%i'%s.snid,y,s.band)):
+        os.mkdir(os.path.join(s.out_dir,'%i'%s.snid,y,s.band))
+    logger = logging.getLogger(__name__)
+    logger.handlers =[]
+    logger.setLevel(logging.DEBUG)
+    formatter =logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    logger.info('Preparing the frames for %i, season %i'%(s.snid,y))
+    #band = band + '    '
+    ## Get the list of exposures for MY, field, chip, band.
+    good = s.good_frame
+    good_band = good[good['BAND']==s.band]
+    good_band_y = good_band[good_band['SEASON']!=int(y)]
+    good_y_exps = good_band_y['EXPNUM'].unique()
+    #for each good exposure, find it's file
+    stack_fns = {}
+    logger.info('Adding files to the %i, %s band, Y%i stack'%(snid,s.band,y))
+    good_band_y.sort_values('CHIP_ZERO_POINT',ascending=False,inplace=True)
+    n,l=0,0
+    stack_fns[0]=[]
+    nights = []
+    for counter,exp in enumerate(good_y_exps):
+
+        this_exp = good_band_y[good_band_y['EXPNUM']==exp]
+        first = this_exp.iloc[0]
+        night = str(first['NITE'])
+        #chip = first['CCDNUM']
+
+        this_exp_fn = get_dessn_obs(s,night,exp,chip,logger)
+        #logger.info("Adding file from %s" %night)
+        if night not in nights:
+            if this_exp_fn:
+                nights.append(night)
+                for fn in this_exp_fn:
+                    n+=1
+                    stack_fns[l].append(fn)
+
+                    if n%100.0 == 0:
+                        l+=1
+                        stack_fns[l]=[]
+    cmd_list = {}
+    for j in range(0,l+1):
+        fns = np.array(stack_fns[j])
+        fn_list = os.path.join(s.temp_dir,\
+        'stack_fns_MY%s_%s_%s_%s_%s_%s.lst' %(MY,field,band,chip,s.cutstring,j))
+        logger.info('Saving list of files to stack at {0}'.format(fn_list))
+        np.savetxt(fn_list,fns,fmt='%s')
+
+        fn_out = os.path.join(s.out_dir,'%i'%s.snid,y,s.band)+\
+            '/%i_%i_%s_%s_%i_coadded.fits'%(s.snid,y,s.band,s.cutstring,j)
+        weightlist_name = os.path.join(s.list_dir,'%i_%i_%s_%s_%i.wgt.lst'%(s.snid,y,s.band,s.cutstring,j))
+        resamplist_name = os.path.join(s.list_dir,'%i_%i_%s_%s_%i.resamp.lst'%(s.snid,y,s.band,s.cutstring,j))
+        headerlist_name = os.path.join(s.list_dir,'%i_%i_%s_%s_%i.head.lst'%(s.snid,y,s.band,s.cutstring,j))
+
+        weightout_name = fn_out[:-4]+'wgt.fits'
+        nofiles = 0
+        if not os.path.isfile(headerlist_name):
+            logger.info("%i, %i, %s band: Going to do resampling!"%(s.snid,y,s.band))
+            try:
+                # TODO: REWRITE RESAMPLE_SINGLE_SEASON
+                weightlist_name,resamplist_name,headerlist_name = resample_single_season(s,fn_list,y,j,logger)
+            except TypeError:
+                logger.info("No files in list: %s" %fn_list)
+                nofiles = 1
+        else:
+            logger.info("Header list exists: %s, \n Going to make initial stack."%headerlist_name)
+        if os.path.isfile(fn_out.replace('clipped','weighted')):
+            cmd_list[j] = (False,False,fn_out)
+        else:
+            if nofiles ==0:
+                cliptab_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(MY,s.field,s.band,chip,s.cutstring,j))
+                clip_sigs = {
+                'SN-X1':15,
+                'SN-X2':15,
+                'SN-C1':15,
+                'SN-C2':15,
+                'SN-S1':15,
+                'SN-S2':15,
+                'SN-E1':15,
+                'SN-E2':15,
+                'SN-X3':10,
+                'SN-C3':10,
+                }
+                swarp_clip = [
+                'swarp',
+                '@%s'%resamplist_name,
+                '-RESAMPLE','N',
+                '-IMAGEOUT_NAME',fn_out,
+                '-CLIP_LOGNAME',cliptab_name,
+                '-CLIP_SIGMA',str(clip_sigs[s.field])
+                ]
+                maskweightlist_name = resamplist_name.replace('resamp','maskweight')
+
+
+                swarp_weight = [
+                'swarp',
+                '@%s'%resamplist_name,
+                '-RESAMPLE', 'N',
+                '-COMBINE_TYPE', 'WEIGHTED',
+                '-WEIGHT_TYPE', 'MAP_WEIGHT',
+                '-WEIGHT_IMAGE', '@%s'%maskweightlist_name,
+                '-IMAGEOUT_NAME', fn_out.replace('clipped.fits','weighted.fits')
+                ]
+                if os.path.isfile(fn_out):
+                    cmd_list[j] = (False,swarp_weight,fn_out)
+                else:
+
+                    cmd_list[j]=(swarp_clip,swarp_weight,fn_out)
+            else:
+                cmd_list[j]=(False,False,False)
+
+    #logger.info(cmd_list)
+    return cmd_list

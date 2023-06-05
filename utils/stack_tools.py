@@ -50,7 +50,7 @@ def make_good_frame_list(s,cuts={'teff':0.2, 'zp':None,'psf':None}):
     logger.info('Initiating make_good_frame_list.py')
     info = s.info_df
     import math
-    band,field,cuts = s.field,s.band,s.cuts
+    field,band,cuts = s.field,s.band,s.cuts
     info = info[info['FIELD']==field]
     logger.info('These are the bands available for field {0}'.format(field))
     logger.info(info.BAND.unique())

@@ -586,6 +586,111 @@ def resample(s,lst,y,chip,cuts,j,logger,stamp_sizex=4200,stamp_sizey=2200):
         h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))
     return (weightlist_name,resamplist_name,headerlist)
 
+
+def resample_single_seaosn(s,lst,y,j,logger):
+    '''Resamples a list of raw exposures so that they can be coadded'''
+
+    img_list = np.genfromtxt(lst,dtype='str',delimiter='\n')
+    if len(img_list)==0:
+        logger.info('Empty list: %s \n %s'%(lst,img_list))
+        return False
+
+    starttime=float(time.time())
+    logger.info('Creating weightmaps for individual input exposures for %i, %s band, Season %i'%(s.snid,s.band,y))
+    weightlist,resamplist,headerlist,masklist  = [],[],[],[]
+    os.chdir(s.temp_dir)
+    #try:
+    #    pixel_scale = 3600.0*abs(fits.getheader(img_list[0])['CD1_1'])
+    #except:
+        #pixel_scale = 3600.0*abs(fits.getheader(img_list[0][:-3])['CD1_1'])
+    ra_cent,dec_cent = get_chip_vals(s.field,int(chip))
+    try:
+        if len(img_list)>1:
+
+            for img in img_list:
+                imgname = os.path.split(img)[-1]
+                imgroot = imgname[:-5]
+                if imgroot[-2:]=='fi':
+                    imgroot = imgroot[:-3]
+                weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
+                resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
+                headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.head'))
+                masklist.append(os.path.join(s.temp_dir,imgroot+'.resamp.mask.fits'))
+
+
+            swarp_cmd = [
+            'swarp',
+            '@%s'%lst,
+            '-COMBINE','N',
+            '-RESAMPLE','Y',
+            #'-IMAGE_SIZE','%s,%s'%(4113,2058),
+            #'-CENTER_TYPE','MANUAL',
+            #'-CENTER','%f,%f'%(ra_cent,dec_cent),
+            #'-PIXELSCALE_TYPE','MANUAL',
+            #'-PIXEL_SCALE','0.2363',#'%.03f'%pixel_scale,
+            '-BACK_SIZE','256',
+            ]
+
+    except TypeError:
+        img = str(img_list)
+        swarp_cmd = [
+        'swarp','%s'%img,
+        '-COMBINE','N',
+        '-RESAMPLE','Y',
+        '-IMAGE_SIZE','%s,%s'%(stamp_sizex,stamp_sizey),
+        '-CENTER_TYPE','MANUAL',
+        '-CENTER','%f,%f'%(ra_cent,dec_cent),
+        '-PIXELSCALE_TYPE','MANUAL',
+        '-PIXEL_SCALE','0.2363',#'%.03f'%pixel_scale,
+        '-BACK_SIZE','256',
+        ]
+        imgname = os.path.split(img)[-1]
+        imgroot = imgname[:-5]
+        if imgroot[-2:]=='fi':
+            imgroot = imgroot[:-3]
+        weightlist.append(os.path.join(s.temp_dir,imgroot +'.resamp.weight.fits'))
+        resamplist.append(os.path.join(s.temp_dir,imgroot+'.resamp.fits'))
+        headerlist.append(os.path.join(s.temp_dir,imgroot+'.resamp.head'))
+        masklist.append(os.path.join(s.temp_dir,imgroot+'.resamp.mask.fits'))
+
+    logger.info('Resampling with command: %s'%swarp_cmd)
+    p = subprocess.Popen(swarp_cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    outs,errs = p.communicate()
+    endtime=float(time.time())
+    logger.info('Finished creating weightmaps for %i, %s band, season %i; took %.3f seconds'%(s.snid,s.band,y,endtime-starttime))
+
+    weightlist = np.array(weightlist)
+    weightlist_name = os.path.join(s.list_dir, '%i_%i_%s_%s_%i.wgt.lst' % (s.snid, y, s.band, s.cutstring, j))
+    resamplist_name = os.path.join(s.list_dir, '%i_%i_%s_%s_%i.resamp.lst' % (s.snid, y, s.band, s.cutstring, j))
+    headerlist_name = os.path.join(s.list_dir, '%i_%i_%s_%s_%i.head.lst' % (s.snid, y, s.band, s.cutstring, j))
+    np.savetxt(weightlist_name,weightlist,fmt='%s')
+    resamplist = np.array(resamplist)
+    np.savetxt(resamplist_name,resamplist,fmt='%s')
+    np.savetxt(headerlist_name,headerlist,fmt='%s')
+
+    try:
+        for img in resamplist:
+            imgname = os.path.split(img)[-1]
+            imgroot = imgname[:-5]
+
+            if imgroot[-2:]=='fi':
+                imgroot = imgroot[:-3]
+            try:
+                imgn = img[:-3]
+                h = fits.getheader(imgn)
+            except:
+                h = fits.getheader(img)
+            header_name = os.path.join(s.temp_dir,imgroot+'.head')
+            if os.path.isfile(header_name):
+                os.remove(header_name)
+            h.totextfile(header_name)
+
+    except TypeError:
+        img = str(img_list)
+        h = fits.getheader(img)
+        h.totextfile(os.path.join(s.temp_dir,imgroot+'.head'))
+    return (weightlist_name,resamplist_name,headerlist)
+
 def make_cap_stamps(sg,sr,si,sz,chip,sn_name,ra,dec,stamp_sizex=4100,stamp_sizey=2100):
     '''***Deprecated***
     Function to make a small stamp around an SN position to do common aperture photometry
@@ -952,7 +1057,7 @@ def make_swarp_cmds_single_season(s,y):
             cmd_list[j] = (False,False,fn_out)
         else:
             if nofiles ==0:
-                cliptab_name = os.path.join(s.temp_dir,'cliptabs','%s_%s_%s_%s_%s_%s_clipped.tab'%(MY,s.field,s.band,chip,s.cutstring,j))
+                cliptab_name = os.path.join(s.temp_dir,'cliptabs','%i_%i_%s_%s_%i_clipped.tab'%(s.snid,y,s.band,s.cutstring,j))
                 clip_sigs = {
                 'SN-X1':15,
                 'SN-X2':15,

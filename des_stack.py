@@ -284,7 +284,7 @@ class Stack():
 
 class Season_Stacks():
     def __init__(self, snid, band,working_dir,cuts={'none':None},db = False):
-        self.ra,self.dec,field,transient_season,self.chip = get_sn_dat(snid)
+        self.ra,self.dec,field,transient_season,self.chip = get_sn_dat(snid=snid)
         self.snid = snid
         self.field = field[3:]
         self.band = band

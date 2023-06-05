@@ -282,28 +282,25 @@ class Stack():
         return limmags
 
 
-class Season_Stacks():
-    def __init__(self, snid, band,working_dir,cuts={'none':None},db = False):
-        self.ra,self.dec,field,transient_season,self.chip = get_sn_dat(snid=snid)
+class Season_Stacks_Test():
+    def __init__(self, snid, band, working_dir, cuts={'none': None}, db=False):
+        self.ra, self.dec, field, transient_season, self.chip = get_sn_dat(snid=snid)
         self.snid = snid
         self.field = field[3:]
         self.band = band
-        self.chip=chip
-        self.ra = ra
-        self.dec = dec
-        self.coadding_dir =working_dir
-        if cuts=={'none':None}:
-            if self.band in ['g','r']:
-                cuts ={'teff':0.02, 'zp':None,'psf':2.5}
+        self.coadding_dir = working_dir
+        if cuts == {'none': None}:
+            if self.band in ['g', 'r']:
+                cuts = {'teff': 0.02, 'zp': None, 'psf': 2.5}
 
-            elif self.band in ['i','z']:
-                cuts ={'teff':0.02, 'zp':None,'psf':2.5}
+            elif self.band in ['i', 'z']:
+                cuts = {'teff': 0.02, 'zp': None, 'psf': 2.5}
 
         if cuts['teff'] and not cuts['psf']:
-            self.cutstring = '%s'%cuts['teff']
+            self.cutstring = '%s' % cuts['teff']
 
         elif cuts['teff'] and cuts['psf']:
-            self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
+            self.cutstring = '%s_%s' % (cuts['teff'], cuts['psf'])
         self._define_paths()
         self._init_log()
         if db:
@@ -318,38 +315,42 @@ class Season_Stacks():
             self.coadding_dir = '/media/data3/wiseman/des/coadding/'
         elif self.coadding_dir == 'current':
             self.coadding_dir = os.curdir
-        self.config_dir = os.path.join(self.coadding_dir,'config')
+        self.config_dir = os.path.join(self.coadding_dir, 'config')
         if not os.path.isdir(self.config_dir):
             os.mkdir(self.config_dir)
-        self.log_dir = os.path.join(self.coadding_dir,'log')
+        self.log_dir = os.path.join(self.coadding_dir, 'log')
         if not os.path.isdir(self.log_dir):
             os.mkdir(self.log_dir)
-        self.cat_dir = os.path.join(self.coadding_dir,'catalogs')
+        self.cat_dir = os.path.join(self.coadding_dir, 'catalogs')
         if not os.path.isdir(self.cat_dir):
             os.mkdir(self.cat_dir)
-        self.res_dir = os.path.join(self.coadding_dir,'results')
+        self.res_dir = os.path.join(self.coadding_dir, 'results')
         if not os.path.isdir(self.res_dir):
             os.mkdir(self.res_dir)
-            self.out_dir = os.path.join(self.coadding_dir,'stacks')
+        self.out_dir = os.path.join(self.coadding_dir, 'stacks')
         if not os.path.isdir(self.out_dir):
             os.mkdir(self.out_dir)
-        self.temp_dir = os.path.join(self.coadding_dir,'temp')
+        self.temp_dir = os.path.join(self.coadding_dir, 'temp')
         if not os.path.isdir(self.temp_dir):
             os.mkdir(self.temp_dir)
-        self.db_dir = os.path.join(self.coadding_dir,'db')
+        self.db_dir = os.path.join(self.coadding_dir, 'db')
         if not os.path.isdir(self.db_dir):
             os.mkdir(self.db_dir)
-        self.list_dir = os.path.join(self.coadding_dir,'good_img_lists')
+        self.list_dir = os.path.join(self.coadding_dir, 'good_img_lists')
         if not os.path.isdir(self.list_dir):
             os.mkdir(self.list_dir)
-        self.weight_dir = os.path.join(self.coadding_dir,'weights')
+        self.weight_dir = os.path.join(self.coadding_dir, 'weights')
         if not os.path.isdir(self.weight_dir):
             os.mkdir(self.weight_dir)
-        self.snid_dir = os.path.join(self.out_dir,'%i'%self.snid,self.band)
+        self.snid_dir = os.path.join(self.out_dir, '%i' % self.snid)
         if not os.path.isdir(self.snid_dir):
             os.mkdir(self.snid_dir)
-        for y in range(1,6):
-            self.y_dir = os.path.join(self.snid_dir,'%i'%y)
+        self.band_dir = os.path.join(self.snid_dir, self.band)
+        if not os.path.isdir(self.band_dir):
+            os.mkdir(self.band_dir)
+
+        for y in range(1, 6):
+            self.y_dir = os.path.join(self.snid_dir, '%i' % y)
             if not os.path.isdir(self.y_dir):
                 os.mkdir(self.y_dir)
 
@@ -357,19 +358,20 @@ class Season_Stacks():
     def _init_log(self):
         '''Sets up the logger'''
         logger = logging.getLogger('des_stack.py')
-        logger.handlers =[]
+        logger.handlers = []
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-        fh = logging.FileHandler(os.path.join(self.log_dir,'stack_%s%s%s.log'%(self.field,self.band,self.my)))
+        fh = logging.FileHandler(os.path.join(self.log_dir, 'stack_%i%s.log' % (self.snid, self.band)))
         fh.setFormatter(formatter)
         ch.setFormatter(formatter)
         logger.addHandler(ch)
         logger.addHandler(fh)
         self.logger = logger
+
     ###########################################################
-    def _get_configs(self,dessn_ini = 'snobs_params.ini'):
+    def _get_configs(self, dessn_ini='snobs_params.ini'):
 
         '''Get config files from the config directory
         parameters:
@@ -377,36 +379,37 @@ class Season_Stacks():
             the .ini file for the DES SN data, including paths for each
             year, plus year lims
         '''
-        if os.path.split(dessn_ini)[0]=='':
+        if os.path.split(dessn_ini)[0] == '':
             # if only the filename for dessn_ini is given, assume it's in /coadding/config
-            ini_fn = os.path.join(self.config_dir,dessn_ini)
+            ini_fn = os.path.join(self.config_dir, dessn_ini)
         else:
             # assume I'm being given a totally new path
             ini_fn = dessn_ini
-        cp=configparser.ConfigParser()
+        cp = configparser.ConfigParser()
         # read the .ini file
         cp.read(ini_fn)
         # Make a list of years
-        years = ['Y1','Y2','Y3','Y4','Y5']
+        years = ['Y1', 'Y2', 'Y3', 'Y4', 'Y5']
         self.year_lims = {}
         self.data_dirs = {}
         for y in years:
-            year_mjd_lim =cp.get('year_mjd_lims',y)
-            year_night_lim = cp.get('year_night_lims',y)
-            self.year_lims[y]={'mjd':year_mjd_lim,'night':year_night_lim}
-            self.data_dirs[y]=cp.get('data_dirs',y)
-        self.logger.info('Successfully pulled configuration from %s' %self.config_dir)
+            year_mjd_lim = cp.get('year_mjd_lims', y)
+            year_night_lim = cp.get('year_night_lims', y)
+            self.year_lims[y] = {'mjd': year_mjd_lim, 'night': year_night_lim}
+            self.data_dirs[y] = cp.get('data_dirs', y)
+        self.logger.info('Successfully pulled configuration from %s' % self.config_dir)
+
     ############################################################################
     def _get_info(self):
         '''Gets the current info file (originally from the DESDB)'''
-        info_tab = Table.read(os.path.join(self.config_dir,'snobsinfo.fits'))
+        info_tab = Table.read(os.path.join(self.config_dir, 'snobsinfo.fits'))
         info_tab['BAND'] = info_tab['BAND'].astype(str)
         info_tab['FIELD'] = info_tab['FIELD'].astype(str)
         info_tab['NITE'] = info_tab['NITE'].astype(str)
 
         self.info_df = info_tab.to_pandas()
 
-    def do_season_stacks(self, cuts={'teff':0.02, 'zp':None,'psf':2.5},final=True):
+    def do_season_stacks(self, cuts={'teff': 0.02, 'zp': None, 'psf': 2.5}, final=True):
         '''Does a stack defined by the parameters from the Stack object it is passed.
         keyword arguments:
         cuts:
@@ -418,27 +421,30 @@ class Season_Stacks():
         none
         '''
 
-        self.final=final
-        self.logger.info("Cuts: %s"%cuts)
-        self.zp_cut,self.psf_cut,self.t_cut = cuts['zp'], cuts['psf'],cuts['teff']
+        self.final = final
+        self.logger.info("Cuts: %s" % cuts)
+        self.zp_cut, self.psf_cut, self.t_cut = cuts['zp'], cuts['psf'], cuts['teff']
         if cuts['zp'] and cuts['psf'] and not cuts['teff']:
-            self.cutstring = '%.3f_%s'%(cuts['zp'],cuts['psf'])
+            self.cutstring = '%.3f_%s' % (cuts['zp'], cuts['psf'])
         elif cuts['teff'] and not cuts['psf']:
-            self.cutstring = '%s'%cuts['teff']
-        elif -1<float(cuts['teff'])<100 and  cuts['psf']:
-            self.cutstring = '%s_%s'%(cuts['teff'],cuts['psf'])
+            self.cutstring = '%s' % cuts['teff']
+        elif -1 < float(cuts['teff']) < 100 and cuts['psf']:
+            self.cutstring = '%s_%s' % (cuts['teff'], cuts['psf'])
         self.cuts = cuts
         self.logger.info('******************************************************')
-        self.logger.info('Initiating stack on {0} in {1} band in season {2}'.format(self.snid,self.band,self.y))
+        self.logger.info('Initiating stack on {0} in {1} band in season {2}'.format(self.snid, self.band, self.y))
         self.logger.info('******************************************************')
         # does list of good frames exist?
-        if not os.path.isfile(os.path.join(self.list_dir,'good_exps_%s_%s_%s.csv'%(self.field,self.band,self.cutstring))):
+        if not os.path.isfile(
+                os.path.join(self.list_dir, 'good_exps_%s_%s_%s.csv' % (self.field, self.band, self.cutstring))):
             # get the list of good frames
-            self.logger.info('No good frame list with conditions (%s, %s, %s) yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' %(self.field,self.band,self.cutstring,self.t_cut,self.zp_cut,self.psf_cut))
+            self.logger.info(
+                'No good frame list with conditions (%s, %s, %s) yet, making a new one with T_eff> %s, ZP < %s. and PSF < %s' % (
+                self.field, self.band, self.cutstring, self.t_cut, self.zp_cut, self.psf_cut))
             self.good_frame = make_good_frame_list(self)
 
         else:
-            good_fn = os.path.join(self.list_dir,'good_exps_%s_%s_%s.csv'%(self.field,self.band,self.cutstring))
+            good_fn = os.path.join(self.list_dir, 'good_exps_%s_%s_%s.csv' % (self.field, self.band, self.cutstring))
             self.logger.info('Reading in list of good frames from {0}'.format(good_fn))
             self.good_frame = pd.read_csv(good_fn)
 
@@ -446,13 +452,13 @@ class Season_Stacks():
         chips = self.chip
 
         # get swarp commands
-        log = open(os.path.join(self.log_dir,'swarp_%s_%s_%s.log' %(self.snid, self.band)),'a')
+        log = open(os.path.join(self.log_dir, 'swarp_%s_%s_%s.log' % (self.snid, self.band)), 'a')
         log.flush()
-        for y in range(1,6):
-            self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(self.snid,self.band,y))
+        for y in range(1, 6):
+            self.logger.info('Stacking {0} in {1} band, skipping year {2}'.format(self.snid, self.band, y))
             multi_single_season_stack.multitask(self)
-            self.logger.info('Finished stacking SN {0} for Y{1}'.format(self.snid,y))
+            self.logger.info('Finished stacking SN {0} for Y{1}'.format(self.snid, y))
 
         log.close()
-        self.logger.info('Stacking of %i complete!' %(self.snid))
+        self.logger.info('Stacking of %i complete!' % (self.snid))
         self.logger.info('******************************************************')
